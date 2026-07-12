@@ -31,6 +31,9 @@ views:
       heading_style: title
       icon: mdi:sofa
     - type: custom:mushroom-template-card
+      entity: climate.wohnzimmer_heizung_wohnzimmer
+      tap_action:
+        action: more-info
       primary: >-
         {% set t = states('sensor.wohnzimmer_heizung_wohnzimmer_current_temperature') %}
         {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
@@ -107,6 +110,9 @@ views:
       heading_style: title
       icon: mdi:bed
     - type: custom:mushroom-template-card
+      entity: climate.schlafzimmer_heizung_schlafzimmer_links
+      tap_action:
+        action: more-info
       primary: >-
         {% set t1 = states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_temperature') %}
         {% set t2 = states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_temperature') %}
@@ -287,6 +293,9 @@ views:
       heading_style: title
       icon: mdi:silverware-fork-knife
     - type: custom:mushroom-template-card
+      entity: climate.esszimmer_heizung_esszimmer_2
+      tap_action:
+        action: more-info
       primary: >-
         {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature_2') %}
         {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
@@ -335,6 +344,9 @@ views:
       heading_style: title
       icon: mdi:desktop-classic
     - type: custom:mushroom-template-card
+      entity: climate.buro_heizung_buro
+      tap_action:
+        action: more-info
       primary: >-
         {% set t = states('sensor.buro_heizung_buro_current_temperature') %}
         {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
@@ -411,6 +423,9 @@ views:
       heading_style: title
       icon: mdi:stove
     - type: custom:mushroom-template-card
+      entity: climate.kuche_heizung_kuche
+      tap_action:
+        action: more-info
       primary: >-
         {% set t = states('sensor.kuche_heizung_kuche_current_temperature') %}
         {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
@@ -444,6 +459,9 @@ views:
       heading_style: title
       icon: mdi:shower
     - type: custom:mushroom-template-card
+      entity: climate.esszimmer_heizung_esszimmer
+      tap_action:
+        action: more-info
       primary: >-
         {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature') %}
         {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
@@ -860,158 +878,112 @@ views:
       - operator: default
         color: var(--disabled-text-color)
       extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+    - type: custom:button-card
+      entity: sensor.hp_envy_6400_series
+      name: HP Envy Drucker
+      icon: mdi:printer
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      label: "[[[\n  const st = states['sensor.hp_envy_6400_series'];\n  const status = st ? st.state : 'unknown';\n  const statusLabels = {idle:'Bereit', printing:'Druckt…', unknown:'Unbekannt'};\n  const black = states['sensor.hp_envy_6400_series_black_cartridge'];\n  const color = states['sensor.hp_envy_6400_series_tri_color_cartridge'];\n  const fmt = (s) => (!s || ['unavailable','unknown','none',''].includes(s.state)) ? '?' : (s.state + '%');\n  const parts = [statusLabels[status] || status];\n  parts.push('Schwarz ' + fmt(black));\n  parts.push('Farbe ' + fmt(color));\n  return parts.join(' · ');\n]]]"
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+      state:
+      - operator: template
+        value: "[[[\n  const black = states['sensor.hp_envy_6400_series_black_cartridge'];\n  const color = states['sensor.hp_envy_6400_series_tri_color_cartridge'];\n  const low = (s) => s && !isNaN(parseFloat(s.state)) && parseFloat(s.state) <= 10;\n  return low(black) || low(color);\n]]]"
+        icon: mdi:printer-alert
+        color: red
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite
+      - operator: default
+        color: var(--disabled-text-color)
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
 - title: Auto
   path: auto
   icon: mdi:car-electric
   cards:
-  - type: vertical-stack
-    cards:
-    - type: heading
-      heading: BYD Seal U DM-i
-      heading_style: title
-      icon: mdi:car-electric
-    - type: custom:mushroom-template-card
-      primary: >-
-        {% set b = states('sensor.byd_seal_u_dm_i_ladezustand') %}
-        {% if b in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ b }} % Akku{% endif %}
-      secondary: >-
-        {% set r = states('sensor.byd_seal_u_dm_i_reichweite') %}
-        {% if r in ['unavailable', 'unknown', 'none', ''] %}Fahrzeug offline{% else %}{{ r }} km Reichweite{% endif %}
-      icon: >-
-        {{ 'mdi:car-off' if is_state('binary_sensor.byd_seal_u_dm_i_online', 'off') else 'mdi:car-electric' }}
-      icon_color: >-
-        {% if is_state('binary_sensor.byd_seal_u_dm_i_online', 'off') %}grey{% elif is_state('binary_sensor.byd_seal_u_dm_i_laden', 'on') %}green{% else %}blue{% endif %}
-      layout: horizontal
-    - type: grid
-      columns: 2
-      square: false
-      cards:
-      - type: tile
-        entity: sensor.byd_seal_u_dm_i_innenraumtemperatur
-        name: Innenraum
-        icon: mdi:thermometer
-        color: orange
-      - type: tile
-        entity: sensor.byd_seal_u_dm_i_aussentemperatur
-        name: Außen
-        icon: mdi:thermometer
-        color: blue
-      - type: tile
-        entity: sensor.byd_seal_u_dm_i_kilometerzahler
-        name: Kilometerstand
-        icon: mdi:counter
-        color: grey
-      - type: custom:button-card
-        entity: binary_sensor.byd_seal_u_dm_i_laden
-        name: Ladestatus
-        show_name: true
-        show_state: false
-        show_label: true
-        show_icon: true
-        label: "[[[\n  const st = states['binary_sensor.byd_seal_u_dm_i_laden'];\n  const state = st ? st.state : 'unknown';\n  if (state === 'on') return 'Lädt gerade';\n  if (state === 'off') return 'Lädt nicht';\n  return 'Nicht erreichbar';\n]]]"
-        styles:
-          card:
-          - padding: 12px
-          - min-height: 66px
-          grid:
-          - grid-template-areas: '"i n" "i l"'
-          - grid-template-columns: 42px 1fr
-          - grid-template-rows: min-content min-content
-          icon:
-          - width: 24px
-          - height: 24px
-          name:
-          - justify-self: start
-          - font-weight: bold
-          - font-size: 14px
-          label:
-          - justify-self: start
-          - font-size: 12px
-          - color: var(--secondary-text-color)
-          - white-space: normal
-        state:
-        - value: 'on'
-          icon: mdi:battery-charging
-          color: green
-          styles:
-            icon:
-            - animation: machine-blink 1.6s ease-in-out infinite
-        - value: 'off'
-          icon: mdi:power-plug-off-outline
-          color: var(--disabled-text-color)
-        - operator: default
-          icon: mdi:car-off
-          color: grey
-        extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
-  - type: vertical-stack
-    cards:
-    - type: heading
-      heading: Schnellzugriff
-      heading_style: title
-      icon: mdi:lightning-bolt
-    - type: custom:mushroom-climate-card
-      entity: climate.byd_seal_u_dm_i_klima
-      show_temperature_control: true
-    - type: grid
-      columns: 2
-      square: false
-      cards:
-      - type: custom:button-card
+  - type: custom:vehicle-status-card
+    name: BYD Seal U DM-i
+    images:
+    - image: /local/byd_seal_u_dmi.jpg
+    indicator_rows:
+    - row_items:
+      - type: entity
+        entity: binary_sensor.byd_seal_u_dm_i_online
+        name: Verbindung
+      - type: entity
         entity: lock.byd_seal_u_dm_i_abschliessen
         name: Verriegelung
-        show_name: true
-        show_state: false
-        show_label: true
-        show_icon: true
-        label: "[[[\n  const st = states['lock.byd_seal_u_dm_i_abschliessen'];\n  const state = st ? st.state : 'unknown';\n  const labels = {locked:'Verriegelt', unlocked:'Entriegelt', locking:'Verriegelt…', unlocking:'Entriegelt…'};\n  return labels[state] || 'Unbekannt';\n]]]"
         tap_action:
-          action: toggle
-        styles:
-          card:
-          - padding: 12px
-          - min-height: 66px
-          grid:
-          - grid-template-areas: '"i n" "i l"'
-          - grid-template-columns: 42px 1fr
-          - grid-template-rows: min-content min-content
-          icon:
-          - width: 24px
-          - height: 24px
-          name:
-          - justify-self: start
-          - font-weight: bold
-          - font-size: 14px
-          label:
-          - justify-self: start
-          - font-size: 12px
-          - color: var(--secondary-text-color)
-          - white-space: normal
-        state:
-        - value: locked
-          icon: mdi:lock
-          color: green
-        - value: unlocked
-          icon: mdi:lock-open-variant
-          color: red
-        - operator: default
-          icon: mdi:lock-question
-          color: grey
-      - type: tile
+          action: more-info
+      - type: entity
         entity: binary_sensor.byd_seal_u_dm_i_turen_offen
         name: Türen/Fenster
-        icon: mdi:car-door
-        color: red
-  - type: vertical-stack
-    cards:
-    - type: heading
-      heading: Standort
-      heading_style: title
-      icon: mdi:map-marker
-    - type: tile
-      entity: device_tracker.byd_seal_u_dm_i_standort
-      name: Standort
-      icon: mdi:map-marker
-      color: purple
+      alignment: center
+    range_info:
+    - energy_level:
+        entity: sensor.byd_seal_u_dm_i_ladezustand
+        icon: mdi:battery
+        value_position: inside
+        tap_action:
+          action: more-info
+      range_level:
+        entity: sensor.byd_seal_u_dm_i_reichweite
+        value_position: inside
+      charging_entity: binary_sensor.byd_seal_u_dm_i_laden
+      progress_color: '#4caf50'
+      bar_height: 16
+      bar_radius: 8
+    button_cards:
+    - name: Klimaanlage
+      entity: climate.byd_seal_u_dm_i_klima
+      icon: mdi:air-conditioner
+      tap_action:
+        action: more-info
+    - name: Innenraum
+      entity: sensor.byd_seal_u_dm_i_innenraumtemperatur
+      icon: mdi:thermometer
+    - name: Außen
+      entity: sensor.byd_seal_u_dm_i_aussentemperatur
+      icon: mdi:thermometer
+    - name: Kilometerstand
+      entity: sensor.byd_seal_u_dm_i_kilometerzahler
+      icon: mdi:counter
+    mini_map:
+      device_tracker: device_tracker.byd_seal_u_dm_i_standort
+      map_zoom: 14
+    layout_config:
+      button_grid:
+        rows: 2
+        columns: 2
+      range_info_config:
+        layout: row
+      section_order:
+      - images
+      - range_info
+      - indicators
+      - buttons
+      - mini_map
 - title: Synology
   path: synology
   icon: mdi:nas
