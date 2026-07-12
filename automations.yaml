@@ -273,3 +273,37 @@
         push:
           sound: default
   mode: single
+- id: '1783786435282'
+  alias: 'Waschmaschine: Fertig-Benachrichtigung'
+  description: Sendet eine Push-Nachricht, wenn die Waschmaschine fertig ist.
+  triggers:
+  - entity_id: sensor.waschmaschine_zustand
+    to: finished
+    trigger: state
+  conditions: []
+  actions:
+  - action: notify.notify
+    data:
+      title: "\U0001F9FA Waschmaschine fertig!"
+      message: Das Programm ist beendet. Du kannst die Wäsche jetzt raushängen!
+      data:
+        push:
+          sound: default
+  mode: single
+- id: '1783786435283'
+  alias: 'Trockner: Fertig-Benachrichtigung'
+  description: Sendet eine Push-Nachricht, wenn der Trockner fertig ist.
+  triggers:
+  - entity_id: sensor.trockner_zustand
+    to: finished
+    trigger: state
+  conditions: []
+  actions:
+  - action: notify.notify
+    data:
+      title: "\U0001F9FA Trockner fertig!"
+      message: Das Programm ist beendet. Du kannst die Wäsche jetzt rausholen!
+      data:
+        push:
+          sound: default
+  mode: single
