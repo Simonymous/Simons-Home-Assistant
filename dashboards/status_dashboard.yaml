@@ -12,38 +12,158 @@ views:
     columns: 4
     square: false
     cards:
-    - type: custom:mushroom-template-card
-      primary: Restabfall
-      secondary: '{% set days = states(''sensor.restabfall_tage_bis_abholung'') | int(default=99) %} {% if days == 0 %} HEUTE! {% elif days == 1 %} MORGEN! {% else %} In {{ days }} Tagen {% endif %}'
+    - type: custom:button-card
+      entity: sensor.restabfall_tage_bis_abholung
+      name: Restabfall
       icon: mdi:trash-can
-      icon_color: grey
-      layout: vertical
-      card_mod:
-        style: "ha-card {\n  border: 2px solid transparent;\n  border-radius: var(--ha-card-border-radius, 12px);\n  {% if states('sensor.restabfall_tage_bis_abholung') | int(default=99) < 2 %}\n    animation: muell-blink 1.6s ease-in-out infinite;\n  {% endif %}\n}\n@keyframes muell-blink {\n  0%, 100% { border-color: rgba(244, 67, 54, 0.85); }\n  50% { border-color: rgba(244, 67, 54, 0.12); }\n}\n"
-    - type: custom:mushroom-template-card
-      primary: Biotonne
-      secondary: '{% set days = states(''sensor.biotonne_tage_bis_abholung'') | int(default=99) %} {% if days == 0 %} HEUTE! {% elif days == 1 %} MORGEN! {% else %} In {{ days }} Tagen {% endif %}'
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      label: "[[[\n  const st = states['sensor.restabfall_tage_bis_abholung'];\n  const days = st ? parseInt(st.state, 10) : 99;\n  if (isNaN(days)) return '';\n  if (days === 0) return 'HEUTE!';\n  if (days === 1) return 'MORGEN!';\n  return 'In ' + days + ' Tagen';\n]]]"
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+      state:
+      - operator: <=
+        value: '1'
+        color: grey
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite
+      - operator: default
+        color: grey
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+    - type: custom:button-card
+      entity: sensor.biotonne_tage_bis_abholung
+      name: Biotonne
       icon: mdi:trash-can
-      icon_color: brown
-      layout: vertical
-      card_mod:
-        style: "ha-card {\n  border: 2px solid transparent;\n  border-radius: var(--ha-card-border-radius, 12px);\n  {% if states('sensor.biotonne_tage_bis_abholung') | int(default=99) < 2 %}\n    animation: muell-blink 1.6s ease-in-out infinite;\n  {% endif %}\n}\n@keyframes muell-blink {\n  0%, 100% { border-color: rgba(244, 67, 54, 0.85); }\n  50% { border-color: rgba(244, 67, 54, 0.12); }\n}\n"
-    - type: custom:mushroom-template-card
-      primary: Gelbe Tonne
-      secondary: '{% set days = states(''sensor.gelbe_tonne_tage_bis_abholung'') | int(default=99) %} {% if days == 0 %} HEUTE! {% elif days == 1 %} MORGEN! {% else %} In {{ days }} Tagen {% endif %}'
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      label: "[[[\n  const st = states['sensor.biotonne_tage_bis_abholung'];\n  const days = st ? parseInt(st.state, 10) : 99;\n  if (isNaN(days)) return '';\n  if (days === 0) return 'HEUTE!';\n  if (days === 1) return 'MORGEN!';\n  return 'In ' + days + ' Tagen';\n]]]"
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+      state:
+      - operator: <=
+        value: '1'
+        color: brown
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite
+      - operator: default
+        color: brown
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+    - type: custom:button-card
+      entity: sensor.gelbe_tonne_tage_bis_abholung
+      name: Gelbe Tonne
       icon: mdi:trash-can
-      icon_color: yellow
-      layout: vertical
-      card_mod:
-        style: "ha-card {\n  border: 2px solid transparent;\n  border-radius: var(--ha-card-border-radius, 12px);\n  {% if states('sensor.gelbe_tonne_tage_bis_abholung') | int(default=99) < 2 %}\n    animation: muell-blink 1.6s ease-in-out infinite;\n  {% endif %}\n}\n@keyframes muell-blink {\n  0%, 100% { border-color: rgba(244, 67, 54, 0.85); }\n  50% { border-color: rgba(244, 67, 54, 0.12); }\n}\n"
-    - type: custom:mushroom-template-card
-      primary: Blaue Tonne
-      secondary: '{% set days = states(''sensor.blaue_tonne_tage_bis_abholung'') | int(default=99) %} {% if days == 0 %} HEUTE! {% elif days == 1 %} MORGEN! {% else %} In {{ days }} Tagen {% endif %}'
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      label: "[[[\n  const st = states['sensor.gelbe_tonne_tage_bis_abholung'];\n  const days = st ? parseInt(st.state, 10) : 99;\n  if (isNaN(days)) return '';\n  if (days === 0) return 'HEUTE!';\n  if (days === 1) return 'MORGEN!';\n  return 'In ' + days + ' Tagen';\n]]]"
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+      state:
+      - operator: <=
+        value: '1'
+        color: yellow
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite
+      - operator: default
+        color: yellow
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+    - type: custom:button-card
+      entity: sensor.blaue_tonne_tage_bis_abholung
+      name: Blaue Tonne
       icon: mdi:trash-can
-      icon_color: blue
-      layout: vertical
-      card_mod:
-        style: "ha-card {\n  border: 2px solid transparent;\n  border-radius: var(--ha-card-border-radius, 12px);\n  {% if states('sensor.blaue_tonne_tage_bis_abholung') | int(default=99) < 2 %}\n    animation: muell-blink 1.6s ease-in-out infinite;\n  {% endif %}\n}\n@keyframes muell-blink {\n  0%, 100% { border-color: rgba(244, 67, 54, 0.85); }\n  50% { border-color: rgba(244, 67, 54, 0.12); }\n}\n"
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      label: "[[[\n  const st = states['sensor.blaue_tonne_tage_bis_abholung'];\n  const days = st ? parseInt(st.state, 10) : 99;\n  if (isNaN(days)) return '';\n  if (days === 0) return 'HEUTE!';\n  if (days === 1) return 'MORGEN!';\n  return 'In ' + days + ' Tagen';\n]]]"
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+      state:
+      - operator: <=
+        value: '1'
+        color: blue
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite
+      - operator: default
+        color: blue
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
   - type: heading
     heading: Sendungen & Pakete
     heading_style: title
@@ -99,12 +219,12 @@ views:
       color: rgb(33, 150, 243)
       styles:
         icon:
-        - animation: machine-blink 1.6s ease-in-out infinite
+        - animation: machine-blink 1.6s ease-in-out infinite, machine-wobble 1.2s ease-in-out infinite
     - value: finished
       color: rgb(76, 175, 80)
     - operator: default
       color: var(--disabled-text-color)
-    extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+    extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } } @keyframes machine-wobble { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }'
   - type: custom:button-card
     entity: sensor.waschmaschine_zustand
     name: Waschmaschine
@@ -233,10 +353,10 @@ views:
         color: rgb(33, 150, 243)
         styles:
           icon:
-          - animation: spinner-spin 1.1s linear infinite
+          - animation: spinner-spin 1.1s linear infinite, machine-blink 1.6s ease-in-out infinite
       - operator: default
         color: var(--disabled-text-color)
-      extra_styles: '@keyframes spinner-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }'
+      extra_styles: '@keyframes spinner-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } @keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
     - type: custom:mushroom-template-card
       primary: Letzter Download
       secondary: '{% set dt = states(''input_datetime.letzter_synology_download'') %}{% if dt in [''unknown'', ''unavailable'', ''none'', ''''] %} Noch keiner erfasst {% else %} {{ as_timestamp(dt) | timestamp_custom(''%d.%m.%Y um %H:%M Uhr'') }} {% endif %}'
