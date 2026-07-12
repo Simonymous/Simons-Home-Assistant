@@ -937,18 +937,30 @@ views:
       - type: entity
         entity: binary_sensor.byd_seal_u_dm_i_online
         name: Verbindung
+        show_name: true
+        show_state: true
+        show_icon: true
       - type: entity
         entity: lock.byd_seal_u_dm_i_abschliessen
         name: Verriegelung
+        show_name: true
+        show_state: true
+        show_icon: true
         tap_action:
           action: more-info
       - type: entity
         entity: binary_sensor.byd_seal_u_dm_i_turen_offen
         name: Türen/Fenster
+        show_name: true
+        show_state: true
+        show_icon: true
       - type: entity
         entity: sensor.byd_seal_u_dm_i_reichweite
         name: Reichweite
         icon: mdi:map-marker-distance
+        show_name: true
+        show_state: true
+        show_icon: true
       alignment: center
     range_info:
     - energy_level:
