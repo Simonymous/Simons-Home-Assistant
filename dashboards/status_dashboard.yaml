@@ -945,6 +945,10 @@ views:
       - type: entity
         entity: binary_sensor.byd_seal_u_dm_i_turen_offen
         name: Türen/Fenster
+      - type: entity
+        entity: sensor.byd_seal_u_dm_i_reichweite
+        name: Reichweite
+        icon: mdi:map-marker-distance
       alignment: center
     range_info:
     - energy_level:
@@ -953,9 +957,6 @@ views:
         value_position: inside
         tap_action:
           action: more-info
-      range_level:
-        entity: sensor.byd_seal_u_dm_i_reichweite
-        value_position: inside
       charging_entity: binary_sensor.byd_seal_u_dm_i_laden
       progress_color: '#4caf50'
       bar_height: 16
@@ -963,9 +964,6 @@ views:
     - energy_level:
         entity: sensor.byd_seal_u_dm_i_kraftstofffullstand
         icon: mdi:gas-station
-        value_position: inside
-      range_level:
-        entity: sensor.byd_seal_u_dm_i_restreichweite_kraftstoff
         value_position: inside
       progress_color: '#ff9800'
       bar_height: 16
