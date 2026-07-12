@@ -9,6 +9,15 @@ frontend:
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
+lovelace:
+  dashboards:
+    dashboard-reinigung:
+      mode: yaml
+      filename: dashboards/status_dashboard.yaml
+      title: Status Dashboard
+      icon: mdi:clipboard-check-outline
+      show_in_sidebar: true
+      require_admin: false
 homeassistant:
   media_dirs:
     local: /media

@@ -1,0 +1,205 @@
+title: Mein Zuhause
+views:
+- title: Erledigungen
+  path: erledigungen
+  icon: mdi:clipboard-check-outline
+  cards:
+  - type: heading
+    heading: Müllabfuhr
+    heading_style: title
+    icon: mdi:trash-can
+  - type: grid
+    columns: 4
+    square: false
+    cards:
+    - type: custom:mushroom-template-card
+      primary: Restabfall
+      secondary: '{% set days = states(''sensor.restabfall_tage_bis_abholung'') | int(default=99) %} {% if days == 0 %} HEUTE! {% elif days == 1 %} MORGEN! {% else %} In {{ days }} Tagen {% endif %}'
+      icon: mdi:trash-can
+      icon_color: grey
+      layout: vertical
+      card_mod:
+        style: "ha-card {\n  border: 2px solid transparent;\n  border-radius: var(--ha-card-border-radius, 12px);\n  {% if states('sensor.restabfall_tage_bis_abholung') | int(default=99) < 2 %}\n    animation: muell-blink 1.6s ease-in-out infinite;\n  {% endif %}\n}\n@keyframes muell-blink {\n  0%, 100% { border-color: rgba(244, 67, 54, 0.85); }\n  50% { border-color: rgba(244, 67, 54, 0.12); }\n}\n"
+    - type: custom:mushroom-template-card
+      primary: Biotonne
+      secondary: '{% set days = states(''sensor.biotonne_tage_bis_abholung'') | int(default=99) %} {% if days == 0 %} HEUTE! {% elif days == 1 %} MORGEN! {% else %} In {{ days }} Tagen {% endif %}'
+      icon: mdi:trash-can
+      icon_color: brown
+      layout: vertical
+      card_mod:
+        style: "ha-card {\n  border: 2px solid transparent;\n  border-radius: var(--ha-card-border-radius, 12px);\n  {% if states('sensor.biotonne_tage_bis_abholung') | int(default=99) < 2 %}\n    animation: muell-blink 1.6s ease-in-out infinite;\n  {% endif %}\n}\n@keyframes muell-blink {\n  0%, 100% { border-color: rgba(244, 67, 54, 0.85); }\n  50% { border-color: rgba(244, 67, 54, 0.12); }\n}\n"
+    - type: custom:mushroom-template-card
+      primary: Gelbe Tonne
+      secondary: '{% set days = states(''sensor.gelbe_tonne_tage_bis_abholung'') | int(default=99) %} {% if days == 0 %} HEUTE! {% elif days == 1 %} MORGEN! {% else %} In {{ days }} Tagen {% endif %}'
+      icon: mdi:trash-can
+      icon_color: yellow
+      layout: vertical
+      card_mod:
+        style: "ha-card {\n  border: 2px solid transparent;\n  border-radius: var(--ha-card-border-radius, 12px);\n  {% if states('sensor.gelbe_tonne_tage_bis_abholung') | int(default=99) < 2 %}\n    animation: muell-blink 1.6s ease-in-out infinite;\n  {% endif %}\n}\n@keyframes muell-blink {\n  0%, 100% { border-color: rgba(244, 67, 54, 0.85); }\n  50% { border-color: rgba(244, 67, 54, 0.12); }\n}\n"
+    - type: custom:mushroom-template-card
+      primary: Blaue Tonne
+      secondary: '{% set days = states(''sensor.blaue_tonne_tage_bis_abholung'') | int(default=99) %} {% if days == 0 %} HEUTE! {% elif days == 1 %} MORGEN! {% else %} In {{ days }} Tagen {% endif %}'
+      icon: mdi:trash-can
+      icon_color: blue
+      layout: vertical
+      card_mod:
+        style: "ha-card {\n  border: 2px solid transparent;\n  border-radius: var(--ha-card-border-radius, 12px);\n  {% if states('sensor.blaue_tonne_tage_bis_abholung') | int(default=99) < 2 %}\n    animation: muell-blink 1.6s ease-in-out infinite;\n  {% endif %}\n}\n@keyframes muell-blink {\n  0%, 100% { border-color: rgba(244, 67, 54, 0.85); }\n  50% { border-color: rgba(244, 67, 54, 0.12); }\n}\n"
+  - type: heading
+    heading: Sendungen & Pakete
+    heading_style: title
+    icon: mdi:package-variant-closed
+  - type: custom:mushroom-template-card
+    primary: '{% set count = states(''sensor.tracking_numbers_simon_triem_icloud_com_simon_triem_icloud_com_tracking_numbers'') | int(0) %}{% if count == 0 %} Keine Sendungen unterwegs {% elif count == 1 %} 1 Sendung unterwegs {% else %} {{ count }} Sendungen unterwegs {% endif %}'
+    secondary: '{% set by_carrier = state_attr(''sensor.tracking_numbers_simon_triem_icloud_com_simon_triem_icloud_com_tracking_numbers'', ''summary'').by_carrier if state_attr(''sensor.tracking_numbers_simon_triem_icloud_com_simon_triem_icloud_com_tracking_numbers'', ''summary'') else {} %}{% if by_carrier %} {% for carrier, n in by_carrier.items() %}{{ carrier }}: {{ n }}{% if not loop.last %} · {% endif %}{% endfor %} {% else %} Alles zugestellt {% endif %}'
+    icon: mdi:truck-delivery
+    icon_color: '{% if states(''sensor.tracking_numbers_simon_triem_icloud_com_simon_triem_icloud_com_tracking_numbers'') | int(0) > 0 %} purple {% else %} grey {% endif %}'
+    layout: horizontal
+  - type: markdown
+    content: '{% set pkgs = state_attr(''sensor.tracking_numbers_simon_triem_icloud_com_simon_triem_icloud_com_tracking_numbers'', ''packages'') or [] %}{% if pkgs %}
+
+      {% for p in pkgs %}- **{{ p.retailer | default(''Unbekannter Shop'') }}** via {{ p.carrier | default(''?'') }} — {{ p.status | default(p.delivery_status) | default(''unterwegs'') }}
+
+      {% endfor %}{% else %}_Aktuell ist nichts unterwegs._{% endif %}'
+- title: Maschinen
+  path: maschinen
+  icon: mdi:washing-machine
+  cards:
+  - type: custom:ha-washdata-card
+    entity: sensor.spulmaschine_zustand
+    title: Spülmaschine
+    icon: mdi:dishwasher
+    program_entity: sensor.spulmaschine_programm
+    time_entity: sensor.spulmaschine_verbleibende_zeit
+    pct_entity: sensor.spulmaschine_fortschritt
+    display_mode: time
+    active_color:
+    - 33
+    - 150
+    - 243
+    spin_icon: false
+    card_mod:
+      style: ".icon-container {\n  {% if is_state('sensor.spulmaschine_zustand', 'running') %}\n  animation: dish-pulse 1.8s ease-in-out infinite;\n  {% endif %}\n}\n@keyframes dish-pulse {\n  0%, 100% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.55); }\n  50% { box-shadow: 0 0 0 6px rgba(33, 150, 243, 0); }\n}\n"
+  - type: custom:ha-washdata-card
+    entity: sensor.waschmaschine_zustand
+    title: Waschmaschine
+    icon: mdi:washing-machine
+    program_entity: sensor.waschmaschine_programm
+    time_entity: sensor.waschmaschine_verbleibende_zeit
+    pct_entity: sensor.waschmaschine_fortschritt
+    display_mode: time
+    active_color:
+    - 0
+    - 172
+    - 193
+    spin_icon: true
+  - type: custom:ha-washdata-card
+    entity: sensor.trockner_zustand
+    title: Trockner
+    icon: mdi:tumble-dryer
+    program_entity: sensor.trockner_programm
+    time_entity: sensor.trockner_verbleibende_zeit
+    pct_entity: sensor.trockner_fortschritt
+    display_mode: time
+    active_color:
+    - 255
+    - 152
+    - 0
+    spin_icon: true
+- title: Synology
+  path: synology
+  icon: mdi:nas
+  cards:
+  - type: heading
+    heading: Downloads
+    heading_style: title
+    icon: mdi:download-network
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: custom:mushroom-template-card
+      primary: Download
+      secondary: '{% if is_state(''binary_sensor.synology_download_aktiv'', ''on'') %} Download läuft… {% else %} Kein Download aktiv {% endif %}'
+      icon: mdi:download-network
+      icon_color: '{% if is_state(''binary_sensor.synology_download_aktiv'', ''on'') %} blue {% else %} grey {% endif %}'
+      layout: vertical
+      card_mod:
+        style: "mushroom-shape-icon {\n  {% if is_state('binary_sensor.synology_download_aktiv', 'on') %}\n    animation: pulse 2s infinite;\n  {% endif %}\n}\n@keyframes pulse {\n  0%, 100% { transform: scale(1); opacity: 1; }\n  50% { transform: scale(0.9); opacity: 0.6; }\n}\n"
+    - type: custom:mushroom-template-card
+      primary: Letzter Download
+      secondary: '{% set dt = states(''input_datetime.letzter_synology_download'') %}{% if dt in [''unknown'', ''unavailable'', ''none'', ''''] %} Noch keiner erfasst {% else %} {{ as_timestamp(dt) | timestamp_custom(''%d.%m.%Y um %H:%M Uhr'') }} {% endif %}'
+      icon: mdi:clock-check-outline
+      icon_color: grey
+      layout: vertical
+  - type: heading
+    heading: System
+    heading_style: title
+    icon: mdi:chip
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: tile
+      entity: sensor.simon_synology_cpu_auslastung_gesamt
+      name: CPU-Auslastung
+      icon: mdi:cpu-64-bit
+      color: blue
+    - type: tile
+      entity: sensor.simon_synology_speichernutzung_real
+      name: Arbeitsspeicher
+      icon: mdi:memory
+      color: green
+  - type: heading
+    heading: Speicher
+    heading_style: title
+    icon: mdi:harddisk
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: tile
+      entity: sensor.simon_synology_volume_1_volume_nutzung
+      name: Volume-Nutzung
+      icon: mdi:database
+      color: orange
+    - type: tile
+      entity: sensor.simon_synology_volume_1_durchschnittliche_festplattentemperatur
+      name: Festplatten-Temperatur
+      icon: mdi:thermometer
+      color: red
+  - type: heading
+    heading: Netzwerk
+    heading_style: title
+    icon: mdi:swap-vertical
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: tile
+      entity: sensor.simon_synology_download_durchsatz
+      name: Download-Durchsatz
+      icon: mdi:arrow-down-bold
+      color: blue
+    - type: tile
+      entity: sensor.simon_synology_upload_durchsatz
+      name: Upload-Durchsatz
+      icon: mdi:arrow-up-bold
+      color: purple
+  - type: heading
+    heading: Status
+    heading_style: title
+    icon: mdi:shield-check
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+    - type: tile
+      entity: binary_sensor.simon_synology_sicherheitsstatus
+      name: Sicherheitsstatus
+      icon: mdi:shield-check
+      color: green
+    - type: tile
+      entity: update.simon_synology_dsm_update
+      name: DSM-Update
+      icon: mdi:update
+      color: orange
