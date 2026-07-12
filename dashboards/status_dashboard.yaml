@@ -1,5 +1,457 @@
 title: Mein Zuhause
 views:
+- title: Zuhause
+  path: zuhause
+  icon: mdi:home
+  cards:
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Anwesenheit
+      heading_style: title
+      icon: mdi:account-multiple
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: custom:mushroom-person-card
+        entity: person.simonymous
+        name: Simon
+        layout: vertical
+        use_entity_picture: true
+      - type: custom:mushroom-person-card
+        entity: person.madeleine
+        name: Madeleine
+        layout: vertical
+        use_entity_picture: true
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Wohnzimmer
+      heading_style: title
+      icon: mdi:sofa
+    - type: custom:mushroom-template-card
+      primary: '{{ states(''sensor.wohnzimmer_heizung_wohnzimmer_current_temperature'') }} °C'
+      secondary: '{{ states(''sensor.wohnzimmer_heizung_wohnzimmer_current_humidity'') }} % Luftfeuchtigkeit'
+      icon: mdi:thermometer
+      icon_color: >-
+        {% set t = states('sensor.wohnzimmer_heizung_wohnzimmer_current_temperature') | float(0) %}
+        {% if t >= 23 %}orange{% elif t <= 19 %}blue{% else %}green{% endif %}
+      layout: horizontal
+    - type: custom:mushroom-chips-card
+      alignment: start
+      chips:
+      - type: template
+        icon: mdi:ceiling-light
+        content: Decke
+        icon_color: >-
+          {{ 'amber' if is_state('light.wohnzimmer_hue_centris_ceiling_1', 'on') else 'grey' }}
+        tap_action:
+          action: perform-action
+          perform_action: light.toggle
+          target:
+            entity_id: light.wohnzimmer_hue_centris_ceiling_1
+      - type: template
+        icon: mdi:sofa-outline
+        content: Wohnwand
+        icon_color: >-
+          {{ 'amber' if is_state('light.wohnzimmer_wohnwand_dnd', 'on') else 'grey' }}
+        tap_action:
+          action: perform-action
+          perform_action: light.toggle
+          target:
+            entity_id: light.wohnzimmer_wohnwand_dnd
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: media_player.wohnzimmer_appletv_wohnzimmer_appletv
+        state: playing
+      card:
+        type: custom:mushroom-media-player-card
+        entity: media_player.wohnzimmer_appletv_wohnzimmer_appletv
+        use_media_info: true
+        show_volume_level: false
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: media_player.lg_webos_tv_65nano759pa
+        state: playing
+      card:
+        type: custom:mushroom-media-player-card
+        entity: media_player.lg_webos_tv_65nano759pa
+        use_media_info: true
+        show_volume_level: false
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: media_player.homepod_wohnzimmer_homepod_wohnzimmer
+        state: playing
+      card:
+        type: custom:mushroom-media-player-card
+        entity: media_player.homepod_wohnzimmer_homepod_wohnzimmer
+        use_media_info: true
+        show_volume_level: false
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Schlafzimmer
+      heading_style: title
+      icon: mdi:bed
+    - type: custom:mushroom-template-card
+      primary: >-
+        {% set t1 = states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_temperature') | float(0) %}
+        {% set t2 = states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_temperature') | float(0) %}
+        {{ ((t1 + t2) / 2) | round(1) }} °C
+      secondary: >-
+        {% set h1 = states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_humidity') | float(0) %}
+        {% set h2 = states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_humidity') | float(0) %}
+        {{ ((h1 + h2) / 2) | round(0) }} % Luftfeuchtigkeit
+      icon: mdi:thermometer
+      icon_color: >-
+        {% set t1 = states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_temperature') | float(0) %}
+        {% set t2 = states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_temperature') | float(0) %}
+        {% set t = (t1 + t2) / 2 %}
+        {% if t >= 23 %}orange{% elif t <= 19 %}blue{% else %}green{% endif %}
+      layout: horizontal
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: custom:button-card
+        entity: cover.schlafzimmer_links
+        name: Rollo links
+        show_name: true
+        show_state: false
+        show_label: true
+        show_icon: true
+        label: "[[[\n  const st = states['cover.schlafzimmer_links'];\n  const state = st ? st.state : 'unknown';\n  const labels = {open:'Offen', closed:'Geschlossen', opening:'Öffnet…', closing:'Schließt…'};\n  return labels[state] || 'Unbekannt';\n]]]"
+        tap_action:
+          action: toggle
+        styles:
+          card:
+          - padding: 12px
+          - min-height: 66px
+          grid:
+          - grid-template-areas: '"i n" "i l"'
+          - grid-template-columns: 42px 1fr
+          - grid-template-rows: min-content min-content
+          icon:
+          - width: 24px
+          - height: 24px
+          name:
+          - justify-self: start
+          - font-weight: bold
+          - font-size: 14px
+          label:
+          - justify-self: start
+          - font-size: 12px
+          - color: var(--secondary-text-color)
+          - white-space: normal
+        state:
+        - value: open
+          icon: mdi:window-shutter-open
+          color: blue
+        - value: closed
+          icon: mdi:window-shutter
+          color: var(--disabled-text-color)
+        - value: opening
+          icon: mdi:window-shutter-open
+          color: blue
+          styles:
+            icon:
+            - animation: machine-blink 1.2s ease-in-out infinite
+        - value: closing
+          icon: mdi:window-shutter
+          color: blue
+          styles:
+            icon:
+            - animation: machine-blink 1.2s ease-in-out infinite
+        - operator: default
+          icon: mdi:window-shutter-alert
+          color: grey
+        extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+      - type: custom:button-card
+        entity: cover.schlafzimmer_rechts
+        name: Rollo rechts
+        show_name: true
+        show_state: false
+        show_label: true
+        show_icon: true
+        label: "[[[\n  const st = states['cover.schlafzimmer_rechts'];\n  const state = st ? st.state : 'unknown';\n  const labels = {open:'Offen', closed:'Geschlossen', opening:'Öffnet…', closing:'Schließt…'};\n  return labels[state] || 'Unbekannt';\n]]]"
+        tap_action:
+          action: toggle
+        styles:
+          card:
+          - padding: 12px
+          - min-height: 66px
+          grid:
+          - grid-template-areas: '"i n" "i l"'
+          - grid-template-columns: 42px 1fr
+          - grid-template-rows: min-content min-content
+          icon:
+          - width: 24px
+          - height: 24px
+          name:
+          - justify-self: start
+          - font-weight: bold
+          - font-size: 14px
+          label:
+          - justify-self: start
+          - font-size: 12px
+          - color: var(--secondary-text-color)
+          - white-space: normal
+        state:
+        - value: open
+          icon: mdi:window-shutter-open
+          color: blue
+        - value: closed
+          icon: mdi:window-shutter
+          color: var(--disabled-text-color)
+        - value: opening
+          icon: mdi:window-shutter-open
+          color: blue
+          styles:
+            icon:
+            - animation: machine-blink 1.2s ease-in-out infinite
+        - value: closing
+          icon: mdi:window-shutter
+          color: blue
+          styles:
+            icon:
+            - animation: machine-blink 1.2s ease-in-out infinite
+        - operator: default
+          icon: mdi:window-shutter-alert
+          color: grey
+        extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+    - type: custom:mushroom-chips-card
+      alignment: start
+      chips:
+      - type: template
+        icon: mdi:ceiling-light
+        content: Decke
+        icon_color: >-
+          {{ 'amber' if is_state('light.schlafzimmer_schlafzimmer', 'on') else 'grey' }}
+        tap_action:
+          action: perform-action
+          perform_action: light.toggle
+          target:
+            entity_id: light.schlafzimmer_schlafzimmer
+      - type: template
+        icon: mdi:led-strip-variant
+        content: Bett-LED
+        icon_color: >-
+          {{ 'amber' if is_state('light.schlafzimmer_smart_led_strip', 'on') else 'grey' }}
+        tap_action:
+          action: perform-action
+          perform_action: light.toggle
+          target:
+            entity_id: light.schlafzimmer_smart_led_strip
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: media_player.schlafzimmer_appletv_schlafzimmer_appletv
+        state: playing
+      card:
+        type: custom:mushroom-media-player-card
+        entity: media_player.schlafzimmer_appletv_schlafzimmer_appletv
+        use_media_info: true
+        show_volume_level: false
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: media_player.homepod_schlafzimmer_homepod_schlafzimmer
+        state: playing
+      card:
+        type: custom:mushroom-media-player-card
+        entity: media_player.homepod_schlafzimmer_homepod_schlafzimmer
+        use_media_info: true
+        show_volume_level: false
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Esszimmer
+      heading_style: title
+      icon: mdi:silverware-fork-knife
+    - type: custom:mushroom-template-card
+      primary: '{{ states(''sensor.esszimmer_heizung_esszimmer_current_temperature_2'') }} °C'
+      secondary: '{{ states(''sensor.esszimmer_heizung_esszimmer_current_humidity_2'') }} % Luftfeuchtigkeit'
+      icon: mdi:thermometer
+      icon_color: >-
+        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature_2') | float(0) %}
+        {% if t >= 23 %}orange{% elif t <= 19 %}blue{% else %}green{% endif %}
+      layout: horizontal
+    - type: custom:mushroom-chips-card
+      alignment: start
+      chips:
+      - type: template
+        icon: mdi:ceiling-light
+        content: Decke
+        icon_color: >-
+          {{ 'amber' if is_state('light.esszimmer_esszimmer_decke', 'on') else 'grey' }}
+        tap_action:
+          action: perform-action
+          perform_action: light.toggle
+          target:
+            entity_id: light.esszimmer_esszimmer_decke
+      - type: template
+        icon: mdi:lightbulb-group
+        content: Hue-Lampen
+        icon_color: >-
+          {{ 'amber' if (is_state('light.esszimmer_hue_go_1', 'on') or is_state('light.esszimmer_hue_white_lamp_1', 'on')) else 'grey' }}
+        tap_action:
+          action: perform-action
+          perform_action: light.toggle
+          target:
+            entity_id:
+            - light.esszimmer_hue_go_1
+            - light.esszimmer_hue_white_lamp_1
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Büro
+      heading_style: title
+      icon: mdi:desktop-classic
+    - type: custom:mushroom-template-card
+      primary: '{{ states(''sensor.buro_heizung_buro_current_temperature'') }} °C'
+      secondary: '{{ states(''sensor.buro_heizung_buro_current_humidity'') }} % Luftfeuchtigkeit'
+      icon: mdi:thermometer
+      icon_color: >-
+        {% set t = states('sensor.buro_heizung_buro_current_temperature') | float(0) %}
+        {% if t >= 23 %}orange{% elif t <= 19 %}blue{% else %}green{% endif %}
+      layout: horizontal
+    - type: custom:button-card
+      entity: fan.zhimi_de_533989040_za5_s_2_fan
+      name: Ventilator
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      icon: mdi:fan
+      label: "[[[\n  const st = states['fan.zhimi_de_533989040_za5_s_2_fan'];\n  if (!st || st.state !== 'on') return 'Aus';\n  const pct = st.attributes.percentage;\n  return (pct !== undefined && pct !== null) ? ('An · ' + pct + ' %') : 'An';\n]]]"
+      tap_action:
+        action: toggle
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+      state:
+      - value: 'on'
+        color: rgb(0, 188, 212)
+        styles:
+          icon:
+          - animation: fan-spin 1s linear infinite
+      - operator: default
+        color: var(--disabled-text-color)
+      extra_styles: '@keyframes fan-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }'
+    - type: custom:mushroom-chips-card
+      alignment: start
+      chips:
+      - type: template
+        icon: mdi:ceiling-light
+        content: Decke
+        icon_color: >-
+          {{ 'amber' if is_state('light.buro_buro', 'on') else 'grey' }}
+        tap_action:
+          action: perform-action
+          perform_action: light.toggle
+          target:
+            entity_id: light.buro_buro
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Küche
+      heading_style: title
+      icon: mdi:stove
+    - type: custom:mushroom-template-card
+      primary: '{{ states(''sensor.kuche_heizung_kuche_current_temperature'') }} °C'
+      secondary: '{{ states(''sensor.kuche_heizung_kuche_current_humidity'') }} % Luftfeuchtigkeit'
+      icon: mdi:thermometer
+      icon_color: >-
+        {% set t = states('sensor.kuche_heizung_kuche_current_temperature') | float(0) %}
+        {% if t >= 23 %}orange{% elif t <= 19 %}blue{% else %}green{% endif %}
+      layout: horizontal
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: media_player.homepod_kuche_homepod_kuche
+        state: playing
+      card:
+        type: custom:mushroom-media-player-card
+        entity: media_player.homepod_kuche_homepod_kuche
+        use_media_info: true
+        show_volume_level: false
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Bad
+      heading_style: title
+      icon: mdi:shower
+    - type: custom:mushroom-template-card
+      primary: '{{ states(''sensor.esszimmer_heizung_esszimmer_current_temperature'') }} °C'
+      secondary: '{{ states(''sensor.esszimmer_heizung_esszimmer_current_humidity'') }} % Luftfeuchtigkeit'
+      icon: mdi:thermometer
+      icon_color: >-
+        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature') | float(0) %}
+        {% if t >= 23 %}orange{% elif t <= 19 %}blue{% else %}green{% endif %}
+      layout: horizontal
+    - type: custom:mushroom-chips-card
+      alignment: start
+      chips:
+      - type: template
+        icon: mdi:ceiling-light
+        content: Decke
+        icon_color: >-
+          {{ 'amber' if is_state('light.badezimmer_badezimmer', 'on') else 'grey' }}
+        tap_action:
+          action: perform-action
+          perform_action: light.toggle
+          target:
+            entity_id: light.badezimmer_badezimmer
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: media_player.homepod_badezimmer_homepod_badezimmer
+        state: playing
+      card:
+        type: custom:mushroom-media-player-card
+        entity: media_player.homepod_badezimmer_homepod_badezimmer
+        use_media_info: true
+        show_volume_level: false
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Flur
+      heading_style: title
+      icon: mdi:door-closed
+    - type: custom:mushroom-chips-card
+      alignment: start
+      chips:
+      - type: template
+        icon: mdi:ceiling-light
+        content: Decke
+        icon_color: >-
+          {{ 'amber' if is_state('light.flur_flur', 'on') else 'grey' }}
+        tap_action:
+          action: perform-action
+          perform_action: light.toggle
+          target:
+            entity_id: light.flur_flur
 - title: Erledigungen
   path: erledigungen
   icon: mdi:clipboard-check-outline
@@ -317,6 +769,157 @@ views:
       - operator: default
         color: var(--disabled-text-color)
       extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } } @keyframes machine-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }'
+    - type: custom:button-card
+      entity: vacuum.bob
+      name: Saugroboter Bob
+      icon: mdi:robot-vacuum
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      label: "[[[\n  const st = states['vacuum.bob'];\n  const state = st ? st.state : 'unknown';\n  const labels = {cleaning:'Läuft', docked:'Läuft nicht', idle:'Läuft nicht', paused:'Pausiert', returning:'Kehrt zurück', error:'Fehler', off:'Aus'};\n  const running = labels[state] || (state.charAt(0).toUpperCase() + state.slice(1));\n  const last = states['sensor.bob_letztes_reinigungsende'];\n  let lastTxt = '';\n  if (last && last.state && !['unknown','unavailable',''].includes(last.state)) {\n    const d = new Date(last.state);\n    if (!isNaN(d.getTime())) {\n      const dd = String(d.getDate()).padStart(2,'0');\n      const mm = String(d.getMonth()+1).padStart(2,'0');\n      const hh = String(d.getHours()).padStart(2,'0');\n      const mi = String(d.getMinutes()).padStart(2,'0');\n      lastTxt = 'Letzte Reinigung: ' + dd + '.' + mm + '. um ' + hh + ':' + mi;\n    }\n  }\n  return lastTxt ? (running + ' · ' + lastTxt) : running;\n]]]"
+      tap_action:
+        action: navigate
+        navigation_path: /dashboard-reinigung/roborock
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+      state:
+      - value: cleaning
+        color: rgb(76, 175, 80)
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite
+      - operator: default
+        color: var(--disabled-text-color)
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+- title: Auto
+  path: auto
+  icon: mdi:car-electric
+  cards:
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: BYD Seal U DM-i
+      heading_style: title
+      icon: mdi:car-electric
+    - type: custom:mushroom-template-card
+      primary: '{{ states(''sensor.byd_seal_u_dm_i_akkustand'') }} % Akku'
+      secondary: '{{ states(''sensor.byd_seal_u_dm_i_elektrische_reichweite'') }} km Reichweite'
+      icon: mdi:car-electric
+      icon_color: >-
+        {{ 'green' if is_state('binary_sensor.byd_seal_u_dm_i_laden', 'on') else 'blue' }}
+      layout: horizontal
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: tile
+        entity: sensor.byd_seal_u_dm_i_innenraumtemperatur
+        name: Innenraum
+        icon: mdi:thermometer
+        color: orange
+      - type: tile
+        entity: sensor.byd_seal_u_dm_i_aussentemperatur
+        name: Außen
+        icon: mdi:thermometer
+        color: blue
+      - type: tile
+        entity: sensor.byd_seal_u_dm_i_kilometerzahler
+        name: Kilometerstand
+        icon: mdi:counter
+        color: grey
+      - type: tile
+        entity: binary_sensor.byd_seal_u_dm_i_laden
+        name: Lädt
+        icon: mdi:battery-charging
+        color: green
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Schnellzugriff
+      heading_style: title
+      icon: mdi:lightning-bolt
+    - type: custom:mushroom-climate-card
+      entity: climate.byd_seal_u_dm_i_klima
+      show_temperature_control: true
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: custom:button-card
+        entity: lock.byd_seal_u_dm_i_abschliessen
+        name: Verriegelung
+        show_name: true
+        show_state: false
+        show_label: true
+        show_icon: true
+        label: "[[[\n  const st = states['lock.byd_seal_u_dm_i_abschliessen'];\n  const state = st ? st.state : 'unknown';\n  const labels = {locked:'Verriegelt', unlocked:'Entriegelt', locking:'Verriegelt…', unlocking:'Entriegelt…'};\n  return labels[state] || 'Unbekannt';\n]]]"
+        tap_action:
+          action: toggle
+        styles:
+          card:
+          - padding: 12px
+          - min-height: 66px
+          grid:
+          - grid-template-areas: '"i n" "i l"'
+          - grid-template-columns: 42px 1fr
+          - grid-template-rows: min-content min-content
+          icon:
+          - width: 24px
+          - height: 24px
+          name:
+          - justify-self: start
+          - font-weight: bold
+          - font-size: 14px
+          label:
+          - justify-self: start
+          - font-size: 12px
+          - color: var(--secondary-text-color)
+          - white-space: normal
+        state:
+        - value: locked
+          icon: mdi:lock
+          color: green
+        - value: unlocked
+          icon: mdi:lock-open-variant
+          color: red
+        - operator: default
+          icon: mdi:lock-question
+          color: grey
+      - type: tile
+        entity: binary_sensor.byd_seal_u_dm_i_turen_offen
+        name: Türen/Fenster
+        icon: mdi:car-door
+        color: red
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Standort
+      heading_style: title
+      icon: mdi:map-marker
+    - type: tile
+      entity: device_tracker.byd_seal_u_dm_i_standort
+      name: Standort
+      icon: mdi:map-marker
+      color: purple
 - title: Synology
   path: synology
   icon: mdi:nas
