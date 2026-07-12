@@ -11,7 +11,7 @@ views:
       heading_style: title
       icon: mdi:trash-can
     - type: grid
-      columns: 4
+      columns: 2
       square: false
       cards:
       - type: custom:button-card
@@ -42,6 +42,7 @@ views:
           - justify-self: start
           - font-size: 12px
           - color: var(--secondary-text-color)
+          - white-space: normal
         state:
         - operator: <=
           value: '1'
@@ -80,6 +81,7 @@ views:
           - justify-self: start
           - font-size: 12px
           - color: var(--secondary-text-color)
+          - white-space: normal
         state:
         - operator: <=
           value: '1'
@@ -118,6 +120,7 @@ views:
           - justify-self: start
           - font-size: 12px
           - color: var(--secondary-text-color)
+          - white-space: normal
         state:
         - operator: <=
           value: '1'
@@ -156,6 +159,7 @@ views:
           - justify-self: start
           - font-size: 12px
           - color: var(--secondary-text-color)
+          - white-space: normal
         state:
         - operator: <=
           value: '1'
