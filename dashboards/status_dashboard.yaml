@@ -4,7 +4,7 @@ views:
 - title: Zuhause
   path: zuhause
   icon: mdi:home
-  background: 'linear-gradient(135deg, #a7c7ff 0%, #d7b8f5 45%, #ffd6e8 100%) fixed'
+  background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%) fixed'
   cards:
   - type: vertical-stack
     cards:
@@ -741,7 +741,7 @@ views:
 - title: Erledigungen
   path: erledigungen
   icon: mdi:clipboard-check-outline
-  background: 'linear-gradient(135deg, #a7c7ff 0%, #d7b8f5 45%, #ffd6e8 100%) fixed'
+  background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%) fixed'
   cards:
   - type: vertical-stack
     cards:
@@ -927,10 +927,152 @@ views:
         {% for p in pkgs %}- **{{ p.retailer | default(''Unbekannter Shop'') }}** via {{ p.carrier | default(''?'') }} — {{ p.status | default(p.delivery_status) | default(''unterwegs'') }}
 
         {% endfor %}{% else %}_Aktuell ist nichts unterwegs._{% endif %}'
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Batteriestatus
+      heading_style: title
+      icon: mdi:battery-alert-variant-outline
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: custom:button-card
+        name: Kritische Geräte
+        icon: mdi:battery-alert-variant-outline
+        show_name: true
+        show_state: false
+        show_label: true
+        show_icon: true
+        label: "[[[\n  const ids = ['sensor.vordereingang_batterie','sensor.smart_lock_pro_batterie','sensor.schlafzimmer_links_batterie','sensor.schlafzimmer_rechts_batterie'];\n  const low = ids.filter((id) => {\n    const s = states[id];\n    if (!s) return false;\n    const v = parseFloat(s.state);\n    return !isNaN(v) && v <= 15;\n  });\n  if (low.length === 0) return 'Alle Batterien OK';\n  if (low.length === 1) return '1 muss bald aufgeladen werden';\n  return low.length + ' müssen bald aufgeladen werden';\n]]]"
+        tap_action:
+          action: navigate
+          navigation_path: '#batterien-kritisch'
+        styles:
+          card:
+          - padding: 12px
+          - min-height: 66px
+          grid:
+          - grid-template-areas: '"i n" "i l"'
+          - grid-template-columns: 42px 1fr
+          - grid-template-rows: min-content min-content
+          icon:
+          - width: 24px
+          - height: 24px
+          name:
+          - justify-self: start
+          - font-weight: bold
+          - font-size: 14px
+          label:
+          - justify-self: start
+          - font-size: 12px
+          - color: var(--secondary-text-color)
+          - white-space: normal
+        state:
+        - operator: template
+          value: "[[[\n  const ids = ['sensor.vordereingang_batterie','sensor.smart_lock_pro_batterie','sensor.schlafzimmer_links_batterie','sensor.schlafzimmer_rechts_batterie'];\n  return ids.some((id) => {\n    const s = states[id];\n    if (!s) return false;\n    const v = parseFloat(s.state);\n    return !isNaN(v) && v <= 15;\n  });\n]]]"
+          icon: mdi:battery-alert-variant-outline
+          color: red
+          styles:
+            icon:
+            - animation: machine-blink 1.6s ease-in-out infinite
+        - operator: default
+          icon: mdi:battery-check-outline
+          color: green
+        extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+      - type: custom:button-card
+        name: Weitere Geräte
+        icon: mdi:battery-outline
+        show_name: true
+        show_state: false
+        show_label: true
+        show_icon: true
+        label: "[[[\n  const ids = ['sensor.buro_hue_smart_button_4_batterie','sensor.esszimmer_hue_dimmer_switch_1_batterie','sensor.esszimmer_hue_smart_button_3_batterie','sensor.eve_door_20ebn9901_batterie','sensor.flur_bewegungsmelder_flur_batterie','sensor.flur_hue_smart_button_2_batterie','sensor.hue_dimmer_switch_sz_batterie','sensor.schlafzimmer_hue_smart_button_1_batterie','sensor.tradfri_open_close_remote_batterie','sensor.wohnzimmer_hue_dimmer_switch_wz_batterie'];\n  const low = ids.filter((id) => {\n    const s = states[id];\n    if (!s) return false;\n    const v = parseFloat(s.state);\n    return !isNaN(v) && v <= 15;\n  });\n  if (low.length === 0) return 'Alle Batterien OK';\n  if (low.length === 1) return '1 muss bald aufgeladen werden';\n  return low.length + ' müssen bald aufgeladen werden';\n]]]"
+        tap_action:
+          action: navigate
+          navigation_path: '#batterien-unkritisch'
+        styles:
+          card:
+          - padding: 12px
+          - min-height: 66px
+          grid:
+          - grid-template-areas: '"i n" "i l"'
+          - grid-template-columns: 42px 1fr
+          - grid-template-rows: min-content min-content
+          icon:
+          - width: 24px
+          - height: 24px
+          name:
+          - justify-self: start
+          - font-weight: bold
+          - font-size: 14px
+          label:
+          - justify-self: start
+          - font-size: 12px
+          - color: var(--secondary-text-color)
+          - white-space: normal
+        state:
+        - operator: template
+          value: "[[[\n  const ids = ['sensor.buro_hue_smart_button_4_batterie','sensor.esszimmer_hue_dimmer_switch_1_batterie','sensor.esszimmer_hue_smart_button_3_batterie','sensor.eve_door_20ebn9901_batterie','sensor.flur_bewegungsmelder_flur_batterie','sensor.flur_hue_smart_button_2_batterie','sensor.hue_dimmer_switch_sz_batterie','sensor.schlafzimmer_hue_smart_button_1_batterie','sensor.tradfri_open_close_remote_batterie','sensor.wohnzimmer_hue_dimmer_switch_wz_batterie'];\n  return ids.some((id) => {\n    const s = states[id];\n    if (!s) return false;\n    const v = parseFloat(s.state);\n    return !isNaN(v) && v <= 15;\n  });\n]]]"
+          icon: mdi:battery-alert-variant-outline
+          color: orange
+          styles:
+            icon:
+            - animation: machine-blink 1.6s ease-in-out infinite
+        - operator: default
+          icon: mdi:battery-check-outline
+          color: green
+        extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+    - type: custom:bubble-card
+      card_type: pop-up
+      hash: '#batterien-kritisch'
+      name: Kritische Geräte
+      icon: mdi:battery-alert-variant-outline
+      cards:
+      - type: entities
+        title: Kritische Geräte
+        entities:
+        - entity: sensor.vordereingang_batterie
+          name: Ring Intercom
+        - entity: sensor.smart_lock_pro_batterie
+          name: Nuki Smart Lock
+        - entity: sensor.schlafzimmer_links_batterie
+          name: Rollo links
+        - entity: sensor.schlafzimmer_rechts_batterie
+          name: Rollo rechts
+    - type: custom:bubble-card
+      card_type: pop-up
+      hash: '#batterien-unkritisch'
+      name: Weitere Geräte
+      icon: mdi:battery-outline
+      cards:
+      - type: entities
+        title: Weitere Geräte
+        entities:
+        - entity: sensor.buro_hue_smart_button_4_batterie
+          name: Hue Smart Button (Büro)
+        - entity: sensor.esszimmer_hue_dimmer_switch_1_batterie
+          name: Hue Dimmer Switch (Esszimmer)
+        - entity: sensor.esszimmer_hue_smart_button_3_batterie
+          name: Hue Smart Button (Esszimmer)
+        - entity: sensor.eve_door_20ebn9901_batterie
+          name: Eve Door (Schlafzimmerfenster)
+        - entity: sensor.flur_bewegungsmelder_flur_batterie
+          name: Bewegungsmelder (Flur)
+        - entity: sensor.flur_hue_smart_button_2_batterie
+          name: Hue Smart Button (Flur)
+        - entity: sensor.hue_dimmer_switch_sz_batterie
+          name: Hue Dimmer Switch (Schlafzimmer)
+        - entity: sensor.schlafzimmer_hue_smart_button_1_batterie
+          name: Hue Smart Button (Schlafzimmer)
+        - entity: sensor.tradfri_open_close_remote_batterie
+          name: Tradfri Fernbedienung
+        - entity: sensor.wohnzimmer_hue_dimmer_switch_wz_batterie
+          name: Hue Dimmer Switch (Wohnzimmer)
 - title: Auto
   path: auto
   icon: mdi:car-electric
-  background: 'linear-gradient(135deg, #a7c7ff 0%, #d7b8f5 45%, #ffd6e8 100%) fixed'
+  background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%) fixed'
   cards:
   - type: custom:vehicle-status-card
     name: BYD Seal U DM-i
@@ -1017,7 +1159,7 @@ views:
 - title: Synology
   path: synology
   icon: mdi:nas
-  background: 'linear-gradient(135deg, #a7c7ff 0%, #d7b8f5 45%, #ffd6e8 100%) fixed'
+  background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%) fixed'
   cards:
   - type: vertical-stack
     cards:
@@ -1156,7 +1298,7 @@ views:
 - title: Roborock
   path: roborock
   icon: mdi:robot-vacuum
-  background: 'linear-gradient(135deg, #a7c7ff 0%, #d7b8f5 45%, #ffd6e8 100%) fixed'
+  background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%) fixed'
   cards:
   - type: vertical-stack
     cards:
