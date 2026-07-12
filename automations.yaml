@@ -307,3 +307,51 @@
         push:
           sound: default
   mode: single
+- id: '1783786435284'
+  alias: 'Spülmaschine: Letzten Lauf protokollieren'
+  description: Speichert den Zeitpunkt, an dem die Spülmaschine zuletzt gelaufen ist.
+  triggers:
+  - entity_id: binary_sensor.spulmaschine_lauft
+    from: 'on'
+    to: 'off'
+    trigger: state
+  conditions: []
+  actions:
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.letzter_lauf_spulmaschine
+    data:
+      timestamp: '{{ now().timestamp() }}'
+  mode: single
+- id: '1783786435285'
+  alias: 'Waschmaschine: Letzten Lauf protokollieren'
+  description: Speichert den Zeitpunkt, an dem die Waschmaschine zuletzt gelaufen ist.
+  triggers:
+  - entity_id: binary_sensor.waschmaschine_lauft
+    from: 'on'
+    to: 'off'
+    trigger: state
+  conditions: []
+  actions:
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.letzter_lauf_waschmaschine
+    data:
+      timestamp: '{{ now().timestamp() }}'
+  mode: single
+- id: '1783786435286'
+  alias: 'Trockner: Letzten Lauf protokollieren'
+  description: Speichert den Zeitpunkt, an dem der Trockner zuletzt gelaufen ist.
+  triggers:
+  - entity_id: binary_sensor.trockner_lauft
+    from: 'on'
+    to: 'off'
+    trigger: state
+  conditions: []
+  actions:
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.letzter_lauf_trockner
+    data:
+      timestamp: '{{ now().timestamp() }}'
+  mode: single

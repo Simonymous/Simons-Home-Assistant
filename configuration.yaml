@@ -26,6 +26,18 @@ input_datetime:
     name: Letzter Synology Download
     has_date: true
     has_time: true
+  letzter_lauf_spulmaschine:
+    name: Letzter Lauf Spülmaschine
+    has_date: true
+    has_time: true
+  letzter_lauf_waschmaschine:
+    name: Letzter Lauf Waschmaschine
+    has_date: true
+    has_time: true
+  letzter_lauf_trockner:
+    name: Letzter Lauf Trockner
+    has_date: true
+    has_time: true
 
 template:
   - sensor:

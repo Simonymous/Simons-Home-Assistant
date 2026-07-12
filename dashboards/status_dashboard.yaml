@@ -704,7 +704,7 @@ views:
       show_state: false
       show_label: true
       show_icon: true
-      label: "[[[\n  const zustand = states['sensor.spulmaschine_zustand'];\n  const state = zustand ? zustand.state : 'unknown';\n  const labels = {off:'Aus', idle:'Bereit', finished:'Fertig!', paused:'Pausiert', user_paused:'Pausiert', starting:'Startet…', ending:'Endet…', delay_wait:'Startverzögerung', interrupted:'Unterbrochen', force_stopped:'Gestoppt', clean:'Fertig – bitte ausräumen'};\n  if (state !== 'running') {\n    return labels[state] || (state.charAt(0).toUpperCase() + state.slice(1));\n  }\n  const program = states['sensor.spulmaschine_programm'] ? states['sensor.spulmaschine_programm'].state : 'off';\n  const minsRaw = states['sensor.spulmaschine_verbleibende_zeit'] ? states['sensor.spulmaschine_verbleibende_zeit'].state : 'unknown';\n  const mins = parseFloat(minsRaw);\n  const parts = [];\n  if (program && !['off','unknown','unavailable','none',''].includes(program)) parts.push(program);\n  if (!isNaN(mins) && mins >= 0) {\n    const finish = new Date(Date.now() + mins*60000);\n\
+      label: "[[[\n  const zustand = states['sensor.spulmaschine_zustand'];\n  const state = zustand ? zustand.state : 'unknown';\n  const labels = {off:'Aus', idle:'Bereit', finished:'Fertig!', paused:'Pausiert', user_paused:'Pausiert', starting:'Startet…', ending:'Endet…', delay_wait:'Startverzögerung', interrupted:'Unterbrochen', force_stopped:'Gestoppt', clean:'Fertig – bitte ausräumen'};\n  if (state !== 'running') {\n    const base = labels[state] || (state.charAt(0).toUpperCase() + state.slice(1));\n    if (state === 'off') {\n      const last = states['input_datetime.letzter_lauf_spulmaschine'];\n      if (last && last.state) {\n        const m = last.state.match(/^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2})/);\n        if (m) return base + ' · Zuletzt gelaufen: ' + m[3] + '.' + m[2] + '. um ' + m[4] + ':' + m[5];\n      }\n    }\n    return base;\n  }\n  const program = states['sensor.spulmaschine_programm'] ? states['sensor.spulmaschine_programm'].state : 'off';\n  const minsRaw = states['sensor.spulmaschine_verbleibende_zeit'] ? states['sensor.spulmaschine_verbleibende_zeit'].state : 'unknown';\n  const mins = parseFloat(minsRaw);\n  const parts = [];\n  if (program && !['off','unknown','unavailable','none',''].includes(program)) parts.push(program);\n  if (!isNaN(mins) && mins >= 0) {\n    const finish = new Date(Date.now() + mins*60000);\n\
         \    const hh = String(finish.getHours()).padStart(2,'0');\n    const mm = String(finish.getMinutes()).padStart(2,'0');\n    const h = Math.floor(mins/60);\n    const m = Math.round(mins%60);\n    const dur = h > 0 ? (h + ':' + String(m).padStart(2,'0') + ' h') : (m + ' min');\n    parts.push('fertig ' + hh + ':' + mm);\n    parts.push(dur + ' verbleibend');\n  } else {\n    parts.push('Programm wird erkannt…');\n  }\n  return parts.join(' · ');\n]]]"
       styles:
         card:
@@ -745,7 +745,7 @@ views:
       show_state: false
       show_label: true
       show_icon: true
-      label: "[[[\n  const zustand = states['sensor.waschmaschine_zustand'];\n  const state = zustand ? zustand.state : 'unknown';\n  const labels = {off:'Aus', idle:'Bereit', finished:'Fertig!', paused:'Pausiert', user_paused:'Pausiert', starting:'Startet…', ending:'Endet…', delay_wait:'Startverzögerung', interrupted:'Unterbrochen', force_stopped:'Gestoppt', clean:'Fertig – bitte ausräumen'};\n  if (state !== 'running') {\n    return labels[state] || (state.charAt(0).toUpperCase() + state.slice(1));\n  }\n  const program = states['sensor.waschmaschine_programm'] ? states['sensor.waschmaschine_programm'].state : 'off';\n  const minsRaw = states['sensor.waschmaschine_verbleibende_zeit'] ? states['sensor.waschmaschine_verbleibende_zeit'].state : 'unknown';\n  const mins = parseFloat(minsRaw);\n  const parts = [];\n  if (program && !['off','unknown','unavailable','none',''].includes(program)) parts.push(program);\n  if (!isNaN(mins) && mins >= 0) {\n    const finish = new Date(Date.now() +\
+      label: "[[[\n  const zustand = states['sensor.waschmaschine_zustand'];\n  const state = zustand ? zustand.state : 'unknown';\n  const labels = {off:'Aus', idle:'Bereit', finished:'Fertig!', paused:'Pausiert', user_paused:'Pausiert', starting:'Startet…', ending:'Endet…', delay_wait:'Startverzögerung', interrupted:'Unterbrochen', force_stopped:'Gestoppt', clean:'Fertig – bitte ausräumen'};\n  if (state !== 'running') {\n    const base = labels[state] || (state.charAt(0).toUpperCase() + state.slice(1));\n    if (state === 'off') {\n      const last = states['input_datetime.letzter_lauf_waschmaschine'];\n      if (last && last.state) {\n        const m = last.state.match(/^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2})/);\n        if (m) return base + ' · Zuletzt gelaufen: ' + m[3] + '.' + m[2] + '. um ' + m[4] + ':' + m[5];\n      }\n    }\n    return base;\n  }\n  const program = states['sensor.waschmaschine_programm'] ? states['sensor.waschmaschine_programm'].state : 'off';\n  const minsRaw = states['sensor.waschmaschine_verbleibende_zeit'] ? states['sensor.waschmaschine_verbleibende_zeit'].state : 'unknown';\n  const mins = parseFloat(minsRaw);\n  const parts = [];\n  if (program && !['off','unknown','unavailable','none',''].includes(program)) parts.push(program);\n  if (!isNaN(mins) && mins >= 0) {\n    const finish = new Date(Date.now() +\
         \ mins*60000);\n    const hh = String(finish.getHours()).padStart(2,'0');\n    const mm = String(finish.getMinutes()).padStart(2,'0');\n    const h = Math.floor(mins/60);\n    const m = Math.round(mins%60);\n    const dur = h > 0 ? (h + ':' + String(m).padStart(2,'0') + ' h') : (m + ' min');\n    parts.push('fertig ' + hh + ':' + mm);\n    parts.push(dur + ' verbleibend');\n  } else {\n    parts.push('Programm wird erkannt…');\n  }\n  return parts.join(' · ');\n]]]"
       styles:
         card:
@@ -786,7 +786,7 @@ views:
       show_state: false
       show_label: true
       show_icon: true
-      label: "[[[\n  const zustand = states['sensor.trockner_zustand'];\n  const state = zustand ? zustand.state : 'unknown';\n  const labels = {off:'Aus', idle:'Bereit', finished:'Fertig!', paused:'Pausiert', user_paused:'Pausiert', starting:'Startet…', ending:'Endet…', delay_wait:'Startverzögerung', interrupted:'Unterbrochen', force_stopped:'Gestoppt', clean:'Fertig – bitte ausräumen'};\n  if (state !== 'running') {\n    return labels[state] || (state.charAt(0).toUpperCase() + state.slice(1));\n  }\n  const program = states['sensor.trockner_programm'] ? states['sensor.trockner_programm'].state : 'off';\n  const minsRaw = states['sensor.trockner_verbleibende_zeit'] ? states['sensor.trockner_verbleibende_zeit'].state : 'unknown';\n  const mins = parseFloat(minsRaw);\n  const parts = [];\n  if (program && !['off','unknown','unavailable','none',''].includes(program)) parts.push(program);\n  if (!isNaN(mins) && mins >= 0) {\n    const finish = new Date(Date.now() + mins*60000);\n    const hh\
+      label: "[[[\n  const zustand = states['sensor.trockner_zustand'];\n  const state = zustand ? zustand.state : 'unknown';\n  const labels = {off:'Aus', idle:'Bereit', finished:'Fertig!', paused:'Pausiert', user_paused:'Pausiert', starting:'Startet…', ending:'Endet…', delay_wait:'Startverzögerung', interrupted:'Unterbrochen', force_stopped:'Gestoppt', clean:'Fertig – bitte ausräumen'};\n  if (state !== 'running') {\n    const base = labels[state] || (state.charAt(0).toUpperCase() + state.slice(1));\n    if (state === 'off') {\n      const last = states['input_datetime.letzter_lauf_trockner'];\n      if (last && last.state) {\n        const m = last.state.match(/^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2})/);\n        if (m) return base + ' · Zuletzt gelaufen: ' + m[3] + '.' + m[2] + '. um ' + m[4] + ':' + m[5];\n      }\n    }\n    return base;\n  }\n  const program = states['sensor.trockner_programm'] ? states['sensor.trockner_programm'].state : 'off';\n  const minsRaw = states['sensor.trockner_verbleibende_zeit'] ? states['sensor.trockner_verbleibende_zeit'].state : 'unknown';\n  const mins = parseFloat(minsRaw);\n  const parts = [];\n  if (program && !['off','unknown','unavailable','none',''].includes(program)) parts.push(program);\n  if (!isNaN(mins) && mins >= 0) {\n    const finish = new Date(Date.now() + mins*60000);\n    const hh\
         \ = String(finish.getHours()).padStart(2,'0');\n    const mm = String(finish.getMinutes()).padStart(2,'0');\n    const h = Math.floor(mins/60);\n    const m = Math.round(mins%60);\n    const dur = h > 0 ? (h + ':' + String(m).padStart(2,'0') + ' h') : (m + ' min');\n    parts.push('fertig ' + hh + ':' + mm);\n    parts.push(dur + ' verbleibend');\n  } else {\n    parts.push('Programm wird erkannt…');\n  }\n  return parts.join(' · ');\n]]]"
       styles:
         card:
@@ -871,11 +871,16 @@ views:
       heading_style: title
       icon: mdi:car-electric
     - type: custom:mushroom-template-card
-      primary: '{{ states(''sensor.byd_seal_u_dm_i_akkustand'') }} % Akku'
-      secondary: '{{ states(''sensor.byd_seal_u_dm_i_elektrische_reichweite'') }} km Reichweite'
-      icon: mdi:car-electric
+      primary: >-
+        {% set b = states('sensor.byd_seal_u_dm_i_ladezustand') %}
+        {% if b in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ b }} % Akku{% endif %}
+      secondary: >-
+        {% set r = states('sensor.byd_seal_u_dm_i_reichweite') %}
+        {% if r in ['unavailable', 'unknown', 'none', ''] %}Fahrzeug offline{% else %}{{ r }} km Reichweite{% endif %}
+      icon: >-
+        {{ 'mdi:car-off' if is_state('binary_sensor.byd_seal_u_dm_i_online', 'off') else 'mdi:car-electric' }}
       icon_color: >-
-        {{ 'green' if is_state('binary_sensor.byd_seal_u_dm_i_laden', 'on') else 'blue' }}
+        {% if is_state('binary_sensor.byd_seal_u_dm_i_online', 'off') %}grey{% elif is_state('binary_sensor.byd_seal_u_dm_i_laden', 'on') %}green{% else %}blue{% endif %}
       layout: horizontal
     - type: grid
       columns: 2
@@ -896,11 +901,48 @@ views:
         name: Kilometerstand
         icon: mdi:counter
         color: grey
-      - type: tile
+      - type: custom:button-card
         entity: binary_sensor.byd_seal_u_dm_i_laden
-        name: Lädt
-        icon: mdi:battery-charging
-        color: green
+        name: Ladestatus
+        show_name: true
+        show_state: false
+        show_label: true
+        show_icon: true
+        label: "[[[\n  const st = states['binary_sensor.byd_seal_u_dm_i_laden'];\n  const state = st ? st.state : 'unknown';\n  if (state === 'on') return 'Lädt gerade';\n  if (state === 'off') return 'Lädt nicht';\n  return 'Nicht erreichbar';\n]]]"
+        styles:
+          card:
+          - padding: 12px
+          - min-height: 66px
+          grid:
+          - grid-template-areas: '"i n" "i l"'
+          - grid-template-columns: 42px 1fr
+          - grid-template-rows: min-content min-content
+          icon:
+          - width: 24px
+          - height: 24px
+          name:
+          - justify-self: start
+          - font-weight: bold
+          - font-size: 14px
+          label:
+          - justify-self: start
+          - font-size: 12px
+          - color: var(--secondary-text-color)
+          - white-space: normal
+        state:
+        - value: 'on'
+          icon: mdi:battery-charging
+          color: green
+          styles:
+            icon:
+            - animation: machine-blink 1.6s ease-in-out infinite
+        - value: 'off'
+          icon: mdi:power-plug-off-outline
+          color: var(--disabled-text-color)
+        - operator: default
+          icon: mdi:car-off
+          color: grey
+        extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
   - type: vertical-stack
     cards:
     - type: heading
