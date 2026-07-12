@@ -1,0 +1,504 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Mit BYD verbinden",
+        "description": "Richten Sie Ihr BYD-Konto ein.",
+        "data": {
+          "username": "Benutzername",
+          "password": "Passwort",
+          "control_pin": "Steuerungs-PIN (optional, 6-stellig)",
+          "country_code": "Land",
+          "poll_interval": "Abfrageintervall Telemetriedaten (Sekunden)",
+          "gps_poll_interval": "Abfrageintervall GPS Position (Sekunden)",
+          "smart_gps_polling": "Intelligente GPS-Positionsabfrage",
+          "gps_active_interval": "Abfrageintervall GPS Position aktives Fahrzeug (Sekunden)",
+          "gps_inactive_interval": "Abfrageintervall GPS Position inaktives Fahrzeug (Sekunden)",
+          "climate_duration": "Dauer der Klimatisierung (time_span)",
+          "debug_dumps": "API-Antworten als Debug-Dump"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung konnte nicht hergestellt werden",
+      "invalid_control_pin": "Ungültige PIN oder Cloud-Steuerung ist vorübergehend gesperrt",
+      "invalid_auth": "Ungültige Authentifizierung",
+      "unknown": "Unbekannter Fehler"
+    },
+    "abort": {
+      "already_configured": "Dieses Konto ist bereits konfiguriert",
+      "wrong_account": "Das Konto stimmt nicht mit dem Konto überein, das zuvor authentifiziert wurde",
+      "reauth_successful": "Die erneute Authentifizierung war erfolgreich"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Abfrage aktualisieren",
+        "data": {
+          "poll_interval": "Abfrageintervall (Sekunden)",
+          "gps_poll_interval": "GPS Abfrageintervall (Sekunden)",
+          "smart_gps_polling": "Intelligente GPS-Abfrage",
+          "gps_active_interval": "GPS Abfrageintervall aktives Fahrzeug (Sekunden)",
+          "gps_inactive_interval": "GPS Abfrageintervall inaktives Fahrzeug (Sekunden)",
+          "climate_duration": "Dauer der Klimatisierung (time_span)",
+          "debug_dumps": "API-Antworten als Debug-Dump"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "elec_percent": {
+        "name": "Ladezustand"
+      },
+      "endurance_mileage": {
+        "name": "Reichweite"
+      },
+      "total_mileage": {
+        "name": "Kilometerzähler"
+      },
+      "speed": {
+        "name": "Geschwindigkeit"
+      },
+      "temp_in_car": {
+        "name": "Innenraumtemperatur"
+      },
+      "left_front_tire_pressure": {
+        "name": "Reifendruck vorne links"
+      },
+      "right_front_tire_pressure": {
+        "name": "Reifendruck vorne rechts"
+      },
+      "left_rear_tire_pressure": {
+        "name": "Reifendruck hinten links"
+      },
+      "right_rear_tire_pressure": {
+        "name": "Reifendruck hinten rechts"
+      },
+      "temp_out_car": {
+        "name": "Außentemperatur"
+      },
+      "pm": {
+        "name": "PM2.5"
+      },
+      "power_battery": {
+        "name": "Akkustand"
+      },
+      "ev_endurance": {
+        "name": "Elektrische Reichweite"
+      },
+      "endurance_mileage_v2": {
+        "name": "Reichweite V2"
+      },
+      "total_mileage_v2": {
+        "name": "Kilometerzähler V2"
+      },
+      "charging_state": {
+        "name": "Ladezustand"
+      },
+      "charge_state": {
+        "name": "Ladezustand"
+      },
+      "wait_status": {
+        "name": "Ladestatus: warten"
+      },
+      "full_hour": {
+        "name": "Stunden bis voll"
+      },
+      "full_minute": {
+        "name": "Minuten bis voll"
+      },
+      "booking_charge_state": {
+        "name": "Geplantes Laden"
+      },
+      "booking_charging_hour": {
+        "name": "Geplante Stunde"
+      },
+      "booking_charging_minute": {
+        "name": "Geplante Minute"
+      },
+      "total_power": {
+        "name": "Gesamtleistung"
+      },
+      "nearest_energy_consumption": {
+        "name": "Aktueller Energieverbrauch"
+      },
+      "recent_50km_energy": {
+        "name": "Energieverbrauch (letzte 50km)"
+      },
+      "oil_endurance": {
+        "name": "Restreichweite (Kraftstoff)"
+      },
+      "oil_percent": {
+        "name": "Kraftstofffüllstand"
+      },
+      "total_oil": {
+        "name": "Gesamtverbrauch"
+      },
+      "engine_status": {
+        "name": "Motorstatus"
+      },
+      "epb": {
+        "name": "Elektronische Feststellbremse"
+      },
+      "ect_value": {
+        "name": "Kühlmitteltemperatur"
+      },
+      "refrigerator_state": {
+        "name": "Kühlschrank"
+      },
+      "refrigerator_door_state": {
+        "name": "Kühlschranktür"
+      },
+      "last_updated": {
+        "name": "Zuletzt aktualisiert"
+      },
+      "gps_last_updated": {
+        "name": "GPS zuletzt aktualisiert"
+      },
+      "remaining_hours": {
+        "name": "Verbleibende Ladezeit (Stunden)"
+      },
+      "remaining_minutes": {
+        "name": "Verbleibende Ladezeit (Minuten)"
+      },
+      "battery_power": {
+        "name": "Battery power"
+      },
+      "total_energy": {
+        "name": "Total energy"
+      },
+      "nearest_energy_consumption_unit": {
+        "name": "Nearest energy consumption unit"
+      },
+      "endurance_mileage_v2_unit": {
+        "name": "Endurance mileage V2 unit"
+      },
+      "total_mileage_v2_unit": {
+        "name": "Total mileage V2 unit"
+      },
+      "rate": {
+        "name": "Rate"
+      },
+      "energy_consumption": {
+        "name": "Energy consumption"
+      },
+      "total_consumption": {
+        "name": "Total consumption"
+      },
+      "total_consumption_en": {
+        "name": "Total consumption EN"
+      },
+      "ok_light": {
+        "name": "OK light"
+      },
+      "power_battery_connection": {
+        "name": "Power battery connection"
+      },
+      "ins": {
+        "name": "INS"
+      },
+      "repair_mode_switch": {
+        "name": "Repair mode switch"
+      },
+      "vehicle_time_zone": {
+        "name": "Vehicle time zone"
+      }
+    },
+    "binary_sensor": {
+      "is_online": {
+        "name": "Online"
+      },
+      "is_charging": {
+        "name": "Laden"
+      },
+      "is_any_door_open": {
+        "name": "Türen offen"
+      },
+      "is_any_window_open": {
+        "name": "Fenster offen"
+      },
+      "is_locked": {
+        "name": "Verriegelt"
+      },
+      "sentry_status": {
+        "name": "Sentry-Modus"
+      },
+      "left_front_door": {
+        "name": "Tür vorne links"
+      },
+      "right_front_door": {
+        "name": "Tür vorne rechts"
+      },
+      "left_rear_door": {
+        "name": "Tür hinten links"
+      },
+      "right_rear_door": {
+        "name": "Tür hinten reschts"
+      },
+      "trunk_lid": {
+        "name": "Kofferraum"
+      },
+      "sliding_door": {
+        "name": "Schiebetür"
+      },
+      "forehold": {
+        "name": "Frunk"
+      },
+      "left_front_window": {
+        "name": "Fenster vorne links"
+      },
+      "right_front_window": {
+        "name": "Fenster vorne rechts"
+      },
+      "left_rear_window": {
+        "name": "Fenster hinten links"
+      },
+      "right_rear_window": {
+        "name": "Fenster hinten rechts"
+      },
+      "skylight": {
+        "name": "Panoramadach"
+      },
+      "battery_heat_state": {
+        "name": "Batterievorkonditionierung"
+      },
+      "charge_heat_state": {
+        "name": "Ladeheizung"
+      },
+      "vehicle_state": {
+        "name": "Fahrzeug an"
+      },
+      "abs_warning": {
+        "name": "ABS-Warnung"
+      },
+      "svs": {
+        "name": "Wartung erforderlich"
+      },
+      "srs": {
+        "name": "Airbagwarnung"
+      },
+      "eps": {
+        "name": "Elektrische Servolenkung"
+      },
+      "esp": {
+        "name": "ESP-Warnung"
+      },
+      "pwr": {
+        "name": "Stromwarnung"
+      },
+      "power_system": {
+        "name": "Energiesystem"
+      },
+      "ect": {
+        "name": "Kühlmitteltemperatur zu hoch"
+      },
+      "tirepressure_system": {
+        "name": "TPMS-Status"
+      },
+      "rapid_tire_leak": {
+        "name": "Plötzlicher Druckverlust"
+      },
+      "left_front_tire_status": {
+        "name": "Status des Reifens vorne links"
+      },
+      "right_front_tire_status": {
+        "name": "Status des Reifens vorne rechts"
+      },
+      "left_rear_tire_status": {
+        "name": "Status des Reifens hinten links"
+      },
+      "right_rear_tire_status": {
+        "name": "Status des Reifens hinten rechts"
+      },
+      "upgrade_status": {
+        "name": "OTA Upgrade-Status"
+      },
+      "oil_pressure_system": {
+        "name": "Oil pressure system"
+      },
+      "braking_system": {
+        "name": "Braking system"
+      },
+      "charging_system": {
+        "name": "Charging system"
+      },
+      "steering_system": {
+        "name": "Steering system"
+      },
+      "less_one_min": {
+        "name": "Less one min"
+      }
+    },
+    "button": {
+      "flash_lights": {
+        "name": "Lichthupe"
+      },
+      "find_car": {
+        "name": "Auto finden"
+      },
+      "close_windows": {
+        "name": "Fenster schließen"
+      },
+      "force_poll": {
+        "name": "Abfrage erzwingen"
+      }
+    },
+    "select": {
+      "driver_seat_heat": {
+        "name": "Sitzheizung Fahrer",
+        "state": {
+          "off": "Aus",
+          "low": "Niedrig",
+          "high": "Hoch"
+        }
+      },
+      "driver_seat_ventilation": {
+        "name": "Sitzbelüftung Fahrer",
+        "state": {
+          "off": "Aus",
+          "low": "Niedrig",
+          "high": "Hoch"
+        }
+      },
+      "passenger_seat_heat": {
+        "name": "Sitzheizung Beifahrer",
+        "state": {
+          "off": "Aus",
+          "low": "Niedrig",
+          "high": "Hoch"
+        }
+      },
+      "passenger_seat_ventilation": {
+        "name": "Sitzbelüftung Beifahrer",
+        "state": {
+          "off": "Aus",
+          "low": "Niedrig",
+          "high": "Hoch"
+        }
+      },
+      "rear_left_seat_heat": {
+        "name": "Sitzheizung hinten links",
+        "state": {
+          "off": "Aus",
+          "low": "Niedrig",
+          "high": "Hoch"
+        }
+      },
+      "rear_left_seat_ventilation": {
+        "name": "Sitzbelüftung hinten links",
+        "state": {
+          "off": "Aus",
+          "low": "Niedrig",
+          "high": "Hoch"
+        }
+      },
+      "rear_right_seat_heat": {
+        "name": "Sitzheizung hinten rechts",
+        "state": {
+          "off": "Aus",
+          "low": "Niedrig",
+          "high": "Hoch"
+        }
+      },
+      "rear_right_seat_ventilation": {
+        "name": "Sitzbelüftung hinten rechts",
+        "state": {
+          "off": "Aus",
+          "low": "Niedrig",
+          "high": "Hoch"
+        }
+      }
+    },
+    "switch": {
+      "battery_heat": {
+        "name": "Batteriewärme"
+      },
+      "car_on": {
+        "name": "Klimaanlage an"
+      },
+      "steering_wheel_heat": {
+        "name": "Lenkradheizung"
+      },
+      "disable_polling": {
+        "name": "Abfrage deaktivieren"
+      }
+    },
+    "climate": {
+      "climate": {
+        "name": "Klima",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "max_heat": "Maximale Heizung",
+              "max_cool": "Maximale Kühlung"
+            }
+          }
+        }
+      }
+    },
+    "lock": {
+      "lock": {
+        "name": "Abschliessen"
+      }
+    },
+    "device_tracker": {
+      "location": {
+        "name": "Standort"
+      }
+    }
+  },
+  "services": {
+    "fetch_realtime": {
+      "name": "Fetch telemetry data",
+      "description": "Force-fetch the latest vehicle telemetry from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_gps": {
+      "name": "Fetch GPS data",
+      "description": "Force-fetch the latest GPS location from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_hvac": {
+      "name": "Fetch HVAC status",
+      "description": "Force-fetch the latest HVAC / climate status from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_charging": {
+      "name": "Fetch charging status",
+      "description": "Force-fetch the latest charging status from the BYD cloud and log the raw response.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_energy": {
+      "name": "Fetch energy consumption",
+      "description": "Force-fetch the latest energy consumption data from the BYD cloud and log the raw response.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    }
+  }
+}

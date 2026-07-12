@@ -1,0 +1,504 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Opret forbindelse til BYD",
+        "description": "Konfigurer din BYD konto.",
+        "data": {
+          "username": "Brugernavn",
+          "password": "Adgangskode",
+          "control_pin": "Kontrol PIN (valgfrit, 6-cifret)",
+          "country_code": "Land",
+          "poll_interval": "Polling-interval (sekunder)",
+          "gps_poll_interval": "GPS polling-interval (sekunder)",
+          "smart_gps_polling": "Smart GPS-polling",
+          "gps_active_interval": "GPS aktivt interval (sekunder)",
+          "gps_inactive_interval": "GPS inaktivt interval (sekunder)",
+          "climate_duration": "Klimavarighed (time_span)",
+          "debug_dumps": "Fejlretnings-dump af API-svar"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Kunne ikke oprette forbindelse",
+      "invalid_control_pin": "Ugyldig kontrol PIN eller skykontrol er midlertidigt låst",
+      "invalid_auth": "Ugyldig godkendelse",
+      "unknown": "Uventet fejl"
+    },
+    "abort": {
+      "already_configured": "Denne konto er allerede konfigureret",
+      "wrong_account": "Kontoen matcher ikke den, der gengodkendes",
+      "reauth_successful": "Gengodkendelse lykkedes"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opdatér polling",
+        "data": {
+          "poll_interval": "Polling-interval (sekunder)",
+          "gps_poll_interval": "GPS polling-interval (sekunder)",
+          "smart_gps_polling": "Smart GPS-polling",
+          "gps_active_interval": "GPS aktivt interval (sekunder)",
+          "gps_inactive_interval": "GPS inaktivt interval (sekunder)",
+          "climate_duration": "Klimavarighed (time_span)",
+          "debug_dumps": "Fejlretnings-dump af API-svar"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "elec_percent": {
+        "name": "Batteriniveau"
+      },
+      "endurance_mileage": {
+        "name": "Rækkevidde"
+      },
+      "total_mileage": {
+        "name": "Kilometertæller"
+      },
+      "speed": {
+        "name": "Hastighed"
+      },
+      "temp_in_car": {
+        "name": "Kabinetemperatur"
+      },
+      "left_front_tire_pressure": {
+        "name": "Forreste venstre dæktryk"
+      },
+      "right_front_tire_pressure": {
+        "name": "Forreste højre dæktryk"
+      },
+      "left_rear_tire_pressure": {
+        "name": "Bagerste venstre dæktryk"
+      },
+      "right_rear_tire_pressure": {
+        "name": "Højre bagerste dæktryk"
+      },
+      "temp_out_car": {
+        "name": "Udvendig temperatur"
+      },
+      "pm": {
+        "name": "PM2.5"
+      },
+      "power_battery": {
+        "name": "Strøm batteriniveau"
+      },
+      "ev_endurance": {
+        "name": "EV-rækkevidde"
+      },
+      "endurance_mileage_v2": {
+        "name": "Rækkevidde V2"
+      },
+      "total_mileage_v2": {
+        "name": "Kilometertæller V2"
+      },
+      "charging_state": {
+        "name": "Opladningstilstand"
+      },
+      "charge_state": {
+        "name": "Opladningstilstand"
+      },
+      "wait_status": {
+        "name": "Opladningsventestatus"
+      },
+      "full_hour": {
+        "name": "Timer til fuld"
+      },
+      "full_minute": {
+        "name": "Minutter til fuld"
+      },
+      "booking_charge_state": {
+        "name": "Planlagt opladning"
+      },
+      "booking_charging_hour": {
+        "name": "Planlagt opladningstime"
+      },
+      "booking_charging_minute": {
+        "name": "Planlagt opladningsminut"
+      },
+      "total_power": {
+        "name": "Samlet kraft"
+      },
+      "nearest_energy_consumption": {
+        "name": "Seneste energiforbrug"
+      },
+      "recent_50km_energy": {
+        "name": "Seneste 50 km energi"
+      },
+      "oil_endurance": {
+        "name": "Brændstof rækkevidde"
+      },
+      "oil_percent": {
+        "name": "Brændstofniveau"
+      },
+      "total_oil": {
+        "name": "Samlet brændstofforbrug"
+      },
+      "engine_status": {
+        "name": "Motorstatus"
+      },
+      "epb": {
+        "name": "Elektronisk parkeringsbremse"
+      },
+      "ect_value": {
+        "name": "Kølevæsketemperatur"
+      },
+      "refrigerator_state": {
+        "name": "Køleskab"
+      },
+      "refrigerator_door_state": {
+        "name": "Køleskabsdør"
+      },
+      "last_updated": {
+        "name": "Sidst opdateret"
+      },
+      "gps_last_updated": {
+        "name": "GPS sidst opdateret"
+      },
+      "remaining_hours": {
+        "name": "Resterende ladetimer"
+      },
+      "remaining_minutes": {
+        "name": "Resterende lademinutter"
+      },
+      "battery_power": {
+        "name": "Battery power"
+      },
+      "total_energy": {
+        "name": "Total energy"
+      },
+      "nearest_energy_consumption_unit": {
+        "name": "Nearest energy consumption unit"
+      },
+      "endurance_mileage_v2_unit": {
+        "name": "Endurance mileage V2 unit"
+      },
+      "total_mileage_v2_unit": {
+        "name": "Total mileage V2 unit"
+      },
+      "rate": {
+        "name": "Rate"
+      },
+      "energy_consumption": {
+        "name": "Energy consumption"
+      },
+      "total_consumption": {
+        "name": "Total consumption"
+      },
+      "total_consumption_en": {
+        "name": "Total consumption EN"
+      },
+      "ok_light": {
+        "name": "OK light"
+      },
+      "power_battery_connection": {
+        "name": "Power battery connection"
+      },
+      "ins": {
+        "name": "INS"
+      },
+      "repair_mode_switch": {
+        "name": "Repair mode switch"
+      },
+      "vehicle_time_zone": {
+        "name": "Vehicle time zone"
+      }
+    },
+    "binary_sensor": {
+      "is_online": {
+        "name": "Online"
+      },
+      "is_charging": {
+        "name": "Opladning"
+      },
+      "is_any_door_open": {
+        "name": "Døre"
+      },
+      "is_any_window_open": {
+        "name": "Vinduer"
+      },
+      "is_locked": {
+        "name": "Låst"
+      },
+      "sentry_status": {
+        "name": "Vagtfunktion"
+      },
+      "left_front_door": {
+        "name": "Forreste venstre dør"
+      },
+      "right_front_door": {
+        "name": "Forreste højre dør"
+      },
+      "left_rear_door": {
+        "name": "Venstre bagdør"
+      },
+      "right_rear_door": {
+        "name": "Højre bagdør"
+      },
+      "trunk_lid": {
+        "name": "Bagagerum"
+      },
+      "sliding_door": {
+        "name": "Skydedør"
+      },
+      "forehold": {
+        "name": "Frunk"
+      },
+      "left_front_window": {
+        "name": "Forreste venstre vindue"
+      },
+      "right_front_window": {
+        "name": "Forreste højre vindue"
+      },
+      "left_rear_window": {
+        "name": "Venstre bagrude"
+      },
+      "right_rear_window": {
+        "name": "Højre bagrude"
+      },
+      "skylight": {
+        "name": "Soltag"
+      },
+      "battery_heat_state": {
+        "name": "Batteriopvarmning"
+      },
+      "charge_heat_state": {
+        "name": "Lad opvarmning"
+      },
+      "vehicle_state": {
+        "name": "Køretøj på"
+      },
+      "abs_warning": {
+        "name": "ABS advarsel"
+      },
+      "svs": {
+        "name": "Service påkrævet snart"
+      },
+      "srs": {
+        "name": "Airbag advarsel"
+      },
+      "eps": {
+        "name": "Elektrisk servostyring"
+      },
+      "esp": {
+        "name": "Elektronisk stabilitet"
+      },
+      "pwr": {
+        "name": "Strømadvarsel"
+      },
+      "power_system": {
+        "name": "Strømsystem"
+      },
+      "ect": {
+        "name": "Advarsel om kølevæsketemperatur"
+      },
+      "tirepressure_system": {
+        "name": "TPMS tilstand"
+      },
+      "rapid_tire_leak": {
+        "name": "Hurtig dæklækage"
+      },
+      "left_front_tire_status": {
+        "name": "Forreste venstre dækstatus"
+      },
+      "right_front_tire_status": {
+        "name": "Forreste højre dækstatus"
+      },
+      "left_rear_tire_status": {
+        "name": "Bageste venstre dækstatus"
+      },
+      "right_rear_tire_status": {
+        "name": "Status baghøjre dæk"
+      },
+      "upgrade_status": {
+        "name": "OTA opgraderingsstatus"
+      },
+      "oil_pressure_system": {
+        "name": "Oil pressure system"
+      },
+      "braking_system": {
+        "name": "Braking system"
+      },
+      "charging_system": {
+        "name": "Charging system"
+      },
+      "steering_system": {
+        "name": "Steering system"
+      },
+      "less_one_min": {
+        "name": "Less one min"
+      }
+    },
+    "button": {
+      "flash_lights": {
+        "name": "Lyshorn"
+      },
+      "find_car": {
+        "name": "Find bil"
+      },
+      "close_windows": {
+        "name": "Luk vinduer"
+      },
+      "force_poll": {
+        "name": "Tving forespørgsel"
+      }
+    },
+    "select": {
+      "driver_seat_heat": {
+        "name": "Førersædevarme",
+        "state": {
+          "off": "Fra",
+          "low": "Lav",
+          "high": "Høj"
+        }
+      },
+      "driver_seat_ventilation": {
+        "name": "Ventilation af førersædet",
+        "state": {
+          "off": "Fra",
+          "low": "Lav",
+          "high": "Høj"
+        }
+      },
+      "passenger_seat_heat": {
+        "name": "Passagersædevarme",
+        "state": {
+          "off": "Fra",
+          "low": "Lav",
+          "high": "Høj"
+        }
+      },
+      "passenger_seat_ventilation": {
+        "name": "Ventilation af passagersæde",
+        "state": {
+          "off": "Fra",
+          "low": "Lav",
+          "high": "Høj"
+        }
+      },
+      "rear_left_seat_heat": {
+        "name": "Venstre bagsædevarme",
+        "state": {
+          "off": "Fra",
+          "low": "Lav",
+          "high": "Høj"
+        }
+      },
+      "rear_left_seat_ventilation": {
+        "name": "Ventilation til venstre bagsæde",
+        "state": {
+          "off": "Fra",
+          "low": "Lav",
+          "high": "Høj"
+        }
+      },
+      "rear_right_seat_heat": {
+        "name": "Højre bagsædevarme",
+        "state": {
+          "off": "Fra",
+          "low": "Lav",
+          "high": "Høj"
+        }
+      },
+      "rear_right_seat_ventilation": {
+        "name": "Højre bagsædeventilation",
+        "state": {
+          "off": "Fra",
+          "low": "Lav",
+          "high": "Høj"
+        }
+      }
+    },
+    "switch": {
+      "battery_heat": {
+        "name": "Batterivarme"
+      },
+      "car_on": {
+        "name": "A/C tændt"
+      },
+      "steering_wheel_heat": {
+        "name": "Ratvarme"
+      },
+      "disable_polling": {
+        "name": "Deaktiver forespørgsel"
+      }
+    },
+    "climate": {
+      "climate": {
+        "name": "Klima",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "max_heat": "Max varme",
+              "max_cool": "Maks køling"
+            }
+          }
+        }
+      }
+    },
+    "lock": {
+      "lock": {
+        "name": "Låse"
+      }
+    },
+    "device_tracker": {
+      "location": {
+        "name": "Beliggenhed"
+      }
+    }
+  },
+  "services": {
+    "fetch_realtime": {
+      "name": "Fetch telemetry data",
+      "description": "Force-fetch the latest vehicle telemetry from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_gps": {
+      "name": "Fetch GPS data",
+      "description": "Force-fetch the latest GPS location from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_hvac": {
+      "name": "Fetch HVAC status",
+      "description": "Force-fetch the latest HVAC / climate status from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_charging": {
+      "name": "Fetch charging status",
+      "description": "Force-fetch the latest charging status from the BYD cloud and log the raw response.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_energy": {
+      "name": "Fetch energy consumption",
+      "description": "Force-fetch the latest energy consumption data from the BYD cloud and log the raw response.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    }
+  }
+}

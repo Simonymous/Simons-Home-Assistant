@@ -1,0 +1,504 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Anslut till BYD",
+        "description": "Konfigurera ditt BYD-konto.",
+        "data": {
+          "username": "Användarnamn",
+          "password": "Lösenord",
+          "control_pin": "Kontroll PIN (valfritt, 6-siffrigt)",
+          "country_code": "Land",
+          "poll_interval": "Pollingintervall (sekunder)",
+          "gps_poll_interval": "GPS avfrågningsintervall (sekunder)",
+          "smart_gps_polling": "Smart GPS-pollning",
+          "gps_active_interval": "GPS aktivt intervall (sekunder)",
+          "gps_inactive_interval": "GPS inaktivt intervall (sekunder)",
+          "climate_duration": "Klimatvaraktighet (time_span)",
+          "debug_dumps": "Felsökningsdump av API-svar"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Det gick inte att ansluta",
+      "invalid_control_pin": "Ogiltig kontroll PIN eller molnkontrollen är tillfälligt låst",
+      "invalid_auth": "Ogiltig autentisering",
+      "unknown": "Oväntat fel"
+    },
+    "abort": {
+      "already_configured": "Det här kontot är redan konfigurerat",
+      "wrong_account": "Kontot matchar inte det som återautentiseras",
+      "reauth_successful": "Återautentiseringen lyckades"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Uppdatera polling",
+        "data": {
+          "poll_interval": "Pollingintervall (sekunder)",
+          "gps_poll_interval": "GPS avfrågningsintervall (sekunder)",
+          "smart_gps_polling": "Smart GPS-pollning",
+          "gps_active_interval": "GPS aktivt intervall (sekunder)",
+          "gps_inactive_interval": "GPS inaktivt intervall (sekunder)",
+          "climate_duration": "Klimatvaraktighet (time_span)",
+          "debug_dumps": "Felsökningsdump av API-svar"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "elec_percent": {
+        "name": "Batterinivå"
+      },
+      "endurance_mileage": {
+        "name": "Räckvidd"
+      },
+      "total_mileage": {
+        "name": "Vägmätare"
+      },
+      "speed": {
+        "name": "Hastighet"
+      },
+      "temp_in_car": {
+        "name": "Kupétemperatur"
+      },
+      "left_front_tire_pressure": {
+        "name": "Främre vänster däcktryck"
+      },
+      "right_front_tire_pressure": {
+        "name": "Fram höger däcktryck"
+      },
+      "left_rear_tire_pressure": {
+        "name": "Däcktryck till vänster bak"
+      },
+      "right_rear_tire_pressure": {
+        "name": "Höger bakre däcktryck"
+      },
+      "temp_out_car": {
+        "name": "Utetemperatur"
+      },
+      "pm": {
+        "name": "PM2.5"
+      },
+      "power_battery": {
+        "name": "Batterinivå"
+      },
+      "ev_endurance": {
+        "name": "EV-räckvidd"
+      },
+      "endurance_mileage_v2": {
+        "name": "Räckvidd V2"
+      },
+      "total_mileage_v2": {
+        "name": "Vägmätare V2"
+      },
+      "charging_state": {
+        "name": "Laddningsläge"
+      },
+      "charge_state": {
+        "name": "Laddningsläge"
+      },
+      "wait_status": {
+        "name": "Laddningsväntestatus"
+      },
+      "full_hour": {
+        "name": "Timmar till full"
+      },
+      "full_minute": {
+        "name": "Minuter till full"
+      },
+      "booking_charge_state": {
+        "name": "Schemalagd laddning"
+      },
+      "booking_charging_hour": {
+        "name": "Schemalagd laddningstid"
+      },
+      "booking_charging_minute": {
+        "name": "Schemalagd laddningsminut"
+      },
+      "total_power": {
+        "name": "Total effekt"
+      },
+      "nearest_energy_consumption": {
+        "name": "Senaste energiförbrukningen"
+      },
+      "recent_50km_energy": {
+        "name": "Senaste 50 km energi"
+      },
+      "oil_endurance": {
+        "name": "Bränsle räckvidd"
+      },
+      "oil_percent": {
+        "name": "Bränslenivå"
+      },
+      "total_oil": {
+        "name": "Total bränsleförbrukning"
+      },
+      "engine_status": {
+        "name": "Motorstatus"
+      },
+      "epb": {
+        "name": "Elektronisk parkeringsbroms"
+      },
+      "ect_value": {
+        "name": "Kylvätsketemperatur"
+      },
+      "refrigerator_state": {
+        "name": "Kylskåp"
+      },
+      "refrigerator_door_state": {
+        "name": "Kylskåpsdörr"
+      },
+      "last_updated": {
+        "name": "Senast uppdaterad"
+      },
+      "gps_last_updated": {
+        "name": "GPS senast uppdaterad"
+      },
+      "remaining_hours": {
+        "name": "Återstående laddtimmar"
+      },
+      "remaining_minutes": {
+        "name": "Återstående laddminuter"
+      },
+      "battery_power": {
+        "name": "Battery power"
+      },
+      "total_energy": {
+        "name": "Total energy"
+      },
+      "nearest_energy_consumption_unit": {
+        "name": "Nearest energy consumption unit"
+      },
+      "endurance_mileage_v2_unit": {
+        "name": "Endurance mileage V2 unit"
+      },
+      "total_mileage_v2_unit": {
+        "name": "Total mileage V2 unit"
+      },
+      "rate": {
+        "name": "Rate"
+      },
+      "energy_consumption": {
+        "name": "Energy consumption"
+      },
+      "total_consumption": {
+        "name": "Total consumption"
+      },
+      "total_consumption_en": {
+        "name": "Total consumption EN"
+      },
+      "ok_light": {
+        "name": "OK light"
+      },
+      "power_battery_connection": {
+        "name": "Power battery connection"
+      },
+      "ins": {
+        "name": "INS"
+      },
+      "repair_mode_switch": {
+        "name": "Repair mode switch"
+      },
+      "vehicle_time_zone": {
+        "name": "Vehicle time zone"
+      }
+    },
+    "binary_sensor": {
+      "is_online": {
+        "name": "Online"
+      },
+      "is_charging": {
+        "name": "Laddar"
+      },
+      "is_any_door_open": {
+        "name": "Dörrar"
+      },
+      "is_any_window_open": {
+        "name": "Fönster"
+      },
+      "is_locked": {
+        "name": "Låst"
+      },
+      "sentry_status": {
+        "name": "Vaktläge"
+      },
+      "left_front_door": {
+        "name": "Främre vänstra dörren"
+      },
+      "right_front_door": {
+        "name": "Höger framdörr"
+      },
+      "left_rear_door": {
+        "name": "Vänster bakdörr"
+      },
+      "right_rear_door": {
+        "name": "Höger bakdörr"
+      },
+      "trunk_lid": {
+        "name": "Bagageutrymme"
+      },
+      "sliding_door": {
+        "name": "Skjutdörr"
+      },
+      "forehold": {
+        "name": "Frunk"
+      },
+      "left_front_window": {
+        "name": "Främre vänstra fönstret"
+      },
+      "right_front_window": {
+        "name": "Fram höger fönster"
+      },
+      "left_rear_window": {
+        "name": "Vänster bakruta"
+      },
+      "right_rear_window": {
+        "name": "Höger bakruta"
+      },
+      "skylight": {
+        "name": "Takfönster"
+      },
+      "battery_heat_state": {
+        "name": "Batterivärme"
+      },
+      "charge_heat_state": {
+        "name": "Ladda uppvärmning"
+      },
+      "vehicle_state": {
+        "name": "Fordon på"
+      },
+      "abs_warning": {
+        "name": "ABS varning"
+      },
+      "svs": {
+        "name": "Service krävs snart"
+      },
+      "srs": {
+        "name": "Airbag-varning"
+      },
+      "eps": {
+        "name": "Elektrisk servostyrning"
+      },
+      "esp": {
+        "name": "Elektronisk stabilitet"
+      },
+      "pwr": {
+        "name": "Strömvarning"
+      },
+      "power_system": {
+        "name": "Kraftsystem"
+      },
+      "ect": {
+        "name": "Varning för kylvätsketemperatur"
+      },
+      "tirepressure_system": {
+        "name": "TPMS tillstånd"
+      },
+      "rapid_tire_leak": {
+        "name": "Snabbt däckläckage"
+      },
+      "left_front_tire_status": {
+        "name": "Status för däck fram vänster"
+      },
+      "right_front_tire_status": {
+        "name": "Fram höger däckstatus"
+      },
+      "left_rear_tire_status": {
+        "name": "Bakre vänstra däckstatus"
+      },
+      "right_rear_tire_status": {
+        "name": "Bakre höger däckstatus"
+      },
+      "upgrade_status": {
+        "name": "OTA uppgraderingsstatus"
+      },
+      "oil_pressure_system": {
+        "name": "Oil pressure system"
+      },
+      "braking_system": {
+        "name": "Braking system"
+      },
+      "charging_system": {
+        "name": "Charging system"
+      },
+      "steering_system": {
+        "name": "Steering system"
+      },
+      "less_one_min": {
+        "name": "Less one min"
+      }
+    },
+    "button": {
+      "flash_lights": {
+        "name": "Ljustuta"
+      },
+      "find_car": {
+        "name": "Hitta bil"
+      },
+      "close_windows": {
+        "name": "Stäng fönster"
+      },
+      "force_poll": {
+        "name": "Tvinga uppdatering"
+      }
+    },
+    "select": {
+      "driver_seat_heat": {
+        "name": "Uppvärmning av förarstolen",
+        "state": {
+          "off": "Av",
+          "low": "Låg",
+          "high": "Hög"
+        }
+      },
+      "driver_seat_ventilation": {
+        "name": "Ventilation av förarstolen",
+        "state": {
+          "off": "Av",
+          "low": "Låg",
+          "high": "Hög"
+        }
+      },
+      "passenger_seat_heat": {
+        "name": "Passagerarstolsvärme",
+        "state": {
+          "off": "Av",
+          "low": "Låg",
+          "high": "Hög"
+        }
+      },
+      "passenger_seat_ventilation": {
+        "name": "Passagerarsätesventilation",
+        "state": {
+          "off": "Av",
+          "low": "Låg",
+          "high": "Hög"
+        }
+      },
+      "rear_left_seat_heat": {
+        "name": "Vänster baksätesvärme",
+        "state": {
+          "off": "Av",
+          "low": "Låg",
+          "high": "Hög"
+        }
+      },
+      "rear_left_seat_ventilation": {
+        "name": "Vänster baksätesventilation",
+        "state": {
+          "off": "Av",
+          "low": "Låg",
+          "high": "Hög"
+        }
+      },
+      "rear_right_seat_heat": {
+        "name": "Höger baksätesvärme",
+        "state": {
+          "off": "Av",
+          "low": "Låg",
+          "high": "Hög"
+        }
+      },
+      "rear_right_seat_ventilation": {
+        "name": "Höger baksätesventilation",
+        "state": {
+          "off": "Av",
+          "low": "Låg",
+          "high": "Hög"
+        }
+      }
+    },
+    "switch": {
+      "battery_heat": {
+        "name": "Batterivärme"
+      },
+      "car_on": {
+        "name": "A/C på"
+      },
+      "steering_wheel_heat": {
+        "name": "Rattvärme"
+      },
+      "disable_polling": {
+        "name": "Inaktivera uppdatering"
+      }
+    },
+    "climate": {
+      "climate": {
+        "name": "Klimat",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "max_heat": "Max värme",
+              "max_cool": "Max kyla"
+            }
+          }
+        }
+      }
+    },
+    "lock": {
+      "lock": {
+        "name": "Låsa"
+      }
+    },
+    "device_tracker": {
+      "location": {
+        "name": "Plats"
+      }
+    }
+  },
+  "services": {
+    "fetch_realtime": {
+      "name": "Fetch telemetry data",
+      "description": "Force-fetch the latest vehicle telemetry from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_gps": {
+      "name": "Fetch GPS data",
+      "description": "Force-fetch the latest GPS location from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_hvac": {
+      "name": "Fetch HVAC status",
+      "description": "Force-fetch the latest HVAC / climate status from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_charging": {
+      "name": "Fetch charging status",
+      "description": "Force-fetch the latest charging status from the BYD cloud and log the raw response.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_energy": {
+      "name": "Fetch energy consumption",
+      "description": "Force-fetch the latest energy consumption data from the BYD cloud and log the raw response.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    }
+  }
+}

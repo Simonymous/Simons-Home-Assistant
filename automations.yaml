@@ -1,0 +1,275 @@
+- id: '1783688965632'
+  alias: 'Nuki Batterie fast leer Reminder '
+  description: ''
+  triggers:
+  - trigger: time
+    at: '18:00:00'
+  conditions:
+  - condition: battery.is_level
+    target:
+      entity_id: sensor.smart_lock_pro_batterie
+    options:
+      threshold:
+        type: below
+        value:
+          active_choice: number
+          number: 15
+  actions:
+  - action: tts.speak
+    metadata: {}
+    target:
+      area_id: ai
+    data:
+      cache: true
+      media_player_entity_id: media_player.homepod_wohnzimmer_homepod_wohnzimmer
+      message: Achtung! Die Batterie des Nuki Wohnungs-Schloss ist fast leer!
+  - action: notify.notify
+    metadata: {}
+    data:
+      title: Batterie fast leer
+      message: Achtung! Die Batterie des Nuki Wohnungs-Schloss ist fast leer!
+  mode: single
+- id: '1783689109119'
+  alias: Batterie Ring Intercom fast leer
+  description: ''
+  triggers:
+  - trigger: time
+    at: '18:00:00'
+  conditions:
+  - condition: battery.is_level
+    target:
+      device_id: f7fe45d21276ac01618d6f4c9f433357
+    options:
+      threshold:
+        type: below
+        value:
+          active_choice: number
+          number: 15
+      behavior: any
+  actions:
+  - action: tts.speak
+    metadata: {}
+    target:
+      area_id: ai
+    data:
+      cache: true
+      media_player_entity_id: media_player.homepod_wohnzimmer_homepod_wohnzimmer
+      message: Achtung! Die Batterie des Ring Intercoms ist fast leer!
+  - action: notify.notify
+    metadata: {}
+    data:
+      title: Batterie fast leer
+      message: Achtung! Die Batterie des Ring Intercomsist fast leer!
+  mode: single
+- id: '1783697731849'
+  alias: 'Schlafzimmer: Hitzeschutz Rollos'
+  description: Steuert beide Schlafzimmer-Rollläden basierend auf Temperatur und Eve-Fenstersensor
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - weather.forecast_home
+    attribute: temperature
+    above: 24
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: weather.forecast_home
+        attribute: temperature
+        above: 24
+      - condition: sun
+        after: sunrise
+        before: sunset
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: binary_sensor.eve_door_20ebn9901_tur
+            state: 'off'
+          sequence:
+          - action: cover.set_cover_position
+            target:
+              entity_id:
+              - cover.schlafzimmer_links
+              - cover.schlafzimmer_rechts
+            data:
+              position: 0
+        - conditions:
+          - condition: state
+            entity_id: binary_sensor.eve_door_20ebn9901_tur
+            state: 'on'
+          sequence:
+          - action: notify.notify
+            data:
+              title: Hitzeschutz active!
+              message: Die Rollläden im Schlafzimmer sollten automatisch schließen,
+                aber das Fenster ist noch offen!
+  mode: restart
+- id: '1783698163537'
+  alias: 'Schutz: Schlafzimmer Rollladen rechts blockieren wenn Fenster offen'
+  description: Verhindert JEDE Schließung des rechten Rollladens (manuell, Siri, HomeKit),
+    wenn das Fenster offen ist.
+  triggers:
+  - trigger: state
+    entity_id: cover.schlafzimmer_rechts
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.eve_door_20ebn9901_tur
+    state: 'on'
+  - condition: template
+    value_template: '{{ state_attr(''cover.schlafzimmer_rechts'', ''current_position'')
+      | int < 100 }}'
+  actions:
+  - action: cover.open_cover
+    target:
+      entity_id: cover.schlafzimmer_rechts
+  - action: notify.notify
+    data:
+      title: Rollladen-Sperre ausgelöst!
+      message: Der rechte Rollladen wurde automatisch geöffnet, da das Fenster noch
+        offen steht.
+  mode: restart
+- id: '1783778455548'
+  alias: 'Synology: Download abgeschlossen'
+  description: Protokolliert den Zeitpunkt und meldet, wenn der Download auf der
+    Synology beendet ist.
+  triggers:
+  - entity_id: binary_sensor.synology_download_aktiv
+    from: 'on'
+    to: 'off'
+    trigger: state
+  conditions: []
+  actions:
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.letzter_synology_download
+    data:
+      timestamp: '{{ now().timestamp() }}'
+  - data:
+      title: Synology NAS
+      message: Download abgeschlossen!
+    action: notify.notify
+- id: '1783778854917'
+  alias: 'Schlafzimmer: Warnung bei Regen und offenem Fenster'
+  description: Sendet eine Benachrichtigung, wenn das Fenster bei Regen geöffnet wird
+    oder es bei offenem Fenster anfängt zu regnen.
+  triggers:
+  - entity_id: binary_sensor.eve_door_20ebn9901_tur
+    to: 'on'
+    trigger: state
+  - entity_id: weather.forecast_home
+    to: rainy
+    trigger: state
+  - entity_id: weather.forecast_home
+    to: pouring
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.eve_door_20ebn9901_tur
+    state: 'on'
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: weather.forecast_home
+      state: rainy
+    - condition: state
+      entity_id: weather.forecast_home
+      state: pouring
+  actions:
+  - action: notify.notify
+    data:
+      title: ⚠️ Fenster schließen!
+      message: Es regnet, aber das Schlafzimmerfenster steht noch offen!
+  mode: single
+- id: '1783780102067'
+  alias: 'Klingel: HomePods und Push-Freigabe'
+  description: Spielt den Klingelton auf den HomePods ab und sendet eine interaktive
+    Push-Nachricht ans iPhone.
+  triggers:
+  - trigger: state
+    entity_id: event.vordereingang_klingeln
+  conditions: []
+  actions:
+  - action: media_player.volume_set
+    target:
+      entity_id:
+      - media_player.homepod_wohnzimmer_homepod_wohnzimmer
+      - media_player.homepod_badezimmer_homepod_badezimmer
+      - media_player.homepod_kuche_homepod_kuche
+    data:
+      volume_level: 0.75
+  - action: media_player.play_media
+    target:
+      entity_id:
+      - media_player.homepod_wohnzimmer_homepod_wohnzimmer
+      - media_player.homepod_badezimmer_homepod_badezimmer
+      - media_player.homepod_kuche_homepod_kuche
+    data:
+      media:
+        media_content_id: media-source://media_source/local/doorbell.mp3
+        media_content_type: audio/mpeg
+        metadata: {}
+  - action: notify.mobile_app_eierphone_simon
+    data:
+      title: "\U0001F514 Es hat geklingelt!"
+      message: Jemand steht am Vordereingang. Haustür öffnen?
+      data:
+        tag: intercom_klingel
+        actions:
+        - action: TUER_OEFFNEN
+          title: "\U0001F513 Tür öffnen"
+  mode: single
+- id: '1783780294734'
+  alias: 'Intercom: Push-Antwort ausführen'
+  description: Reagiert auf den Klick auf den 'Tür öffnen'-Button in der Push-Nachricht.
+  triggers:
+  - trigger: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: TUER_OEFFNEN
+  conditions: []
+  actions:
+  - action: button.press
+    target:
+      entity_id: button.vordereingang_tur_offnen
+    data: {}
+  mode: single
+- id: '1783781683587'
+  alias: Flurlicht aus bei keiner Bewegung
+  description: Schaltet das Flurlicht aus, wenn 30 Sekunden lang keine Bewegung erkannt
+    wurde.
+  triggers:
+  - entity_id: binary_sensor.flur_bewegungsmelder_flur_bewegung
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+    trigger: state
+  conditions: []
+  actions:
+  - action: light.turn_off
+    target:
+      entity_id: light.flur_flur
+  mode: single
+- id: '1783786435281'
+  alias: 'Spülmaschine: Fertig-Benachrichtigung'
+  description: Sendet eine Push-Nachricht, wenn die Spülmaschine fertig ist.
+  triggers:
+  - entity_id: sensor.spulmaschine_zustand
+    to:
+    - job_done
+    - finished
+    - Finished
+    trigger: state
+  conditions: []
+  actions:
+  - action: notify.notify
+    data:
+      title: "\U0001F9FC Spülmaschine fertig!"
+      message: Das Programm ist beendet. Du kannst das Geschirr jetzt ausräumen!
+      data:
+        push:
+          sound: default
+  mode: single

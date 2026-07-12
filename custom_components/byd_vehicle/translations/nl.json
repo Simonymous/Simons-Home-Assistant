@@ -1,0 +1,504 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Verbinding maken met BYD",
+        "description": "Stel uw BYD-account in.",
+        "data": {
+          "username": "Gebruikersnaam",
+          "password": "Wachtwoord",
+          "control_pin": "Controle PIN (optioneel, 6 cijfers)",
+          "country_code": "Land",
+          "poll_interval": "Polling-interval (seconden)",
+          "gps_poll_interval": "GPS polling-interval (seconden)",
+          "smart_gps_polling": "Slimme GPS polling",
+          "gps_active_interval": "GPS actief interval (seconden)",
+          "gps_inactive_interval": "GPS inactief interval (seconden)",
+          "climate_duration": "Klimaatduur (time_span)",
+          "debug_dumps": "Debug-dump API-antwoorden"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Kan geen verbinding maken",
+      "invalid_control_pin": "Ongeldige controle PIN of cloudcontrole is tijdelijk vergrendeld",
+      "invalid_auth": "Ongeldige authenticatie",
+      "unknown": "Onverwachte fout"
+    },
+    "abort": {
+      "already_configured": "Dit account is al geconfigureerd",
+      "wrong_account": "Het account komt niet overeen met het account dat opnieuw wordt geverifieerd",
+      "reauth_successful": "De herauthenticatie is gelukt"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Polling bijwerken",
+        "data": {
+          "poll_interval": "Polling-interval (seconden)",
+          "gps_poll_interval": "GPS polling-interval (seconden)",
+          "smart_gps_polling": "Slimme GPS polling",
+          "gps_active_interval": "GPS actief interval (seconden)",
+          "gps_inactive_interval": "GPS inactief interval (seconden)",
+          "climate_duration": "Klimaatduur (time_span)",
+          "debug_dumps": "Debug-dump API-antwoorden"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "elec_percent": {
+        "name": "Batterijniveau"
+      },
+      "endurance_mileage": {
+        "name": "Bereik"
+      },
+      "total_mileage": {
+        "name": "Kilometerteller"
+      },
+      "speed": {
+        "name": "Snelheid"
+      },
+      "temp_in_car": {
+        "name": "Cabine temperatuur"
+      },
+      "left_front_tire_pressure": {
+        "name": "Bandenspanning linksvoor"
+      },
+      "right_front_tire_pressure": {
+        "name": "Bandenspanning rechtsvoor"
+      },
+      "left_rear_tire_pressure": {
+        "name": "Bandenspanning links achter"
+      },
+      "right_rear_tire_pressure": {
+        "name": "Bandenspanning rechtsachter"
+      },
+      "temp_out_car": {
+        "name": "Buitentemperatuur"
+      },
+      "pm": {
+        "name": "PM2.5"
+      },
+      "power_battery": {
+        "name": "Vermogen batterijniveau"
+      },
+      "ev_endurance": {
+        "name": "Elektrische actieradius"
+      },
+      "endurance_mileage_v2": {
+        "name": "Bereik V2"
+      },
+      "total_mileage_v2": {
+        "name": "Kilometerteller V2"
+      },
+      "charging_state": {
+        "name": "Oplaadstatus"
+      },
+      "charge_state": {
+        "name": "Laadstatus"
+      },
+      "wait_status": {
+        "name": "Wachtstatus opladen"
+      },
+      "full_hour": {
+        "name": "Uren tot vol"
+      },
+      "full_minute": {
+        "name": "Minuten tot vol"
+      },
+      "booking_charge_state": {
+        "name": "Gepland opladen"
+      },
+      "booking_charging_hour": {
+        "name": "Gepland oplaaduur"
+      },
+      "booking_charging_minute": {
+        "name": "Geplande oplaadminuut"
+      },
+      "total_power": {
+        "name": "Totaal vermogen"
+      },
+      "nearest_energy_consumption": {
+        "name": "Recent energieverbruik"
+      },
+      "recent_50km_energy": {
+        "name": "Verbruik laatste 50km"
+      },
+      "oil_endurance": {
+        "name": "Brandstofbereik"
+      },
+      "oil_percent": {
+        "name": "Brandstofniveau"
+      },
+      "total_oil": {
+        "name": "Totaal brandstofverbruik"
+      },
+      "engine_status": {
+        "name": "Motorstatus"
+      },
+      "epb": {
+        "name": "Elektronische parkeerrem"
+      },
+      "ect_value": {
+        "name": "Koelvloeistof temperatuur"
+      },
+      "refrigerator_state": {
+        "name": "Koelkast"
+      },
+      "refrigerator_door_state": {
+        "name": "Deur van de koelkast"
+      },
+      "last_updated": {
+        "name": "Laatst bijgewerkt"
+      },
+      "gps_last_updated": {
+        "name": "GPS laatst bijgewerkt"
+      },
+      "remaining_hours": {
+        "name": "Resterende laadtijd (uren)"
+      },
+      "remaining_minutes": {
+        "name": "Resterende laadtijd (minuten)"
+      },
+      "battery_power": {
+        "name": "Battery power"
+      },
+      "total_energy": {
+        "name": "Total energy"
+      },
+      "nearest_energy_consumption_unit": {
+        "name": "Nearest energy consumption unit"
+      },
+      "endurance_mileage_v2_unit": {
+        "name": "Endurance mileage V2 unit"
+      },
+      "total_mileage_v2_unit": {
+        "name": "Total mileage V2 unit"
+      },
+      "rate": {
+        "name": "Rate"
+      },
+      "energy_consumption": {
+        "name": "Energy consumption"
+      },
+      "total_consumption": {
+        "name": "Total consumption"
+      },
+      "total_consumption_en": {
+        "name": "Total consumption EN"
+      },
+      "ok_light": {
+        "name": "OK light"
+      },
+      "power_battery_connection": {
+        "name": "Power battery connection"
+      },
+      "ins": {
+        "name": "INS"
+      },
+      "repair_mode_switch": {
+        "name": "Repair mode switch"
+      },
+      "vehicle_time_zone": {
+        "name": "Vehicle time zone"
+      }
+    },
+    "binary_sensor": {
+      "is_online": {
+        "name": "Online"
+      },
+      "is_charging": {
+        "name": "Opladen"
+      },
+      "is_any_door_open": {
+        "name": "Deuren open"
+      },
+      "is_any_window_open": {
+        "name": "Ramen open"
+      },
+      "is_locked": {
+        "name": "Vergrendeld"
+      },
+      "sentry_status": {
+        "name": "Sentry-modus"
+      },
+      "left_front_door": {
+        "name": "Linkervoordeur"
+      },
+      "right_front_door": {
+        "name": "Rechter voordeur"
+      },
+      "left_rear_door": {
+        "name": "Linker achterdeur"
+      },
+      "right_rear_door": {
+        "name": "Rechter achterdeur"
+      },
+      "trunk_lid": {
+        "name": "Kofferbak"
+      },
+      "sliding_door": {
+        "name": "Schuifdeur"
+      },
+      "forehold": {
+        "name": "Frunk"
+      },
+      "left_front_window": {
+        "name": "Raam linksvoor"
+      },
+      "right_front_window": {
+        "name": "Raam rechtsvoor"
+      },
+      "left_rear_window": {
+        "name": "Linker achterraam"
+      },
+      "right_rear_window": {
+        "name": "Rechter achterraam"
+      },
+      "skylight": {
+        "name": "Schuifdak"
+      },
+      "battery_heat_state": {
+        "name": "Batterij verwarming"
+      },
+      "charge_heat_state": {
+        "name": "Verwarming opladen"
+      },
+      "vehicle_state": {
+        "name": "Voertuig aan"
+      },
+      "abs_warning": {
+        "name": "ABS waarschuwing"
+      },
+      "svs": {
+        "name": "Onderhoud vereist"
+      },
+      "srs": {
+        "name": "Airbagwaarschuwing"
+      },
+      "eps": {
+        "name": "Elektrische stuurbekrachtiging"
+      },
+      "esp": {
+        "name": "Elektronische stabiliteit"
+      },
+      "pwr": {
+        "name": "Waarschuwing voor stroom"
+      },
+      "power_system": {
+        "name": "Voedingssysteem"
+      },
+      "ect": {
+        "name": "Waarschuwing koelvloeistoftemperatuur"
+      },
+      "tirepressure_system": {
+        "name": "TPMS staat"
+      },
+      "rapid_tire_leak": {
+        "name": "Snelle bandenlekkage"
+      },
+      "left_front_tire_status": {
+        "name": "Bandenstatus linksvoor"
+      },
+      "right_front_tire_status": {
+        "name": "Bandenstatus rechtsvoor"
+      },
+      "left_rear_tire_status": {
+        "name": "Bandenstatus linksachter"
+      },
+      "right_rear_tire_status": {
+        "name": "Bandenstatus rechtsachter"
+      },
+      "upgrade_status": {
+        "name": "OTA upgradestatus"
+      },
+      "oil_pressure_system": {
+        "name": "Oil pressure system"
+      },
+      "braking_system": {
+        "name": "Braking system"
+      },
+      "charging_system": {
+        "name": "Charging system"
+      },
+      "steering_system": {
+        "name": "Steering system"
+      },
+      "less_one_min": {
+        "name": "Less one min"
+      }
+    },
+    "button": {
+      "flash_lights": {
+        "name": "Flitslichten"
+      },
+      "find_car": {
+        "name": "Vind auto"
+      },
+      "close_windows": {
+        "name": "Sluit ramen"
+      },
+      "force_poll": {
+        "name": "Geforceerd ophalen"
+      }
+    },
+    "select": {
+      "driver_seat_heat": {
+        "name": "Verwarming bestuurdersstoel",
+        "state": {
+          "off": "Uit",
+          "low": "Laag",
+          "high": "Hoog"
+        }
+      },
+      "driver_seat_ventilation": {
+        "name": "Ventilatie bestuurdersstoel",
+        "state": {
+          "off": "Uit",
+          "low": "Laag",
+          "high": "Hoog"
+        }
+      },
+      "passenger_seat_heat": {
+        "name": "Verwarming passagiersstoel",
+        "state": {
+          "off": "Uit",
+          "low": "Laag",
+          "high": "Hoog"
+        }
+      },
+      "passenger_seat_ventilation": {
+        "name": "Ventilatie passagiersstoel",
+        "state": {
+          "off": "Uit",
+          "low": "Laag",
+          "high": "Hoog"
+        }
+      },
+      "rear_left_seat_heat": {
+        "name": "Stoelverwarming links achter",
+        "state": {
+          "off": "Uit",
+          "low": "Laag",
+          "high": "Hoog"
+        }
+      },
+      "rear_left_seat_ventilation": {
+        "name": "Ventilatie stoel linksachter",
+        "state": {
+          "off": "Uit",
+          "low": "Laag",
+          "high": "Hoog"
+        }
+      },
+      "rear_right_seat_heat": {
+        "name": "Stoelverwarming rechts achter",
+        "state": {
+          "off": "Uit",
+          "low": "Laag",
+          "high": "Hoog"
+        }
+      },
+      "rear_right_seat_ventilation": {
+        "name": "Ventilatie stoel rechtsachter",
+        "state": {
+          "off": "Uit",
+          "low": "Laag",
+          "high": "Hoog"
+        }
+      }
+    },
+    "switch": {
+      "battery_heat": {
+        "name": "Batterij warmte"
+      },
+      "car_on": {
+        "name": "Airco aan"
+      },
+      "steering_wheel_heat": {
+        "name": "Stuurverwarming"
+      },
+      "disable_polling": {
+        "name": "Ophalen uitschakelen"
+      }
+    },
+    "climate": {
+      "climate": {
+        "name": "Klimaat",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "max_heat": "Maximale warmte",
+              "max_cool": "Maximale koeling"
+            }
+          }
+        }
+      }
+    },
+    "lock": {
+      "lock": {
+        "name": "Slot"
+      }
+    },
+    "device_tracker": {
+      "location": {
+        "name": "Locatie"
+      }
+    }
+  },
+  "services": {
+    "fetch_realtime": {
+      "name": "Fetch telemetry data",
+      "description": "Force-fetch the latest vehicle telemetry from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_gps": {
+      "name": "Fetch GPS data",
+      "description": "Force-fetch the latest GPS location from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_hvac": {
+      "name": "Fetch HVAC status",
+      "description": "Force-fetch the latest HVAC / climate status from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_charging": {
+      "name": "Fetch charging status",
+      "description": "Force-fetch the latest charging status from the BYD cloud and log the raw response.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_energy": {
+      "name": "Fetch energy consumption",
+      "description": "Force-fetch the latest energy consumption data from the BYD cloud and log the raw response.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    }
+  }
+}

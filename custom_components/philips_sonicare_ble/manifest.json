@@ -1,0 +1,19 @@
+{
+  "domain": "philips_sonicare_ble",
+  "name": "Philips Sonicare",
+  "after_dependencies": ["esphome"],
+  "bluetooth": [
+    {"service_uuid": "477ea600-a260-11e4-ae37-0002a5d50001"},
+    {"service_uuid": "e50ba3c0-af04-4564-92ad-fef019489de6", "local_name": "Philips Sonicare"}
+  ],
+  "codeowners": ["@mtheli"],
+  "config_flow": true,
+  "dependencies": ["bluetooth"],
+  "documentation": "https://github.com/mtheli/philips_sonicare_ble",
+  "integration_type": "device",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/mtheli/philips_sonicare_ble/issues",
+  "requirements": [],
+  "version": "0.18.1",
+  "zeroconf": [{"type": "_esphomelib._tcp.local."}]
+}

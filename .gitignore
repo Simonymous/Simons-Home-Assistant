@@ -1,0 +1,42 @@
+# --- Geheimnisse & Zugangsdaten ---
+# .storage enthaelt Klartext-Passwoerter/Tokens fuer alle Integrationen
+# (core.config_entries), Login-Sessions (auth) und HomeKit-Pairing-Keys.
+# NIEMALS committen, auch nicht in ein privates Repo.
+.storage/
+secrets.yaml
+*.token
+*.key
+*.pem
+
+# --- Datenbanken & Laufzeit-State ---
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+.ha_run.lock
+home-assistant.log
+home-assistant.log.*
+
+# --- Caches, generierte & herunterladbare Inhalte ---
+.cache/
+.cloud/
+deps/
+tts/
+image/
+www/community/
+custom_components/**/__pycache__/
+custom_components/**/*.pyc
+**/__pycache__/
+*.pyc
+
+# --- Backups & Uploads ---
+*.tar
+*.tar.gz
+backups/
+
+# --- Editor / OS / Tooling ---
+.vscode/
+.claude/
+.DS_Store

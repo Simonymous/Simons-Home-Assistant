@@ -1,0 +1,504 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "BYD に接続します",
+        "description": "BYD アカウントを設定します。",
+        "data": {
+          "username": "ユーザー名",
+          "password": "パスワード",
+          "control_pin": "コントロール PIN (オプション、6 桁)",
+          "country_code": "国",
+          "poll_interval": "ポーリング間隔 (秒)",
+          "gps_poll_interval": "GPS ポーリング間隔 (秒)",
+          "smart_gps_polling": "スマート GPS ポーリング",
+          "gps_active_interval": "GPS アクティブな間隔 (秒)",
+          "gps_inactive_interval": "GPS 非アクティブな間隔 (秒)",
+          "climate_duration": "エアコン作動時間 (time_span)",
+          "debug_dumps": "APIレスポンスのデバッグダンプ"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "接続に失敗しました",
+      "invalid_control_pin": "無効なコントロール PIN またはクラウド コントロールが一時的にロックされています",
+      "invalid_auth": "無効な認証",
+      "unknown": "予期しないエラー"
+    },
+    "abort": {
+      "already_configured": "このアカウントはすでに設定されています",
+      "wrong_account": "アカウントが再認証中のアカウントと一致しません",
+      "reauth_successful": "再認証に成功しました"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ポーリング設定",
+        "data": {
+          "poll_interval": "ポーリング間隔 (秒)",
+          "gps_poll_interval": "GPS ポーリング間隔 (秒)",
+          "smart_gps_polling": "スマート GPS ポーリング",
+          "gps_active_interval": "GPS アクティブな間隔 (秒)",
+          "gps_inactive_interval": "GPS 非アクティブな間隔 (秒)",
+          "climate_duration": "エアコン作動時間 (time_span)",
+          "debug_dumps": "APIレスポンスのデバッグダンプ"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "elec_percent": {
+        "name": "バッテリー残量"
+      },
+      "endurance_mileage": {
+        "name": "範囲"
+      },
+      "total_mileage": {
+        "name": "オドメーター"
+      },
+      "speed": {
+        "name": "スピード"
+      },
+      "temp_in_car": {
+        "name": "車内温度"
+      },
+      "left_front_tire_pressure": {
+        "name": "左前タイヤの空気圧"
+      },
+      "right_front_tire_pressure": {
+        "name": "右前タイヤの空気圧"
+      },
+      "left_rear_tire_pressure": {
+        "name": "左後輪タイヤの空気圧"
+      },
+      "right_rear_tire_pressure": {
+        "name": "右後輪タイヤの空気圧"
+      },
+      "temp_out_car": {
+        "name": "外気温"
+      },
+      "pm": {
+        "name": "PM2.5"
+      },
+      "power_battery": {
+        "name": "電源バッテリー残量"
+      },
+      "ev_endurance": {
+        "name": "EV 航続距離"
+      },
+      "endurance_mileage_v2": {
+        "name": "範囲 V2"
+      },
+      "total_mileage_v2": {
+        "name": "オドメーター V2"
+      },
+      "charging_state": {
+        "name": "充電状態"
+      },
+      "charge_state": {
+        "name": "充電状態"
+      },
+      "wait_status": {
+        "name": "充電待ち状態"
+      },
+      "full_hour": {
+        "name": "満充電までの時間"
+      },
+      "full_minute": {
+        "name": "満充電までの分数"
+      },
+      "booking_charge_state": {
+        "name": "計画充電"
+      },
+      "booking_charging_hour": {
+        "name": "充電予定時間"
+      },
+      "booking_charging_minute": {
+        "name": "予定充電分"
+      },
+      "total_power": {
+        "name": "総電力"
+      },
+      "nearest_energy_consumption": {
+        "name": "最近のエネルギー消費量"
+      },
+      "recent_50km_energy": {
+        "name": "最近の50kmのエネルギー"
+      },
+      "oil_endurance": {
+        "name": "燃料範囲"
+      },
+      "oil_percent": {
+        "name": "燃料レベル"
+      },
+      "total_oil": {
+        "name": "総燃料消費量"
+      },
+      "engine_status": {
+        "name": "エンジンの状態"
+      },
+      "epb": {
+        "name": "電子パーキングブレーキ"
+      },
+      "ect_value": {
+        "name": "冷却水温度"
+      },
+      "refrigerator_state": {
+        "name": "冷蔵庫"
+      },
+      "refrigerator_door_state": {
+        "name": "冷蔵庫のドア"
+      },
+      "last_updated": {
+        "name": "最終更新"
+      },
+      "gps_last_updated": {
+        "name": "GPS 最終更新"
+      },
+      "remaining_hours": {
+        "name": "残り充電時間"
+      },
+      "remaining_minutes": {
+        "name": "残り充電分数"
+      },
+      "battery_power": {
+        "name": "Battery power"
+      },
+      "total_energy": {
+        "name": "Total energy"
+      },
+      "nearest_energy_consumption_unit": {
+        "name": "Nearest energy consumption unit"
+      },
+      "endurance_mileage_v2_unit": {
+        "name": "Endurance mileage V2 unit"
+      },
+      "total_mileage_v2_unit": {
+        "name": "Total mileage V2 unit"
+      },
+      "rate": {
+        "name": "Rate"
+      },
+      "energy_consumption": {
+        "name": "Energy consumption"
+      },
+      "total_consumption": {
+        "name": "Total consumption"
+      },
+      "total_consumption_en": {
+        "name": "Total consumption EN"
+      },
+      "ok_light": {
+        "name": "OK light"
+      },
+      "power_battery_connection": {
+        "name": "Power battery connection"
+      },
+      "ins": {
+        "name": "INS"
+      },
+      "repair_mode_switch": {
+        "name": "Repair mode switch"
+      },
+      "vehicle_time_zone": {
+        "name": "Vehicle time zone"
+      }
+    },
+    "binary_sensor": {
+      "is_online": {
+        "name": "オンライン"
+      },
+      "is_charging": {
+        "name": "充電"
+      },
+      "is_any_door_open": {
+        "name": "ドア"
+      },
+      "is_any_window_open": {
+        "name": "窓"
+      },
+      "is_locked": {
+        "name": "ロックされています"
+      },
+      "sentry_status": {
+        "name": "セントリーモード"
+      },
+      "left_front_door": {
+        "name": "左前のドア"
+      },
+      "right_front_door": {
+        "name": "正面右ドア"
+      },
+      "left_rear_door": {
+        "name": "左後部ドア"
+      },
+      "right_rear_door": {
+        "name": "右後部ドア"
+      },
+      "trunk_lid": {
+        "name": "トランク"
+      },
+      "sliding_door": {
+        "name": "引き戸"
+      },
+      "forehold": {
+        "name": "フランク"
+      },
+      "left_front_window": {
+        "name": "左前の窓"
+      },
+      "right_front_window": {
+        "name": "右前の窓"
+      },
+      "left_rear_window": {
+        "name": "左後部の窓"
+      },
+      "right_rear_window": {
+        "name": "右後部の窓"
+      },
+      "skylight": {
+        "name": "天窓"
+      },
+      "battery_heat_state": {
+        "name": "バッテリーの加熱"
+      },
+      "charge_heat_state": {
+        "name": "充電ヒーティング"
+      },
+      "vehicle_state": {
+        "name": "車両オン"
+      },
+      "abs_warning": {
+        "name": "ABS 警告"
+      },
+      "svs": {
+        "name": "要点検"
+      },
+      "srs": {
+        "name": "エアバッグ警告"
+      },
+      "eps": {
+        "name": "電動パワーステアリング"
+      },
+      "esp": {
+        "name": "横滑り防止装置"
+      },
+      "pwr": {
+        "name": "電力警告"
+      },
+      "power_system": {
+        "name": "電源システム"
+      },
+      "ect": {
+        "name": "冷却水温度警告"
+      },
+      "tirepressure_system": {
+        "name": "TPMS 状態"
+      },
+      "rapid_tire_leak": {
+        "name": "急速なタイヤ漏れ"
+      },
+      "left_front_tire_status": {
+        "name": "左前タイヤの状態"
+      },
+      "right_front_tire_status": {
+        "name": "右前タイヤの状態"
+      },
+      "left_rear_tire_status": {
+        "name": "左後タイヤの状態"
+      },
+      "right_rear_tire_status": {
+        "name": "右後輪タイヤの状態"
+      },
+      "upgrade_status": {
+        "name": "OTA アップグレード ステータス"
+      },
+      "oil_pressure_system": {
+        "name": "Oil pressure system"
+      },
+      "braking_system": {
+        "name": "Braking system"
+      },
+      "charging_system": {
+        "name": "Charging system"
+      },
+      "steering_system": {
+        "name": "Steering system"
+      },
+      "less_one_min": {
+        "name": "Less one min"
+      }
+    },
+    "button": {
+      "flash_lights": {
+        "name": "ライトフラッシュ"
+      },
+      "find_car": {
+        "name": "車を探す"
+      },
+      "close_windows": {
+        "name": "窓を閉じる"
+      },
+      "force_poll": {
+        "name": "強制ポーリング"
+      }
+    },
+    "select": {
+      "driver_seat_heat": {
+        "name": "運転席シートヒーター",
+        "state": {
+          "off": "オフ",
+          "low": "低",
+          "high": "高"
+        }
+      },
+      "driver_seat_ventilation": {
+        "name": "運転席ベンチレーション",
+        "state": {
+          "off": "オフ",
+          "low": "低",
+          "high": "高"
+        }
+      },
+      "passenger_seat_heat": {
+        "name": "助手席シートヒーター",
+        "state": {
+          "off": "オフ",
+          "low": "低",
+          "high": "高"
+        }
+      },
+      "passenger_seat_ventilation": {
+        "name": "助手席シートベンチレーション",
+        "state": {
+          "off": "オフ",
+          "low": "低",
+          "high": "高"
+        }
+      },
+      "rear_left_seat_heat": {
+        "name": "左後席シートヒーター",
+        "state": {
+          "off": "オフ",
+          "low": "低",
+          "high": "高"
+        }
+      },
+      "rear_left_seat_ventilation": {
+        "name": "後部左席ベンチレーション",
+        "state": {
+          "off": "オフ",
+          "low": "低",
+          "high": "高"
+        }
+      },
+      "rear_right_seat_heat": {
+        "name": "右後席シートヒーター",
+        "state": {
+          "off": "オフ",
+          "low": "低",
+          "high": "高"
+        }
+      },
+      "rear_right_seat_ventilation": {
+        "name": "後部右席ベンチレーション",
+        "state": {
+          "off": "オフ",
+          "low": "低",
+          "high": "高"
+        }
+      }
+    },
+    "switch": {
+      "battery_heat": {
+        "name": "バッテリーの熱"
+      },
+      "car_on": {
+        "name": "エアコン オン"
+      },
+      "steering_wheel_heat": {
+        "name": "ステアリングホイールヒーター"
+      },
+      "disable_polling": {
+        "name": "ポーリング無効化"
+      }
+    },
+    "climate": {
+      "climate": {
+        "name": "気候",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "max_heat": "最大暖房",
+              "max_cool": "最大冷房"
+            }
+          }
+        }
+      }
+    },
+    "lock": {
+      "lock": {
+        "name": "ロック"
+      }
+    },
+    "device_tracker": {
+      "location": {
+        "name": "位置"
+      }
+    }
+  },
+  "services": {
+    "fetch_realtime": {
+      "name": "Fetch telemetry data",
+      "description": "Force-fetch the latest vehicle telemetry from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_gps": {
+      "name": "Fetch GPS data",
+      "description": "Force-fetch the latest GPS location from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_hvac": {
+      "name": "Fetch HVAC status",
+      "description": "Force-fetch the latest HVAC / climate status from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_charging": {
+      "name": "Fetch charging status",
+      "description": "Force-fetch the latest charging status from the BYD cloud and log the raw response.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_energy": {
+      "name": "Fetch energy consumption",
+      "description": "Force-fetch the latest energy consumption data from the BYD cloud and log the raw response.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    }
+  }
+}

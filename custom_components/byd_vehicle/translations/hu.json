@@ -1,0 +1,504 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Csatlakozás a BYD-hoz",
+        "description": "BYD fiók beállítása.",
+        "data": {
+          "username": "Felhasználónév",
+          "password": "Jelszó",
+          "control_pin": "Vezérlés PIN kódja (nem kötelező, 6 számjegyű)",
+          "country_code": "Ország",
+          "poll_interval": "Lekérdezési időköz (mp)",
+          "gps_poll_interval": "GPS lekérdezési időköz (mp)",
+          "smart_gps_polling": "Intelligens GPS lekérdezés",
+          "gps_active_interval": "GPS aktív időköz (mp)",
+          "gps_inactive_interval": "GPS inaktív időköz (mp)",
+          "climate_duration": "Klíma időtartam",
+          "debug_dumps": "API válaszok mentése hibakereséshez"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Nem sikerült csatlakozni",
+      "invalid_control_pin": "Érvénytelen vezérlő PIN vagy a felhőalapú vezérlés ideiglenesen zárolva van",
+      "invalid_auth": "Érvénytelen hitelesítés",
+      "unknown": "Váratlan hiba"
+    },
+    "abort": {
+      "already_configured": "Ez a fiók már beállításra került",
+      "wrong_account": "A fiók nem egyezik az újrahitelesítés alatt állóval",
+      "reauth_successful": "Az újrahitelesítés sikeres volt"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lekérdezés frissítése",
+        "data": {
+          "poll_interval": "Lekérdezési időköz (mp)",
+          "gps_poll_interval": "GPS lekérdezési időköz (mp)",
+          "smart_gps_polling": "Intelligens GPS lekérdezés",
+          "gps_active_interval": "GPS aktív időköz (mp)",
+          "gps_inactive_interval": "GPS inaktív időköz (mp)",
+          "climate_duration": "Klíma időtartam",
+          "debug_dumps": "API válaszok mentése hibakereséshez"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "elec_percent": {
+        "name": "Akkumulátor töltöttségi szint"
+      },
+      "endurance_mileage": {
+        "name": "Hatótávolság"
+      },
+      "total_mileage": {
+        "name": "Megtett távolság"
+      },
+      "speed": {
+        "name": "Sebesség"
+      },
+      "temp_in_car": {
+        "name": "Utastér hőmérséklet"
+      },
+      "left_front_tire_pressure": {
+        "name": "Bal első guminyomás"
+      },
+      "right_front_tire_pressure": {
+        "name": "Jobb első guminyomás"
+      },
+      "left_rear_tire_pressure": {
+        "name": "Bal hátsó guminyomás"
+      },
+      "right_rear_tire_pressure": {
+        "name": "Jobb hátsó guminyomás"
+      },
+      "temp_out_car": {
+        "name": "Külső hőmérséklet"
+      },
+      "pm": {
+        "name": "PM2.5"
+      },
+      "power_battery": {
+        "name": "Akkumulátor töltöttségi szint"
+      },
+      "ev_endurance": {
+        "name": "EV hatótáv"
+      },
+      "endurance_mileage_v2": {
+        "name": "Tartomány V2"
+      },
+      "total_mileage_v2": {
+        "name": "Kilométerszámláló V2"
+      },
+      "charging_state": {
+        "name": "Töltés állapot"
+      },
+      "charge_state": {
+        "name": "Töltő állapot"
+      },
+      "wait_status": {
+        "name": "Töltési várakozás állapot"
+      },
+      "full_hour": {
+        "name": "Órák a teljes töltésig"
+      },
+      "full_minute": {
+        "name": "Percek a teljes töltésig"
+      },
+      "booking_charge_state": {
+        "name": "Ütemezett töltés"
+      },
+      "booking_charging_hour": {
+        "name": "Ütemezett töltési óra"
+      },
+      "booking_charging_minute": {
+        "name": "Ütemezett töltési perc"
+      },
+      "total_power": {
+        "name": "Teljes teljesítmény"
+      },
+      "nearest_energy_consumption": {
+        "name": "Legutóbbi energiafogyasztás"
+      },
+      "recent_50km_energy": {
+        "name": "Legutóbbi 50 km-es energia"
+      },
+      "oil_endurance": {
+        "name": "Motorolaj élettartam"
+      },
+      "oil_percent": {
+        "name": "Motorolaj szint"
+      },
+      "total_oil": {
+        "name": "Teljes üzemanyag-fogyasztás"
+      },
+      "engine_status": {
+        "name": "Motor állapota"
+      },
+      "epb": {
+        "name": "Elektronikus rögzítőfék"
+      },
+      "ect_value": {
+        "name": "Hűtőfolyadék hőmérséklet"
+      },
+      "refrigerator_state": {
+        "name": "Hűtőszekrény"
+      },
+      "refrigerator_door_state": {
+        "name": "Hűtőszekrény ajtó"
+      },
+      "last_updated": {
+        "name": "Utolsó frissítés"
+      },
+      "gps_last_updated": {
+        "name": "GPS utolsó frissítés"
+      },
+      "remaining_hours": {
+        "name": "Töltésből hátralévő órák"
+      },
+      "remaining_minutes": {
+        "name": "Töltésből hátralévő percek"
+      },
+      "battery_power": {
+        "name": "Battery power"
+      },
+      "total_energy": {
+        "name": "Total energy"
+      },
+      "nearest_energy_consumption_unit": {
+        "name": "Nearest energy consumption unit"
+      },
+      "endurance_mileage_v2_unit": {
+        "name": "Endurance mileage V2 unit"
+      },
+      "total_mileage_v2_unit": {
+        "name": "Total mileage V2 unit"
+      },
+      "rate": {
+        "name": "Rate"
+      },
+      "energy_consumption": {
+        "name": "Energy consumption"
+      },
+      "total_consumption": {
+        "name": "Total consumption"
+      },
+      "total_consumption_en": {
+        "name": "Total consumption EN"
+      },
+      "ok_light": {
+        "name": "OK light"
+      },
+      "power_battery_connection": {
+        "name": "Power battery connection"
+      },
+      "ins": {
+        "name": "INS"
+      },
+      "repair_mode_switch": {
+        "name": "Repair mode switch"
+      },
+      "vehicle_time_zone": {
+        "name": "Vehicle time zone"
+      }
+    },
+    "binary_sensor": {
+      "is_online": {
+        "name": "Elérhető"
+      },
+      "is_charging": {
+        "name": "Töltés folyamatban"
+      },
+      "is_any_door_open": {
+        "name": "Ajtók"
+      },
+      "is_any_window_open": {
+        "name": "Ablakok"
+      },
+      "is_locked": {
+        "name": "Zárva"
+      },
+      "sentry_status": {
+        "name": "Őrszem mód"
+      },
+      "left_front_door": {
+        "name": "Bal első ajtó"
+      },
+      "right_front_door": {
+        "name": "Jobb első ajtó"
+      },
+      "left_rear_door": {
+        "name": "Bal hátsó ajtó"
+      },
+      "right_rear_door": {
+        "name": "Jobb hátsó ajtó"
+      },
+      "trunk_lid": {
+        "name": "Csomagtartó"
+      },
+      "sliding_door": {
+        "name": "Tolóajtó"
+      },
+      "forehold": {
+        "name": "Első csomagtartó"
+      },
+      "left_front_window": {
+        "name": "Bal első ablak"
+      },
+      "right_front_window": {
+        "name": "Jobb első ablak"
+      },
+      "left_rear_window": {
+        "name": "Bal hátsó ablak"
+      },
+      "right_rear_window": {
+        "name": "Jobb hátsó ablak"
+      },
+      "skylight": {
+        "name": "Tetőablak"
+      },
+      "battery_heat_state": {
+        "name": "Akkumulátor fűtés"
+      },
+      "charge_heat_state": {
+        "name": "Töltő fűtés"
+      },
+      "vehicle_state": {
+        "name": "Jármű üzemben"
+      },
+      "abs_warning": {
+        "name": "ABS figyelmeztetés"
+      },
+      "svs": {
+        "name": "Hamarosan szerviz szükséges"
+      },
+      "srs": {
+        "name": "Légzsák figyelmeztetés"
+      },
+      "eps": {
+        "name": "Elektromos szervokormány"
+      },
+      "esp": {
+        "name": "Elektronikus stabilitás"
+      },
+      "pwr": {
+        "name": "Tápfeszültség figyelmeztetés"
+      },
+      "power_system": {
+        "name": "Energiaellátó rendszer"
+      },
+      "ect": {
+        "name": "Hűtőfolyadék-hőmérséklet figyelmeztetés"
+      },
+      "tirepressure_system": {
+        "name": "TPMS állapot"
+      },
+      "rapid_tire_leak": {
+        "name": "Gyors gumiszivárgás"
+      },
+      "left_front_tire_status": {
+        "name": "Bal első gumi állapot"
+      },
+      "right_front_tire_status": {
+        "name": "Jobb első gumi állapot"
+      },
+      "left_rear_tire_status": {
+        "name": "Bal hátsó gumi állapot"
+      },
+      "right_rear_tire_status": {
+        "name": "Jobb hátsó gumi állapot"
+      },
+      "upgrade_status": {
+        "name": "OTA frissítési állapot"
+      },
+      "oil_pressure_system": {
+        "name": "Oil pressure system"
+      },
+      "braking_system": {
+        "name": "Braking system"
+      },
+      "charging_system": {
+        "name": "Charging system"
+      },
+      "steering_system": {
+        "name": "Steering system"
+      },
+      "less_one_min": {
+        "name": "Less one min"
+      }
+    },
+    "button": {
+      "flash_lights": {
+        "name": "Villantás"
+      },
+      "find_car": {
+        "name": "Autó keresése"
+      },
+      "close_windows": {
+        "name": "Ablakok bezására"
+      },
+      "force_poll": {
+        "name": "Kényszerített lekérdezés"
+      }
+    },
+    "select": {
+      "driver_seat_heat": {
+        "name": "Vezetőülés fűtés",
+        "state": {
+          "off": "Ki",
+          "low": "Alacsony",
+          "high": "Magas"
+        }
+      },
+      "driver_seat_ventilation": {
+        "name": "Vezetőülés szellőzés",
+        "state": {
+          "off": "Ki",
+          "low": "Alacsony",
+          "high": "Magas"
+        }
+      },
+      "passenger_seat_heat": {
+        "name": "Utasülés fűtés",
+        "state": {
+          "off": "Ki",
+          "low": "Alacsony",
+          "high": "Magas"
+        }
+      },
+      "passenger_seat_ventilation": {
+        "name": "Utasülés szellőzés",
+        "state": {
+          "off": "Ki",
+          "low": "Alacsony",
+          "high": "Magas"
+        }
+      },
+      "rear_left_seat_heat": {
+        "name": "Bal hátsó ülésfűtés",
+        "state": {
+          "off": "Ki",
+          "low": "Alacsony",
+          "high": "Magas"
+        }
+      },
+      "rear_left_seat_ventilation": {
+        "name": "Bal hátsó ülésszellőzés",
+        "state": {
+          "off": "Ki",
+          "low": "Alacsony",
+          "high": "Magas"
+        }
+      },
+      "rear_right_seat_heat": {
+        "name": "Jobb hátsó ülésfűtés",
+        "state": {
+          "off": "Ki",
+          "low": "Alacsony",
+          "high": "Magas"
+        }
+      },
+      "rear_right_seat_ventilation": {
+        "name": "Jobb hátsó ülésszellőzés",
+        "state": {
+          "off": "Ki",
+          "low": "Alacsony",
+          "high": "Magas"
+        }
+      }
+    },
+    "switch": {
+      "battery_heat": {
+        "name": "Akkumulátor előfűtése"
+      },
+      "car_on": {
+        "name": "Autó indítása"
+      },
+      "steering_wheel_heat": {
+        "name": "Kormányfűtés"
+      },
+      "disable_polling": {
+        "name": "Lekérdezés letiltása"
+      }
+    },
+    "climate": {
+      "climate": {
+        "name": "Klíma",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "max_heat": "Max. fűtés",
+              "max_cool": "Max. hűtés"
+            }
+          }
+        }
+      }
+    },
+    "lock": {
+      "lock": {
+        "name": "Zárolás"
+      }
+    },
+    "device_tracker": {
+      "location": {
+        "name": "Lokáció"
+      }
+    }
+  },
+  "services": {
+    "fetch_realtime": {
+      "name": "Fetch telemetry data",
+      "description": "Force-fetch the latest vehicle telemetry from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_gps": {
+      "name": "Fetch GPS data",
+      "description": "Force-fetch the latest GPS location from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_hvac": {
+      "name": "Fetch HVAC status",
+      "description": "Force-fetch the latest HVAC / climate status from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_charging": {
+      "name": "Fetch charging status",
+      "description": "Force-fetch the latest charging status from the BYD cloud and log the raw response.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_energy": {
+      "name": "Fetch energy consumption",
+      "description": "Force-fetch the latest energy consumption data from the BYD cloud and log the raw response.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    }
+  }
+}

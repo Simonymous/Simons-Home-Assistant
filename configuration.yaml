@@ -1,0 +1,101 @@
+
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+homeassistant:
+  media_dirs:
+    local: /media
+input_datetime:
+  letzter_synology_download:
+    name: Letzter Synology Download
+    has_date: true
+    has_time: true
+
+template:
+  - sensor:
+      - name: "Nuki Keypad Batterie"
+        unit_of_measurement: "%"
+        device_class: battery
+        state: >
+          {{ state_attr('lock.smart_lock_pro', 'keypad_battery_critical') }}:
+
+      # Liest das naechste Abholdatum direkt aus den Attributen der
+      # waste_collection_schedule UI-Sensoren (deren "state" ist nur ein
+      # Anzeigetext wie "on Mi, 15.07.2026", kein Tage-Zaehler) und rechnet
+      # daraus die Tage bis zur Abholung aus.
+      - name: "Restabfall Tage bis Abholung"
+        unique_id: restabfall_tage_bis_abholung
+        unit_of_measurement: "d"
+        state: >-
+          {% set meta_keys = ['icon', 'friendly_name', 'attribution', 'device_class', 'unit_of_measurement', 'state_class'] %}
+          {% set st = states['sensor.waste_collection_schedule_restabfalltonne'] %}
+          {% set dates = (st.attributes.keys() | reject('in', meta_keys) | list | sort) if st else [] %}
+          {{ (strptime(dates[0], '%Y-%m-%d').date() - now().date()).days if dates else 99 }}
+
+      - name: "Biotonne Tage bis Abholung"
+        unique_id: biotonne_tage_bis_abholung
+        unit_of_measurement: "d"
+        state: >-
+          {% set meta_keys = ['icon', 'friendly_name', 'attribution', 'device_class', 'unit_of_measurement', 'state_class'] %}
+          {% set st = states['sensor.waste_collection_schedule_biotonne'] %}
+          {% set dates = (st.attributes.keys() | reject('in', meta_keys) | list | sort) if st else [] %}
+          {{ (strptime(dates[0], '%Y-%m-%d').date() - now().date()).days if dates else 99 }}
+
+      - name: "Gelbe Tonne Tage bis Abholung"
+        unique_id: gelbe_tonne_tage_bis_abholung
+        unit_of_measurement: "d"
+        state: >-
+          {% set meta_keys = ['icon', 'friendly_name', 'attribution', 'device_class', 'unit_of_measurement', 'state_class'] %}
+          {% set st = states['sensor.waste_collection_schedule_gelbe_tonne'] %}
+          {% set dates = (st.attributes.keys() | reject('in', meta_keys) | list | sort) if st else [] %}
+          {{ (strptime(dates[0], '%Y-%m-%d').date() - now().date()).days if dates else 99 }}
+
+      - name: "Blaue Tonne Tage bis Abholung"
+        unique_id: blaue_tonne_tage_bis_abholung
+        unit_of_measurement: "d"
+        state: >-
+          {% set meta_keys = ['icon', 'friendly_name', 'attribution', 'device_class', 'unit_of_measurement', 'state_class'] %}
+          {% set st = states['sensor.waste_collection_schedule_blaue_tonne'] %}
+          {% set dates = (st.attributes.keys() | reject('in', meta_keys) | list | sort) if st else [] %}
+          {{ (strptime(dates[0], '%Y-%m-%d').date() - now().date()).days if dates else 99 }}
+  - lock:
+      - name: "Haustuer Intercom"
+        state: "locked" # Zeigt in Apple Home standardmäßig "Zugeschlossen" an
+        lock:
+          service: button.press
+          target:
+            entity_id: button.vordereingang_tur_offnen
+        unlock:
+          service: button.press
+          target:
+            entity_id: button.vordereingang_tur_offnen
+  - binary_sensor:
+      - name: "Gelbe Tonne rausstellen"
+        unique_id: gelbe_tonne_rausstellen
+        state: "{{ states('sensor.gelbe_tonne_tage_bis_abholung') | int(99) <= 1 }}"
+        device_class: problem
+
+      - name: "Blaue Tonne rausstellen"
+        unique_id: blaue_tonne_rausstellen
+        state: "{{ states('sensor.blaue_tonne_tage_bis_abholung') | int(99) <= 1 }}"
+        device_class: problem
+
+      - name: "Schwarze Tonne rausstellen"
+        unique_id: schwarze_tonne_rausstellen
+        state: "{{ states('sensor.restabfall_tage_bis_abholung') | int(99) <= 1 }}"
+        device_class: problem
+
+      - name: "Synology Download aktiv"
+        unique_id: synology_download_aktiv
+        icon: mdi:download-network
+        device_class: running
+        delay_off:
+          minutes: 2
+        state: "{{ states('sensor.simon_synology_download_durchsatz') | float(0) > 50 }}"

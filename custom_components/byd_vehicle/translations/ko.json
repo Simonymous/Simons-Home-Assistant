@@ -1,0 +1,504 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "BYD에 연결",
+        "description": "BYD 계정을 설정하세요.",
+        "data": {
+          "username": "사용자 이름",
+          "password": "비밀번호",
+          "control_pin": "제어 PIN(선택 사항, 6자리)",
+          "country_code": "국가",
+          "poll_interval": "폴링 간격(초)",
+          "gps_poll_interval": "GPS 폴링 간격(초)",
+          "smart_gps_polling": "스마트 GPS 폴링",
+          "gps_active_interval": "GPS 활성 간격(초)",
+          "gps_inactive_interval": "GPS 비활성 간격(초)",
+          "climate_duration": "에어컨 작동 시간 (time_span)",
+          "debug_dumps": "API 응답 디버그 덤프"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "연결하지 못했습니다.",
+      "invalid_control_pin": "잘못된 컨트롤 PIN 또는 클라우드 컨트롤이 일시적으로 잠겨 있습니다.",
+      "invalid_auth": "잘못된 인증",
+      "unknown": "예상치 못한 오류"
+    },
+    "abort": {
+      "already_configured": "이 계정은 이미 구성되어 있습니다.",
+      "wrong_account": "재인증하려는 계정과 일치하지 않습니다.",
+      "reauth_successful": "재인증에 성공했습니다"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "폴링 업데이트",
+        "data": {
+          "poll_interval": "폴링 간격(초)",
+          "gps_poll_interval": "GPS 폴링 간격(초)",
+          "smart_gps_polling": "스마트 GPS 폴링",
+          "gps_active_interval": "GPS 활성 간격(초)",
+          "gps_inactive_interval": "GPS 비활성 간격(초)",
+          "climate_duration": "에어컨 작동 시간 (time_span)",
+          "debug_dumps": "API 응답 디버그 덤프"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "elec_percent": {
+        "name": "배터리 잔량"
+      },
+      "endurance_mileage": {
+        "name": "범위"
+      },
+      "total_mileage": {
+        "name": "주행거리계"
+      },
+      "speed": {
+        "name": "속도"
+      },
+      "temp_in_car": {
+        "name": "실내 온도"
+      },
+      "left_front_tire_pressure": {
+        "name": "앞 좌측 타이어 공기압"
+      },
+      "right_front_tire_pressure": {
+        "name": "앞 우측 타이어 공기압"
+      },
+      "left_rear_tire_pressure": {
+        "name": "뒤 좌측 타이어 공기압"
+      },
+      "right_rear_tire_pressure": {
+        "name": "뒤 우측 타이어 공기압"
+      },
+      "temp_out_car": {
+        "name": "외부 온도"
+      },
+      "pm": {
+        "name": "PM2.5"
+      },
+      "power_battery": {
+        "name": "전원 배터리 잔량"
+      },
+      "ev_endurance": {
+        "name": "EV 주행거리"
+      },
+      "endurance_mileage_v2": {
+        "name": "범위 V2"
+      },
+      "total_mileage_v2": {
+        "name": "주행거리계 V2"
+      },
+      "charging_state": {
+        "name": "충전 상태"
+      },
+      "charge_state": {
+        "name": "충전 상태"
+      },
+      "wait_status": {
+        "name": "충전 대기 상태"
+      },
+      "full_hour": {
+        "name": "완충까지 시간"
+      },
+      "full_minute": {
+        "name": "가득 채울 때까지 분"
+      },
+      "booking_charge_state": {
+        "name": "예정된 충전"
+      },
+      "booking_charging_hour": {
+        "name": "예정된 충전 시간"
+      },
+      "booking_charging_minute": {
+        "name": "예정된 충전 시간(분)"
+      },
+      "total_power": {
+        "name": "총 전력"
+      },
+      "nearest_energy_consumption": {
+        "name": "최근 에너지 소비"
+      },
+      "recent_50km_energy": {
+        "name": "최근 50km 에너지"
+      },
+      "oil_endurance": {
+        "name": "연료 범위"
+      },
+      "oil_percent": {
+        "name": "연료 수준"
+      },
+      "total_oil": {
+        "name": "총 연료 소비량"
+      },
+      "engine_status": {
+        "name": "엔진 상태"
+      },
+      "epb": {
+        "name": "전자식 주차 브레이크"
+      },
+      "ect_value": {
+        "name": "냉각수 온도"
+      },
+      "refrigerator_state": {
+        "name": "냉장고"
+      },
+      "refrigerator_door_state": {
+        "name": "냉장고 문"
+      },
+      "last_updated": {
+        "name": "마지막 업데이트"
+      },
+      "gps_last_updated": {
+        "name": "GPS 마지막 업데이트"
+      },
+      "remaining_hours": {
+        "name": "충전 남은 시간"
+      },
+      "remaining_minutes": {
+        "name": "충전 남은 시간(분)"
+      },
+      "battery_power": {
+        "name": "Battery power"
+      },
+      "total_energy": {
+        "name": "Total energy"
+      },
+      "nearest_energy_consumption_unit": {
+        "name": "Nearest energy consumption unit"
+      },
+      "endurance_mileage_v2_unit": {
+        "name": "Endurance mileage V2 unit"
+      },
+      "total_mileage_v2_unit": {
+        "name": "Total mileage V2 unit"
+      },
+      "rate": {
+        "name": "Rate"
+      },
+      "energy_consumption": {
+        "name": "Energy consumption"
+      },
+      "total_consumption": {
+        "name": "Total consumption"
+      },
+      "total_consumption_en": {
+        "name": "Total consumption EN"
+      },
+      "ok_light": {
+        "name": "OK light"
+      },
+      "power_battery_connection": {
+        "name": "Power battery connection"
+      },
+      "ins": {
+        "name": "INS"
+      },
+      "repair_mode_switch": {
+        "name": "Repair mode switch"
+      },
+      "vehicle_time_zone": {
+        "name": "Vehicle time zone"
+      }
+    },
+    "binary_sensor": {
+      "is_online": {
+        "name": "온라인"
+      },
+      "is_charging": {
+        "name": "충전 중"
+      },
+      "is_any_door_open": {
+        "name": "문"
+      },
+      "is_any_window_open": {
+        "name": "창문"
+      },
+      "is_locked": {
+        "name": "잠김"
+      },
+      "sentry_status": {
+        "name": "감시 모드"
+      },
+      "left_front_door": {
+        "name": "전면 왼쪽 문"
+      },
+      "right_front_door": {
+        "name": "전면 오른쪽 문"
+      },
+      "left_rear_door": {
+        "name": "후면 왼쪽 도어"
+      },
+      "right_rear_door": {
+        "name": "후면 오른쪽 도어"
+      },
+      "trunk_lid": {
+        "name": "트렁크"
+      },
+      "sliding_door": {
+        "name": "미닫이문"
+      },
+      "forehold": {
+        "name": "프렁크"
+      },
+      "left_front_window": {
+        "name": "전면 왼쪽 창"
+      },
+      "right_front_window": {
+        "name": "전면 오른쪽 창"
+      },
+      "left_rear_window": {
+        "name": "뒤 좌측 창문"
+      },
+      "right_rear_window": {
+        "name": "뒤 오른쪽 창문"
+      },
+      "skylight": {
+        "name": "채광창"
+      },
+      "battery_heat_state": {
+        "name": "배터리 가열"
+      },
+      "charge_heat_state": {
+        "name": "충전 히팅"
+      },
+      "vehicle_state": {
+        "name": "차량 켜짐"
+      },
+      "abs_warning": {
+        "name": "ABS 경고"
+      },
+      "svs": {
+        "name": "점검 필요"
+      },
+      "srs": {
+        "name": "에어백 경고"
+      },
+      "eps": {
+        "name": "전동식 파워 스티어링"
+      },
+      "esp": {
+        "name": "전자적 안정성"
+      },
+      "pwr": {
+        "name": "전원 경고"
+      },
+      "power_system": {
+        "name": "전력 시스템"
+      },
+      "ect": {
+        "name": "냉각수 온도 경고"
+      },
+      "tirepressure_system": {
+        "name": "TPMS 상태"
+      },
+      "rapid_tire_leak": {
+        "name": "급속한 타이어 누출"
+      },
+      "left_front_tire_status": {
+        "name": "앞 좌측 타이어 상태"
+      },
+      "right_front_tire_status": {
+        "name": "앞 우측 타이어 상태"
+      },
+      "left_rear_tire_status": {
+        "name": "뒤 좌측 타이어 상태"
+      },
+      "right_rear_tire_status": {
+        "name": "뒤 우측 타이어 상태"
+      },
+      "upgrade_status": {
+        "name": "OTA 업그레이드 상태"
+      },
+      "oil_pressure_system": {
+        "name": "Oil pressure system"
+      },
+      "braking_system": {
+        "name": "Braking system"
+      },
+      "charging_system": {
+        "name": "Charging system"
+      },
+      "steering_system": {
+        "name": "Steering system"
+      },
+      "less_one_min": {
+        "name": "Less one min"
+      }
+    },
+    "button": {
+      "flash_lights": {
+        "name": "플래시 라이트"
+      },
+      "find_car": {
+        "name": "자동차 찾기"
+      },
+      "close_windows": {
+        "name": "창 닫기"
+      },
+      "force_poll": {
+        "name": "강제 폴링"
+      }
+    },
+    "select": {
+      "driver_seat_heat": {
+        "name": "운전석 난방",
+        "state": {
+          "off": "끔",
+          "low": "낮음",
+          "high": "높음"
+        }
+      },
+      "driver_seat_ventilation": {
+        "name": "운전석 통풍",
+        "state": {
+          "off": "끔",
+          "low": "낮음",
+          "high": "높음"
+        }
+      },
+      "passenger_seat_heat": {
+        "name": "조수석 난방",
+        "state": {
+          "off": "끔",
+          "low": "낮음",
+          "high": "높음"
+        }
+      },
+      "passenger_seat_ventilation": {
+        "name": "조수석 환기",
+        "state": {
+          "off": "끔",
+          "low": "낮음",
+          "high": "높음"
+        }
+      },
+      "rear_left_seat_heat": {
+        "name": "뒷좌석 난방",
+        "state": {
+          "off": "끔",
+          "low": "낮음",
+          "high": "높음"
+        }
+      },
+      "rear_left_seat_ventilation": {
+        "name": "뒷좌석 통풍",
+        "state": {
+          "off": "끔",
+          "low": "낮음",
+          "high": "높음"
+        }
+      },
+      "rear_right_seat_heat": {
+        "name": "뒷좌석 우측 시트 난방",
+        "state": {
+          "off": "끔",
+          "low": "낮음",
+          "high": "높음"
+        }
+      },
+      "rear_right_seat_ventilation": {
+        "name": "뒷좌석 우측 통풍",
+        "state": {
+          "off": "끔",
+          "low": "낮음",
+          "high": "높음"
+        }
+      }
+    },
+    "switch": {
+      "battery_heat": {
+        "name": "배터리 히팅"
+      },
+      "car_on": {
+        "name": "에어컨 켜짐"
+      },
+      "steering_wheel_heat": {
+        "name": "스티어링 휠 가열"
+      },
+      "disable_polling": {
+        "name": "폴링 비활성화"
+      }
+    },
+    "climate": {
+      "climate": {
+        "name": "기후",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "max_heat": "최대 난방",
+              "max_cool": "최대 냉방"
+            }
+          }
+        }
+      }
+    },
+    "lock": {
+      "lock": {
+        "name": "잠금"
+      }
+    },
+    "device_tracker": {
+      "location": {
+        "name": "위치"
+      }
+    }
+  },
+  "services": {
+    "fetch_realtime": {
+      "name": "Fetch telemetry data",
+      "description": "Force-fetch the latest vehicle telemetry from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_gps": {
+      "name": "Fetch GPS data",
+      "description": "Force-fetch the latest GPS location from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_hvac": {
+      "name": "Fetch HVAC status",
+      "description": "Force-fetch the latest HVAC / climate status from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_charging": {
+      "name": "Fetch charging status",
+      "description": "Force-fetch the latest charging status from the BYD cloud and log the raw response.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_energy": {
+      "name": "Fetch energy consumption",
+      "description": "Force-fetch the latest energy consumption data from the BYD cloud and log the raw response.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    }
+  }
+}

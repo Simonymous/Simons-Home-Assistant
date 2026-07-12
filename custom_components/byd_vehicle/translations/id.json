@@ -1,0 +1,504 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Hubungkan ke BYD",
+        "description": "Siapkan akun BYD Anda.",
+        "data": {
+          "username": "Nama pengguna",
+          "password": "Kata sandi",
+          "control_pin": "Kontrol PIN (opsional, 6 digit)",
+          "country_code": "Negara",
+          "poll_interval": "Interval polling (detik)",
+          "gps_poll_interval": "GPS interval polling (detik)",
+          "smart_gps_polling": "Polling GPS cerdas",
+          "gps_active_interval": "GPS interval aktif (detik)",
+          "gps_inactive_interval": "GPS interval tidak aktif (detik)",
+          "climate_duration": "Durasi iklim (time_span)",
+          "debug_dumps": "Debug dump respons API"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Gagal terhubung",
+      "invalid_control_pin": "PIN kontrol tidak valid atau kontrol cloud dikunci sementara",
+      "invalid_auth": "Otentikasi tidak valid",
+      "unknown": "Kesalahan yang tidak terduga"
+    },
+    "abort": {
+      "already_configured": "Akun ini sudah dikonfigurasi",
+      "wrong_account": "Akun tersebut tidak cocok dengan akun yang diautentikasi ulang",
+      "reauth_successful": "Autentikasi ulang berhasil"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Perbarui polling",
+        "data": {
+          "poll_interval": "Interval polling (detik)",
+          "gps_poll_interval": "GPS interval polling (detik)",
+          "smart_gps_polling": "Polling GPS cerdas",
+          "gps_active_interval": "GPS interval aktif (detik)",
+          "gps_inactive_interval": "GPS interval tidak aktif (detik)",
+          "climate_duration": "Durasi iklim (time_span)",
+          "debug_dumps": "Debug dump respons API"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "elec_percent": {
+        "name": "Tingkat baterai"
+      },
+      "endurance_mileage": {
+        "name": "Jangkauan"
+      },
+      "total_mileage": {
+        "name": "Odometer"
+      },
+      "speed": {
+        "name": "Kecepatan"
+      },
+      "temp_in_car": {
+        "name": "Suhu kabin"
+      },
+      "left_front_tire_pressure": {
+        "name": "Tekanan ban kiri depan"
+      },
+      "right_front_tire_pressure": {
+        "name": "Tekanan ban kanan depan"
+      },
+      "left_rear_tire_pressure": {
+        "name": "Tekanan ban kiri belakang"
+      },
+      "right_rear_tire_pressure": {
+        "name": "Tekanan ban kanan belakang"
+      },
+      "temp_out_car": {
+        "name": "Suhu luar"
+      },
+      "pm": {
+        "name": "PM2.5"
+      },
+      "power_battery": {
+        "name": "Tingkat daya baterai"
+      },
+      "ev_endurance": {
+        "name": "Jangkauan EV"
+      },
+      "endurance_mileage_v2": {
+        "name": "Rentang V2"
+      },
+      "total_mileage_v2": {
+        "name": "Odometer V2"
+      },
+      "charging_state": {
+        "name": "Status pengisian daya"
+      },
+      "charge_state": {
+        "name": "Status pengisian daya"
+      },
+      "wait_status": {
+        "name": "Status tunggu pengisian daya"
+      },
+      "full_hour": {
+        "name": "Jam hingga penuh"
+      },
+      "full_minute": {
+        "name": "Menit hingga penuh"
+      },
+      "booking_charge_state": {
+        "name": "Pengisian terjadwal"
+      },
+      "booking_charging_hour": {
+        "name": "Jam pengisian daya terjadwal"
+      },
+      "booking_charging_minute": {
+        "name": "Menit pengisian terjadwal"
+      },
+      "total_power": {
+        "name": "Daya total"
+      },
+      "nearest_energy_consumption": {
+        "name": "Konsumsi energi terkini"
+      },
+      "recent_50km_energy": {
+        "name": "Energi 50km terbaru"
+      },
+      "oil_endurance": {
+        "name": "Kisaran bahan bakar"
+      },
+      "oil_percent": {
+        "name": "Tingkat bahan bakar"
+      },
+      "total_oil": {
+        "name": "Konsumsi bahan bakar total"
+      },
+      "engine_status": {
+        "name": "Status mesin"
+      },
+      "epb": {
+        "name": "Rem parkir elektronik"
+      },
+      "ect_value": {
+        "name": "Suhu pendingin"
+      },
+      "refrigerator_state": {
+        "name": "Lemari es"
+      },
+      "refrigerator_door_state": {
+        "name": "Pintu kulkas"
+      },
+      "last_updated": {
+        "name": "Terakhir diperbarui"
+      },
+      "gps_last_updated": {
+        "name": "GPS terakhir diperbarui"
+      },
+      "remaining_hours": {
+        "name": "Sisa jam pengisian"
+      },
+      "remaining_minutes": {
+        "name": "Sisa menit pengisian"
+      },
+      "battery_power": {
+        "name": "Battery power"
+      },
+      "total_energy": {
+        "name": "Total energy"
+      },
+      "nearest_energy_consumption_unit": {
+        "name": "Nearest energy consumption unit"
+      },
+      "endurance_mileage_v2_unit": {
+        "name": "Endurance mileage V2 unit"
+      },
+      "total_mileage_v2_unit": {
+        "name": "Total mileage V2 unit"
+      },
+      "rate": {
+        "name": "Rate"
+      },
+      "energy_consumption": {
+        "name": "Energy consumption"
+      },
+      "total_consumption": {
+        "name": "Total consumption"
+      },
+      "total_consumption_en": {
+        "name": "Total consumption EN"
+      },
+      "ok_light": {
+        "name": "OK light"
+      },
+      "power_battery_connection": {
+        "name": "Power battery connection"
+      },
+      "ins": {
+        "name": "INS"
+      },
+      "repair_mode_switch": {
+        "name": "Repair mode switch"
+      },
+      "vehicle_time_zone": {
+        "name": "Vehicle time zone"
+      }
+    },
+    "binary_sensor": {
+      "is_online": {
+        "name": "Online"
+      },
+      "is_charging": {
+        "name": "Mengisi daya"
+      },
+      "is_any_door_open": {
+        "name": "Pintu"
+      },
+      "is_any_window_open": {
+        "name": "Jendela"
+      },
+      "is_locked": {
+        "name": "Terkunci"
+      },
+      "sentry_status": {
+        "name": "Modus penjaga"
+      },
+      "left_front_door": {
+        "name": "Pintu kiri depan"
+      },
+      "right_front_door": {
+        "name": "Pintu kanan depan"
+      },
+      "left_rear_door": {
+        "name": "Pintu kiri belakang"
+      },
+      "right_rear_door": {
+        "name": "Pintu kanan belakang"
+      },
+      "trunk_lid": {
+        "name": "Bagasi"
+      },
+      "sliding_door": {
+        "name": "Pintu geser"
+      },
+      "forehold": {
+        "name": "Bagasi depan"
+      },
+      "left_front_window": {
+        "name": "Jendela kiri depan"
+      },
+      "right_front_window": {
+        "name": "Jendela kanan depan"
+      },
+      "left_rear_window": {
+        "name": "Jendela kiri belakang"
+      },
+      "right_rear_window": {
+        "name": "Jendela kanan belakang"
+      },
+      "skylight": {
+        "name": "Atap kaca"
+      },
+      "battery_heat_state": {
+        "name": "Pemanasan baterai"
+      },
+      "charge_heat_state": {
+        "name": "Pemanasan pengisian"
+      },
+      "vehicle_state": {
+        "name": "Kendaraan menyala"
+      },
+      "abs_warning": {
+        "name": "Peringatan ABS"
+      },
+      "svs": {
+        "name": "Servis diperlukan segera"
+      },
+      "srs": {
+        "name": "Peringatan kantung udara"
+      },
+      "eps": {
+        "name": "Kemudi tenaga listrik"
+      },
+      "esp": {
+        "name": "Stabilitas elektronik"
+      },
+      "pwr": {
+        "name": "Peringatan daya"
+      },
+      "power_system": {
+        "name": "Sistem tenaga"
+      },
+      "ect": {
+        "name": "Peringatan suhu cairan pendingin"
+      },
+      "tirepressure_system": {
+        "name": "Status TPMS"
+      },
+      "rapid_tire_leak": {
+        "name": "Kebocoran ban yang cepat"
+      },
+      "left_front_tire_status": {
+        "name": "Status ban kiri depan"
+      },
+      "right_front_tire_status": {
+        "name": "Status ban kanan depan"
+      },
+      "left_rear_tire_status": {
+        "name": "Status ban kiri belakang"
+      },
+      "right_rear_tire_status": {
+        "name": "Status ban kanan belakang"
+      },
+      "upgrade_status": {
+        "name": "Status peningkatan OTA"
+      },
+      "oil_pressure_system": {
+        "name": "Oil pressure system"
+      },
+      "braking_system": {
+        "name": "Braking system"
+      },
+      "charging_system": {
+        "name": "Charging system"
+      },
+      "steering_system": {
+        "name": "Steering system"
+      },
+      "less_one_min": {
+        "name": "Less one min"
+      }
+    },
+    "button": {
+      "flash_lights": {
+        "name": "Lampu flash"
+      },
+      "find_car": {
+        "name": "Temukan mobil"
+      },
+      "close_windows": {
+        "name": "Tutup jendela"
+      },
+      "force_poll": {
+        "name": "Paksa polling"
+      }
+    },
+    "select": {
+      "driver_seat_heat": {
+        "name": "Pemanasan kursi pengemudi",
+        "state": {
+          "off": "Mati",
+          "low": "Rendah",
+          "high": "Tinggi"
+        }
+      },
+      "driver_seat_ventilation": {
+        "name": "Ventilasi kursi pengemudi",
+        "state": {
+          "off": "Mati",
+          "low": "Rendah",
+          "high": "Tinggi"
+        }
+      },
+      "passenger_seat_heat": {
+        "name": "Pemanasan kursi penumpang",
+        "state": {
+          "off": "Mati",
+          "low": "Rendah",
+          "high": "Tinggi"
+        }
+      },
+      "passenger_seat_ventilation": {
+        "name": "Ventilasi kursi penumpang",
+        "state": {
+          "off": "Mati",
+          "low": "Rendah",
+          "high": "Tinggi"
+        }
+      },
+      "rear_left_seat_heat": {
+        "name": "Pemanas kursi kiri belakang",
+        "state": {
+          "off": "Mati",
+          "low": "Rendah",
+          "high": "Tinggi"
+        }
+      },
+      "rear_left_seat_ventilation": {
+        "name": "Ventilasi kursi kiri belakang",
+        "state": {
+          "off": "Mati",
+          "low": "Rendah",
+          "high": "Tinggi"
+        }
+      },
+      "rear_right_seat_heat": {
+        "name": "Pemanas kursi kanan belakang",
+        "state": {
+          "off": "Mati",
+          "low": "Rendah",
+          "high": "Tinggi"
+        }
+      },
+      "rear_right_seat_ventilation": {
+        "name": "Ventilasi kursi kanan belakang",
+        "state": {
+          "off": "Mati",
+          "low": "Rendah",
+          "high": "Tinggi"
+        }
+      }
+    },
+    "switch": {
+      "battery_heat": {
+        "name": "Pemanasan baterai"
+      },
+      "car_on": {
+        "name": "AC menyala"
+      },
+      "steering_wheel_heat": {
+        "name": "Pemanasan roda kemudi"
+      },
+      "disable_polling": {
+        "name": "Nonaktifkan polling"
+      }
+    },
+    "climate": {
+      "climate": {
+        "name": "Iklim",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "max_heat": "Panas Maks",
+              "max_cool": "Pendinginan maks."
+            }
+          }
+        }
+      }
+    },
+    "lock": {
+      "lock": {
+        "name": "Kunci"
+      }
+    },
+    "device_tracker": {
+      "location": {
+        "name": "Lokasi"
+      }
+    }
+  },
+  "services": {
+    "fetch_realtime": {
+      "name": "Fetch telemetry data",
+      "description": "Force-fetch the latest vehicle telemetry from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_gps": {
+      "name": "Fetch GPS data",
+      "description": "Force-fetch the latest GPS location from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_hvac": {
+      "name": "Fetch HVAC status",
+      "description": "Force-fetch the latest HVAC / climate status from the BYD cloud.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_charging": {
+      "name": "Fetch charging status",
+      "description": "Force-fetch the latest charging status from the BYD cloud and log the raw response.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    },
+    "fetch_energy": {
+      "name": "Fetch energy consumption",
+      "description": "Force-fetch the latest energy consumption data from the BYD cloud and log the raw response.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The BYD vehicle device to fetch data for."
+        }
+      }
+    }
+  }
+}

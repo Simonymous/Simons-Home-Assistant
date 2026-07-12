@@ -1,0 +1,808 @@
+"""DataUpdateCoordinator for Tracking Numbers integration."""
+from __future__ import annotations
+
+import asyncio
+from datetime import timedelta, date, datetime, timezone
+import logging
+import time
+from typing import Any
+from email.utils import parsedate_to_datetime
+
+from imapclient import IMAPClient
+from mailparser import parse_from_bytes
+
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.storage import Store
+
+from .const import (
+    DOMAIN,
+    CONF_EMAIL,
+    CONF_PASSWORD,
+    CONF_IMAP_SERVER,
+    CONF_IMAP_PORT,
+    CONF_USE_SSL,
+    CONF_EMAIL_FOLDER,
+    CONF_DAYS_OLD,
+    CONF_SCAN_INTERVAL,
+    CONF_MAX_PACKAGES,
+    CONF_TRACKINGMORE_API_KEY,
+    CONF_STATUS_PROVIDER,
+    STATUS_PROVIDER_TRACKINGMORE,
+    STATUS_PROVIDER_CARRIERS,
+    STATUS_PROVIDER_NONE,
+    DEFAULT_FOLDER,
+    DEFAULT_DAYS_OLD,
+    DEFAULT_SCAN_INTERVAL,
+    DEFAULT_MAX_PACKAGES,
+    EMAIL_ATTR_FROM,
+    EMAIL_ATTR_SUBJECT,
+    EMAIL_ATTR_BODY,
+    EMAIL_ATTR_DATE,
+    TRACKING_NUMBER_URLS,
+    MANUAL_RETAILER_CODE,
+    MANUAL_RETAILER_NAME,
+    MANUAL_ORIGIN_FALLBACK,
+    MANUAL_CARRIER_FALLBACK,
+    STORE_KEY_MANUAL_PACKAGES,
+    STORE_KEY_HIDDEN_TRACKING_NUMBERS,
+    STORE_KEY_TRACKINGMORE,
+    STORE_KEY_CARRIER_STATUS,
+    LEGACY_STORE_KEY_IGNORED,
+    IMAP_CONNECTION_TIMEOUT,
+    TRACKINGMORE_COURIER_MAP,
+    TRACKINGMORE_CREATE_DELAY,
+    TRACKINGMORE_MAX_NEW_PER_CYCLE,
+    CARRIER_MAX_LOOKUPS_PER_CYCLE,
+    CARRIER_MIN_CALL_SPACING,
+)
+
+# Import parsers and helpers from shared module
+from .parsers_list import parsers, find_carrier, retailer_display_name
+from .trackingmore import TrackingMoreClient
+from .carriers import build_carrier_clients
+
+_LOGGER = logging.getLogger(__name__)
+
+
+class TrackingNumbersCoordinator(DataUpdateCoordinator):
+    """Coordinator to manage tracking numbers data updates."""
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry_id: str,
+        config: dict[str, Any],
+        options: dict[str, Any],
+    ) -> None:
+        """Initialize the coordinator."""
+        self.config = config
+        self.options = options
+        self.entry_id = entry_id
+
+        # Storage for package persistence
+        self.store = Store(hass, version=1, key=f"{DOMAIN}_{entry_id}")
+        self.stored_data = {}
+
+        # Carrier-direct clients, built lazily and cached so their OAuth tokens
+        # persist across poll cycles. Credentials are fixed per config entry (an
+        # options change reloads the entry, recreating the coordinator).
+        self._carrier_clients: dict[str, Any] | None = None
+
+        # Get scan interval from options
+        scan_interval_minutes = options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+        update_interval = timedelta(minutes=scan_interval_minutes)
+
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=f"{DOMAIN}_{config[CONF_EMAIL]}",
+            update_interval=update_interval,
+        )
+
+    async def _async_update_data(self) -> dict[str, Any]:
+        """Fetch tracking numbers from email."""
+        _LOGGER.debug("Starting tracking numbers update")
+
+        # Load stored data
+        self.stored_data = await self.store.async_load() or {}
+        self._ensure_storage_defaults()
+        _LOGGER.debug("Loaded stored data: %s packages", len(self.stored_data.get("packages", {})))
+
+        try:
+            # Fetch emails and parse tracking numbers
+            _LOGGER.debug("Fetching emails from IMAP server")
+            auto_packages = await self.hass.async_add_executor_job(
+                self._fetch_and_parse_emails
+            )
+            _LOGGER.debug("Fetched %d packages", len(auto_packages))
+
+            packages = self._merge_manual_packages(auto_packages)
+
+            # Optionally enrich with live delivery status (TrackingMore or carriers).
+            packages = await self._enrich_status(packages)
+
+            # Build summary statistics
+            summary = self._build_summary(packages)
+
+            # Save updated data
+            await self.store.async_save(self.stored_data)
+
+            return {
+                "packages": packages,
+                "summary": summary,
+                "count": len(packages),
+                "last_update": datetime.now().isoformat(),
+            }
+
+        except Exception as err:
+            _LOGGER.error("Error fetching tracking numbers: %s", err)
+            raise UpdateFailed(f"Error communicating with email server: {err}") from err
+
+    def _fetch_and_parse_emails(self) -> list[dict[str, Any]]:
+        """Fetch emails and parse tracking numbers (blocking operation)."""
+        # Get configuration
+        imap_server = self.config[CONF_IMAP_SERVER]
+        imap_port = self.config[CONF_IMAP_PORT]
+        use_ssl = self.config.get(CONF_USE_SSL, True)
+        email = self.config[CONF_EMAIL]
+        password = self.config[CONF_PASSWORD]
+        folder = self.options.get(
+            CONF_EMAIL_FOLDER, self.config.get(CONF_EMAIL_FOLDER, DEFAULT_FOLDER)
+        )
+        days_old_setting = self.options.get(
+            CONF_DAYS_OLD, self.config.get(CONF_DAYS_OLD, DEFAULT_DAYS_OLD)
+        )
+        days_old = max(1, days_old_setting)
+
+        # Date range for email search
+        search_date = date.today() - timedelta(days=days_old)
+        flag = [u'SINCE', search_date]
+
+        _LOGGER.info("Connecting to IMAP server: %s:%s (SSL: %s)", imap_server, imap_port, use_ssl)
+        _LOGGER.info("Email: %s, Folder: %s, Days: %s", email, folder, days_old)
+
+        # Connect to IMAP server
+        server = IMAPClient(imap_server, port=imap_port, use_uid=True, ssl=use_ssl, timeout=IMAP_CONNECTION_TIMEOUT)
+
+        try:
+            _LOGGER.debug("Attempting IMAP login...")
+            server.login(email, password)
+            _LOGGER.info("IMAP login successful")
+
+            _LOGGER.debug("Selecting folder: %s", folder)
+            server.select_folder(folder, readonly=True)
+            _LOGGER.info("Folder selected successfully")
+        except Exception as err:
+            _LOGGER.error("IMAP login error: %s", err)
+            server.logout()
+            raise
+
+        # Fetch emails
+        emails = []
+        try:
+            _LOGGER.debug("Searching for emails with flag: %s", flag)
+            messages = server.search(flag)
+            _LOGGER.info("Found %d messages matching search criteria", len(messages))
+
+            for uid, message_data in server.fetch(messages, 'RFC822').items():
+                try:
+                    mail = parse_from_bytes(message_data[b'RFC822'])
+
+                    delivered_at = self._extract_email_timestamp(mail)
+
+                    # Prefer HTML body for link parsing, fallback to plain text
+                    body = mail.body
+                    if hasattr(mail, 'text_html') and mail.text_html:
+                        # text_html is a list, join all HTML parts
+                        body = '\n'.join(mail.text_html)
+                    elif hasattr(mail, 'text_plain') and mail.text_plain and not body:
+                        # text_plain is a list, join all plain text parts
+                        body = '\n'.join(mail.text_plain)
+
+                    emails.append({
+                        EMAIL_ATTR_FROM: mail.from_,
+                        EMAIL_ATTR_SUBJECT: mail.subject,
+                        EMAIL_ATTR_BODY: body,
+                        EMAIL_ATTR_DATE: delivered_at,
+                    })
+                except Exception as err:
+                    _LOGGER.warning("Email parse error: %s", err)
+
+        except Exception as err:
+            _LOGGER.error("IMAP fetch error: %s", err)
+        finally:
+            server.logout()
+
+        # Parse emails for tracking numbers
+        all_tracking_numbers = {}
+        for ATTR, EMAIL_DOMAIN, parser in parsers:
+            all_tracking_numbers[ATTR] = []
+
+        _LOGGER.info("Parsing %d emails for tracking numbers", len(emails))
+
+        # Run parsers on each email
+        for email in emails:
+            email_from = email[EMAIL_ATTR_FROM]
+            delivered_at = email.get(EMAIL_ATTR_DATE)
+
+            if isinstance(email_from, (list, tuple)):
+                email_from = ''.join(list(email_from[0]))
+
+            # Run matching parsers
+            for ATTR, EMAIL_DOMAIN, parser in parsers:
+                try:
+                    if EMAIL_DOMAIN in email_from:
+                        tracking_nums = parser(email=email)
+                        if tracking_nums:
+                            enriched = self._enrich_tracking_results(tracking_nums, delivered_at)
+                            if enriched:
+                                _LOGGER.debug(
+                                    "Parser %s found %d tracking numbers from %s",
+                                    ATTR,
+                                    len(enriched),
+                                    email_from,
+                                )
+                                all_tracking_numbers[ATTR].extend(enriched)
+                except Exception as err:
+                    _LOGGER.error("Parser %s error: %s", ATTR, err)
+
+        # Convert to flat packages array
+        _LOGGER.info("Converting tracking numbers to packages")
+        packages = self._convert_to_packages(all_tracking_numbers)
+        _LOGGER.info("Converted to %d unique packages", len(packages))
+
+        return packages
+
+    def _convert_to_packages(
+        self, all_tracking_numbers: dict[str, list]
+    ) -> list[dict[str, Any]]:
+        """Convert nested tracking numbers to flat packages array."""
+        hidden_numbers = set(self.stored_data.get(STORE_KEY_HIDDEN_TRACKING_NUMBERS, []))
+        known_packages = self.stored_data.get("packages", {})
+        max_packages = self.options.get(CONF_MAX_PACKAGES, DEFAULT_MAX_PACKAGES)
+
+        packages = []
+        now = datetime.now().isoformat()
+
+        for ATTR, EMAIL_DOMAIN, _ in parsers:
+            tracking_numbers = all_tracking_numbers.get(ATTR, [])
+
+            if not tracking_numbers:
+                continue
+
+            retailer_name = retailer_display_name(ATTR)
+
+            # Normalize to list of dicts
+            if tracking_numbers and isinstance(tracking_numbers[0], (str, int)):
+                tracking_numbers = [{'tracking_number': str(x)} for x in tracking_numbers]
+
+            # Process each tracking number
+            for item in tracking_numbers:
+                tracking_number = item['tracking_number']
+
+                # Skip ignored
+                if tracking_number in hidden_numbers:
+                    continue
+
+                # Get carrier info
+                pkg_info = find_carrier(item, EMAIL_DOMAIN)
+
+                delivered_iso = item.get('email_timestamp')
+                delivered_dt = self._parse_iso_datetime(delivered_iso)
+
+                # Check if we've seen this before
+                if tracking_number in known_packages:
+                    existing = known_packages[tracking_number]
+                    existing_first_iso = existing.get('first_seen')
+                    existing_first_dt = self._parse_iso_datetime(existing_first_iso)
+
+                    candidate_dt = existing_first_dt
+                    if delivered_dt and (candidate_dt is None or delivered_dt < candidate_dt):
+                        candidate_dt = delivered_dt
+
+                    if candidate_dt:
+                        pkg_info['first_seen'] = candidate_dt.isoformat()
+                    elif existing_first_iso:
+                        pkg_info['first_seen'] = existing_first_iso
+                    elif delivered_iso:
+                        pkg_info['first_seen'] = delivered_iso
+                    else:
+                        pkg_info['first_seen'] = now
+                    pkg_info['last_updated'] = now
+                else:
+                    # New package
+                    if delivered_dt:
+                        pkg_info['first_seen'] = delivered_dt.isoformat()
+                    elif delivered_iso:
+                        pkg_info['first_seen'] = delivered_iso
+                    else:
+                        pkg_info['first_seen'] = now
+                    pkg_info['last_updated'] = now
+
+                # Add retailer/retailer_code and carrier_code for easy filtering
+                pkg_info['retailer'] = retailer_name
+                pkg_info['retailer_code'] = EMAIL_DOMAIN.replace('@', '').replace('.', '_')
+                pkg_info['carrier_code'] = pkg_info['carrier'].lower().replace(' ', '_')
+
+                packages.append(pkg_info)
+
+                # Update known packages
+                known_packages[tracking_number] = pkg_info
+
+        # Deduplicate by tracking_number (keep most recent)
+        seen = {}
+        for pkg in packages:
+            tracking_number = pkg['tracking_number']
+            if tracking_number not in seen:
+                seen[tracking_number] = pkg
+
+        packages = list(seen.values())
+
+        # Sort by first_seen (newest first)
+        packages.sort(key=lambda x: x.get('first_seen', ''), reverse=True)
+
+        # Limit to max packages
+        packages = packages[:max_packages]
+
+        # Update stored data
+        self.stored_data["packages"] = {
+            pkg['tracking_number']: pkg for pkg in packages
+        }
+
+        return packages
+
+    def _merge_manual_packages(self, auto_packages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Merge auto and manual packages with manual overrides."""
+        manual_packages = self.stored_data.get(STORE_KEY_MANUAL_PACKAGES, {})
+        hidden_numbers = set(self.stored_data.get(STORE_KEY_HIDDEN_TRACKING_NUMBERS, []))
+        merged: dict[str, dict[str, Any]] = {}
+
+        for pkg in auto_packages:
+            tracking_number = pkg.get('tracking_number')
+            if not tracking_number:
+                continue
+            merged[tracking_number] = pkg
+
+        for tracking_number, manual_pkg in manual_packages.items():
+            if not tracking_number or tracking_number in hidden_numbers:
+                continue
+            if 'retailer' not in manual_pkg:
+                manual_pkg['retailer'] = manual_pkg.get('origin') or MANUAL_RETAILER_NAME
+            merged[tracking_number] = manual_pkg
+
+        packages = list(merged.values())
+        packages.sort(key=lambda x: x.get('last_updated', ''), reverse=True)
+        return packages
+
+    def _ensure_storage_defaults(self) -> None:
+        """Ensure store has expected structures."""
+        if not isinstance(self.stored_data.get('packages'), dict):
+            self.stored_data['packages'] = {}
+        manual = self.stored_data.get(STORE_KEY_MANUAL_PACKAGES)
+        if not isinstance(manual, dict):
+            self.stored_data[STORE_KEY_MANUAL_PACKAGES] = {}
+        hidden = self.stored_data.get(STORE_KEY_HIDDEN_TRACKING_NUMBERS)
+        if isinstance(hidden, list):
+            self.stored_data[STORE_KEY_HIDDEN_TRACKING_NUMBERS] = hidden
+        else:
+            legacy = self.stored_data.get(LEGACY_STORE_KEY_IGNORED)
+            if isinstance(legacy, list):
+                self.stored_data[STORE_KEY_HIDDEN_TRACKING_NUMBERS] = legacy
+            else:
+                self.stored_data[STORE_KEY_HIDDEN_TRACKING_NUMBERS] = []
+        if not isinstance(self.stored_data.get(STORE_KEY_TRACKINGMORE), dict):
+            self.stored_data[STORE_KEY_TRACKINGMORE] = {}
+        if not isinstance(self.stored_data.get(STORE_KEY_CARRIER_STATUS), dict):
+            self.stored_data[STORE_KEY_CARRIER_STATUS] = {}
+
+    def _status_provider(self) -> str:
+        """Resolve the configured status provider (with v4.9.0 back-compat)."""
+        provider = self.options.get(
+            CONF_STATUS_PROVIDER, self.config.get(CONF_STATUS_PROVIDER)
+        )
+        if provider:
+            return provider
+        # Back-compat: entries created on v4.9.0 have no provider set but may
+        # already have a TrackingMore key — keep enriching via TrackingMore.
+        api_key = self.options.get(
+            CONF_TRACKINGMORE_API_KEY, self.config.get(CONF_TRACKINGMORE_API_KEY)
+        )
+        return STATUS_PROVIDER_TRACKINGMORE if api_key else STATUS_PROVIDER_NONE
+
+    async def _enrich_status(
+        self, packages: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
+        """Dispatch status enrichment to the configured provider."""
+        provider = self._status_provider()
+        if provider == STATUS_PROVIDER_CARRIERS:
+            return await self._enrich_with_carriers(packages)
+        if provider == STATUS_PROVIDER_TRACKINGMORE:
+            return await self._enrich_with_trackingmore(packages)
+        return packages
+
+    @staticmethod
+    def _apply_status(
+        pkg: dict[str, Any], status: dict[str, Any], updated: str
+    ) -> None:
+        """Write normalized status fields onto a package dict."""
+        if status.get("status"):
+            pkg["status"] = status["status"]
+        if status.get("delivery_status"):
+            pkg["delivery_status"] = status["delivery_status"]
+        if status.get("estimated_delivery"):
+            pkg["estimated_delivery"] = status["estimated_delivery"]
+        pkg["status_updated"] = updated
+
+    async def _enrich_with_carriers(
+        self, packages: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
+        """Add live delivery status from carrier-direct APIs (free).
+
+        Queries each package's carrier client (USPS/UPS/FedEx/DHL) for status,
+        skipping already-delivered packages and respecting per-carrier rate
+        limits. No-ops when no carrier credentials are configured.
+        """
+        if self._carrier_clients is None:
+            merged = {**self.config, **self.options}
+            self._carrier_clients = build_carrier_clients(
+                async_get_clientsession(self.hass), merged
+            )
+        clients = self._carrier_clients
+        if not clients:
+            return packages
+
+        cache: dict[str, Any] = self.stored_data.setdefault(
+            STORE_KEY_CARRIER_STATUS, {}
+        )
+        now = datetime.now().isoformat()
+        lookups = 0
+        last_call: dict[str, float] = {}
+
+        for pkg in packages:
+            carrier = pkg.get("carrier_code")
+            client = clients.get(carrier)
+            if client is None:
+                continue
+            number = pkg["tracking_number"]
+            cached = cache.get(number)
+
+            # Don't re-query delivered packages; still surface last-known status.
+            if cached and cached.get("delivery_status") == "delivered":
+                self._apply_status(pkg, cached, cached.get("status_updated") or now)
+                continue
+
+            # Out of per-cycle budget: reuse last-known status if we have it.
+            if lookups >= CARRIER_MAX_LOOKUPS_PER_CYCLE:
+                if cached:
+                    self._apply_status(pkg, cached, cached.get("status_updated") or now)
+                continue
+
+            # Respect per-carrier minimum spacing between successive calls.
+            spacing = CARRIER_MIN_CALL_SPACING.get(carrier, 0.0)
+            if spacing and carrier in last_call:
+                wait = spacing - (time.monotonic() - last_call[carrier])
+                if wait > 0:
+                    await asyncio.sleep(wait)
+
+            result = await client.track(number)
+            last_call[carrier] = time.monotonic()
+            lookups += 1
+
+            if result is None:
+                if cached:
+                    self._apply_status(pkg, cached, cached.get("status_updated") or now)
+                continue
+
+            self._apply_status(pkg, result, now)
+            cache[number] = {
+                "delivery_status": result.get("delivery_status"),
+                "status": result.get("status"),
+                "estimated_delivery": result.get("estimated_delivery"),
+                "status_updated": now,
+            }
+
+        return packages
+
+    async def _enrich_with_trackingmore(
+        self, packages: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
+        """Add live delivery status from TrackingMore when an API key is set.
+
+        No-ops (returns packages unchanged) when no key is configured, so default
+        behavior is identical to email-only operation. Registers each trackable
+        number once (1 credit) and reuses the free batch GET on later cycles.
+        """
+        api_key = self.options.get(
+            CONF_TRACKINGMORE_API_KEY, self.config.get(CONF_TRACKINGMORE_API_KEY)
+        )
+        if not api_key:
+            return packages
+
+        # Only real carriers we can map to a TrackingMore courier code; retailer
+        # order numbers (Amazon/Chewy/...) are skipped to avoid wasted credits.
+        trackable = [
+            pkg
+            for pkg in packages
+            if TRACKINGMORE_COURIER_MAP.get(pkg.get("carrier_code"))
+        ]
+        if not trackable:
+            return packages
+
+        registered: dict[str, Any] = self.stored_data.setdefault(
+            STORE_KEY_TRACKINGMORE, {}
+        )
+        client = TrackingMoreClient(async_get_clientsession(self.hass), api_key)
+        status_by_number: dict[str, dict[str, Any]] = {}
+
+        # 1) Register new numbers once (each costs a credit), capped per cycle.
+        new_this_cycle = 0
+        for pkg in trackable:
+            number = pkg["tracking_number"]
+            if number in registered:
+                continue
+            if new_this_cycle >= TRACKINGMORE_MAX_NEW_PER_CYCLE:
+                _LOGGER.debug(
+                    "TrackingMore: hit new-registration cap (%s) this cycle; "
+                    "remaining numbers register next cycle",
+                    TRACKINGMORE_MAX_NEW_PER_CYCLE,
+                )
+                break
+            courier_code = TRACKINGMORE_COURIER_MAP[pkg["carrier_code"]]
+            result = await client.create(number, courier_code)
+            if result is None:
+                continue  # failed; retry on a later cycle
+            registered[number] = {"courier_code": courier_code}
+            new_this_cycle += 1
+            if result:  # create&get returned live status in the same call
+                status_by_number[number] = result
+            await asyncio.sleep(TRACKINGMORE_CREATE_DELAY)
+
+        # 2) Batch-read status for registered numbers still present (no credit).
+        to_fetch = [
+            pkg["tracking_number"]
+            for pkg in trackable
+            if pkg["tracking_number"] in registered
+            and pkg["tracking_number"] not in status_by_number
+        ]
+        if to_fetch:
+            status_by_number.update(await client.get(to_fetch))
+
+        # 3) Write status onto packages; persist last-known for reuse.
+        now = datetime.now().isoformat()
+        for pkg in trackable:
+            number = pkg["tracking_number"]
+            fresh = status_by_number.get(number)
+            status = fresh or registered.get(number, {}).get("last_status")
+            if not status:
+                continue
+            if status.get("status"):
+                pkg["status"] = status["status"]
+            if status.get("delivery_status"):
+                pkg["delivery_status"] = status["delivery_status"]
+            if status.get("estimated_delivery"):
+                pkg["estimated_delivery"] = status["estimated_delivery"]
+            if fresh:
+                pkg["status_updated"] = now
+                registered.setdefault(number, {})["last_status"] = {
+                    "status": fresh.get("status"),
+                    "delivery_status": fresh.get("delivery_status"),
+                    "estimated_delivery": fresh.get("estimated_delivery"),
+                }
+
+        return packages
+
+    @staticmethod
+    def _normalize_datetime(dt: datetime | None) -> datetime | None:
+        """Normalize datetimes to naive UTC for consistent storage."""
+        if dt is None:
+            return None
+        if dt.tzinfo is not None:
+            return dt.astimezone(timezone.utc).replace(tzinfo=None)
+        return dt
+
+    def _extract_email_timestamp(self, mail) -> str | None:
+        """Extract delivery timestamp from a parsed email."""
+        mail_date = getattr(mail, 'date', None)
+        delivered: datetime | None = None
+
+        if isinstance(mail_date, datetime):
+            delivered = mail_date
+        elif isinstance(mail_date, str):
+            try:
+                delivered = parsedate_to_datetime(mail_date)
+            except (TypeError, ValueError):
+                delivered = None
+
+        if delivered is None:
+            return None
+
+        normalized = self._normalize_datetime(delivered)
+        if normalized is None:
+            return None
+
+        return normalized.isoformat()
+
+    @staticmethod
+    def _parse_iso_datetime(value: str | None) -> datetime | None:
+        """Parse isoformat strings (with optional Z suffix) into naive UTC datetimes."""
+        if not value:
+            return None
+
+        if value.endswith('Z'):
+            value = value.replace('Z', '+00:00')
+
+        try:
+            parsed = datetime.fromisoformat(value)
+        except (TypeError, ValueError, AttributeError):
+            return None
+
+        return TrackingNumbersCoordinator._normalize_datetime(parsed)
+
+    @staticmethod
+    def _enrich_tracking_results(results, delivered_at: str | None) -> list[dict[str, Any]]:
+        """Ensure parser results carry the source email timestamp."""
+        if results is None:
+            return []
+
+        if isinstance(results, (str, bytes, int)):
+            iterable = [results]
+        else:
+            try:
+                iterable = list(results)
+            except TypeError:
+                iterable = [results]
+
+        enriched: list[dict[str, Any]] = []
+        for item in iterable:
+            if isinstance(item, dict):
+                enriched_item = dict(item)
+                if delivered_at and 'email_timestamp' not in enriched_item:
+                    enriched_item['email_timestamp'] = delivered_at
+            else:
+                enriched_item = {'tracking_number': str(item)}
+                if delivered_at:
+                    enriched_item['email_timestamp'] = delivered_at
+            enriched.append(enriched_item)
+
+        return enriched
+
+    def _default_tracking_link(self, carrier: str, tracking_number: str) -> str:
+        """Return a best-effort tracking link for manual entries."""
+        key = (carrier or '').lower().replace(' ', '_')
+        base = TRACKING_NUMBER_URLS.get(key, TRACKING_NUMBER_URLS['unknown'])
+        return f"{base}{tracking_number}"
+
+    async def async_add_manual_package(
+        self,
+        tracking_number: str,
+        *,
+        link: str | None = None,
+        carrier: str | None = None,
+        origin: str | None = None,
+        status: str | None = None,
+    ) -> dict[str, Any]:
+        """Persist a manual tracking number and update coordinator data."""
+        tracking_number = str(tracking_number or '').strip()
+        if not tracking_number:
+            raise ValueError("Tracking number is required")
+
+        self.stored_data = await self.store.async_load() or {}
+        self._ensure_storage_defaults()
+
+        manual_packages = self.stored_data.get(STORE_KEY_MANUAL_PACKAGES, {})
+
+        now = datetime.now().isoformat()
+        existing = manual_packages.get(tracking_number, {})
+
+        final_carrier = (carrier or existing.get('carrier') or MANUAL_CARRIER_FALLBACK).strip()
+        final_origin = (origin or existing.get('origin') or MANUAL_ORIGIN_FALLBACK).strip()
+
+        if link:
+            final_link = link.strip()
+        elif existing.get('link'):
+            final_link = existing['link']
+        else:
+            final_link = self._default_tracking_link(final_carrier, tracking_number)
+
+        package: dict[str, Any] = {
+            'tracking_number': tracking_number,
+            'carrier': final_carrier,
+            'origin': final_origin,
+            'link': final_link,
+            'first_seen': existing.get('first_seen', now),
+            'last_updated': now,
+            'retailer': final_origin or MANUAL_RETAILER_NAME,
+            'retailer_code': MANUAL_RETAILER_CODE,
+            'carrier_code': final_carrier.lower().replace(' ', '_') or 'unknown',
+            'source': 'manual',
+        }
+
+        if status or existing.get('status'):
+            package['status'] = status or existing.get('status')
+
+        hidden_numbers = set(self.stored_data.get(STORE_KEY_HIDDEN_TRACKING_NUMBERS, []))
+        if tracking_number in hidden_numbers:
+            hidden_numbers.remove(tracking_number)
+            self.stored_data[STORE_KEY_HIDDEN_TRACKING_NUMBERS] = list(hidden_numbers)
+
+        manual_packages[tracking_number] = package
+        self.stored_data[STORE_KEY_MANUAL_PACKAGES] = manual_packages
+
+        await self.store.async_save(self.stored_data)
+
+        packages = self._merge_manual_packages(list(self.stored_data.get('packages', {}).values()))
+        summary = self._build_summary(packages)
+
+        self.async_set_updated_data(
+            {
+                'packages': packages,
+                'summary': summary,
+                'count': len(packages),
+                'last_update': now,
+            }
+        )
+
+        return package
+
+    async def async_remove_tracking_number(self, tracking_number: str) -> None:
+        """Remove a manual package or hide an email-derived package."""
+        tracking_number = str(tracking_number or '').strip()
+        if not tracking_number:
+            raise ValueError("Tracking number is required")
+
+        self.stored_data = await self.store.async_load() or {}
+        self._ensure_storage_defaults()
+
+        manual_packages = self.stored_data.get(STORE_KEY_MANUAL_PACKAGES, {})
+        hidden_numbers = set(self.stored_data.get(STORE_KEY_HIDDEN_TRACKING_NUMBERS, []))
+        packages_store = self.stored_data.get('packages', {})
+
+        removed = False
+
+        if tracking_number in manual_packages:
+            manual_packages.pop(tracking_number)
+            self.stored_data[STORE_KEY_MANUAL_PACKAGES] = manual_packages
+            removed = True
+        else:
+            if tracking_number not in hidden_numbers:
+                hidden_numbers.add(tracking_number)
+                removed = True
+            self.stored_data[STORE_KEY_HIDDEN_TRACKING_NUMBERS] = list(hidden_numbers)
+
+        if tracking_number in packages_store:
+            packages_store.pop(tracking_number)
+            self.stored_data['packages'] = packages_store
+
+        if removed:
+            await self.store.async_save(self.stored_data)
+
+        packages = self._merge_manual_packages(list(self.stored_data.get('packages', {}).values()))
+        summary = self._build_summary(packages)
+
+        self.async_set_updated_data(
+            {
+                'packages': packages,
+                'summary': summary,
+                'count': len(packages),
+                'last_update': datetime.now().isoformat(),
+            }
+        )
+
+    def _build_summary(self, packages: list[dict[str, Any]]) -> dict[str, Any]:
+        """Build summary statistics."""
+        by_carrier = {}
+        by_retailer = {}
+
+        for pkg in packages:
+            carrier = pkg.get('carrier', 'Unknown')
+            retailer = pkg.get('retailer') or pkg.get('origin') or 'Unknown'
+
+            by_carrier[carrier] = by_carrier.get(carrier, 0) + 1
+            by_retailer[retailer] = by_retailer.get(retailer, 0) + 1
+
+        return {
+            "by_carrier": by_carrier,
+            "by_retailer": by_retailer,
+        }
