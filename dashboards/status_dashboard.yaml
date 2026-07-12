@@ -81,12 +81,12 @@ views:
       state:
       - operator: <=
         value: '1'
-        color: brown
+        color: green
         styles:
           icon:
           - animation: machine-blink 1.6s ease-in-out infinite
       - operator: default
-        color: brown
+        color: green
       extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
     - type: custom:button-card
       entity: sensor.gelbe_tonne_tage_bis_abholung
