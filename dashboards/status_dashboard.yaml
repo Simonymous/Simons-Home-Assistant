@@ -64,47 +64,33 @@ views:
   path: maschinen
   icon: mdi:washing-machine
   cards:
-  - type: custom:ha-washdata-card
-    entity: sensor.spulmaschine_zustand
-    title: Spülmaschine
+  - type: custom:mushroom-template-card
+    primary: Spülmaschine
+    secondary: '{% set state = states(''sensor.spulmaschine_zustand'') %}{% set labels = {''off'': ''Aus'', ''idle'': ''Bereit'', ''finished'': ''Fertig!'', ''paused'': ''Pausiert'', ''user_paused'': ''Pausiert'', ''starting'': ''Startet…'', ''ending'': ''Endet…'', ''delay_wait'': ''Startverzögerung'', ''interrupted'': ''Unterbrochen'', ''force_stopped'': ''Gestoppt'', ''clean'': ''Fertig – bitte ausräumen''} %}{% if state == ''running'' %}{% set program = states(''sensor.spulmaschine_programm'') %}{% set mins = states(''sensor.spulmaschine_verbleibende_zeit'') | float(-1) %}{% set parts = [] %}{% if program not in [''off'', ''unknown'', ''unavailable'', ''none'', ''''] %}{% set parts = parts + [program] %}{% endif %}{% if mins >= 0 %}{% set finish_ts = as_timestamp(now()) + mins * 60 %}{% set h = (mins // 60) | int %}{% set m = (mins % 60) | int %}{% set dur = (h ~ '':'' ~ ''%02d'' % m ~ '' h'') if h > 0 else (m | int ~ '' min'') %}{% set parts = parts + [''fertig '' ~ (finish_ts | timestamp_custom(''%H:%M''))]
+      %}{% set parts = parts + [dur ~ '' verbleibend''] %}{% else %}{% set parts = parts + [''Programm wird erkannt…''] %}{% endif %}{{ parts | join('' · '') }}{% else %}{{ labels.get(state, state | capitalize) }}{% endif %}'
     icon: mdi:dishwasher
-    program_entity: sensor.spulmaschine_programm
-    time_entity: sensor.spulmaschine_verbleibende_zeit
-    pct_entity: sensor.spulmaschine_fortschritt
-    display_mode: time
-    active_color:
-    - 33
-    - 150
-    - 243
-    spin_icon: false
+    icon_color: '{% if states(''sensor.spulmaschine_zustand'') in [''running'', ''finished''] %} blue {% else %} grey {% endif %}'
+    layout: horizontal
     card_mod:
-      style: ".icon-container {\n  {% if is_state('sensor.spulmaschine_zustand', 'running') %}\n  animation: dish-pulse 1.8s ease-in-out infinite;\n  {% endif %}\n}\n@keyframes dish-pulse {\n  0%, 100% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.55); }\n  50% { box-shadow: 0 0 0 6px rgba(33, 150, 243, 0); }\n}\n"
-  - type: custom:ha-washdata-card
-    entity: sensor.waschmaschine_zustand
-    title: Waschmaschine
+      style: "mushroom-shape-icon {\n  {% if is_state('sensor.spulmaschine_zustand', 'running') %}\n  animation: machine-pulse 1.6s ease-in-out infinite;\n  {% endif %}\n}\n@keyframes machine-pulse {\n  0%, 100% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.55); }\n  50% { box-shadow: 0 0 0 6px rgba(33, 150, 243, 0); }\n}\n"
+  - type: custom:mushroom-template-card
+    primary: Waschmaschine
+    secondary: '{% set state = states(''sensor.waschmaschine_zustand'') %}{% set labels = {''off'': ''Aus'', ''idle'': ''Bereit'', ''finished'': ''Fertig!'', ''paused'': ''Pausiert'', ''user_paused'': ''Pausiert'', ''starting'': ''Startet…'', ''ending'': ''Endet…'', ''delay_wait'': ''Startverzögerung'', ''interrupted'': ''Unterbrochen'', ''force_stopped'': ''Gestoppt'', ''clean'': ''Fertig – bitte ausräumen''} %}{% if state == ''running'' %}{% set program = states(''sensor.waschmaschine_programm'') %}{% set mins = states(''sensor.waschmaschine_verbleibende_zeit'') | float(-1) %}{% set parts = [] %}{% if program not in [''off'', ''unknown'', ''unavailable'', ''none'', ''''] %}{% set parts = parts + [program] %}{% endif %}{% if mins >= 0 %}{% set finish_ts = as_timestamp(now()) + mins * 60 %}{% set h = (mins // 60) | int %}{% set m = (mins % 60) | int %}{% set dur = (h ~ '':'' ~ ''%02d'' % m ~ '' h'') if h > 0 else (m | int ~ '' min'') %}{% set parts = parts + [''fertig '' ~ (finish_ts | timestamp_custom(''%H:%M''))]
+      %}{% set parts = parts + [dur ~ '' verbleibend''] %}{% else %}{% set parts = parts + [''Programm wird erkannt…''] %}{% endif %}{{ parts | join('' · '') }}{% else %}{{ labels.get(state, state | capitalize) }}{% endif %}'
     icon: mdi:washing-machine
-    program_entity: sensor.waschmaschine_programm
-    time_entity: sensor.waschmaschine_verbleibende_zeit
-    pct_entity: sensor.waschmaschine_fortschritt
-    display_mode: time
-    active_color:
-    - 0
-    - 172
-    - 193
-    spin_icon: true
-  - type: custom:ha-washdata-card
-    entity: sensor.trockner_zustand
-    title: Trockner
+    icon_color: '{% if states(''sensor.waschmaschine_zustand'') in [''running'', ''finished''] %} teal {% else %} grey {% endif %}'
+    layout: horizontal
+    card_mod:
+      style: "mushroom-shape-icon {\n  {% if is_state('sensor.waschmaschine_zustand', 'running') %}\n  animation: machine-spin 2.2s linear infinite;\n  {% endif %}\n}\n@keyframes machine-spin {\n  from { transform: rotate(0deg); }\n  to { transform: rotate(360deg); }\n}\n"
+  - type: custom:mushroom-template-card
+    primary: Trockner
+    secondary: '{% set state = states(''sensor.trockner_zustand'') %}{% set labels = {''off'': ''Aus'', ''idle'': ''Bereit'', ''finished'': ''Fertig!'', ''paused'': ''Pausiert'', ''user_paused'': ''Pausiert'', ''starting'': ''Startet…'', ''ending'': ''Endet…'', ''delay_wait'': ''Startverzögerung'', ''interrupted'': ''Unterbrochen'', ''force_stopped'': ''Gestoppt'', ''clean'': ''Fertig – bitte ausräumen''} %}{% if state == ''running'' %}{% set program = states(''sensor.trockner_programm'') %}{% set mins = states(''sensor.trockner_verbleibende_zeit'') | float(-1) %}{% set parts = [] %}{% if program not in [''off'', ''unknown'', ''unavailable'', ''none'', ''''] %}{% set parts = parts + [program] %}{% endif %}{% if mins >= 0 %}{% set finish_ts = as_timestamp(now()) + mins * 60 %}{% set h = (mins // 60) | int %}{% set m = (mins % 60) | int %}{% set dur = (h ~ '':'' ~ ''%02d'' % m ~ '' h'') if h > 0 else (m | int ~ '' min'') %}{% set parts = parts + [''fertig '' ~ (finish_ts | timestamp_custom(''%H:%M''))]
+      %}{% set parts = parts + [dur ~ '' verbleibend''] %}{% else %}{% set parts = parts + [''Programm wird erkannt…''] %}{% endif %}{{ parts | join('' · '') }}{% else %}{{ labels.get(state, state | capitalize) }}{% endif %}'
     icon: mdi:tumble-dryer
-    program_entity: sensor.trockner_programm
-    time_entity: sensor.trockner_verbleibende_zeit
-    pct_entity: sensor.trockner_fortschritt
-    display_mode: time
-    active_color:
-    - 255
-    - 152
-    - 0
-    spin_icon: true
+    icon_color: '{% if states(''sensor.trockner_zustand'') in [''running'', ''finished''] %} orange {% else %} grey {% endif %}'
+    layout: horizontal
+    card_mod:
+      style: "mushroom-shape-icon {\n  {% if is_state('sensor.trockner_zustand', 'running') %}\n  animation: machine-spin 2.2s linear infinite;\n  {% endif %}\n}\n@keyframes machine-spin {\n  from { transform: rotate(0deg); }\n  to { transform: rotate(360deg); }\n}\n"
 - title: Synology
   path: synology
   icon: mdi:nas
