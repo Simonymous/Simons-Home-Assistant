@@ -140,12 +140,12 @@ views:
       color: rgb(0, 150, 136)
       styles:
         icon:
-        - animation: machine-blink 1.6s ease-in-out infinite
+        - animation: machine-blink 1.6s ease-in-out infinite, machine-spin 2.2s linear infinite
     - value: finished
       color: rgb(76, 175, 80)
     - operator: default
       color: var(--disabled-text-color)
-    extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+    extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } } @keyframes machine-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }'
   - type: custom:button-card
     entity: sensor.trockner_zustand
     name: Trockner
@@ -181,12 +181,12 @@ views:
       color: rgb(255, 152, 0)
       styles:
         icon:
-        - animation: machine-blink 1.6s ease-in-out infinite
+        - animation: machine-blink 1.6s ease-in-out infinite, machine-spin 2.2s linear infinite
     - value: finished
       color: rgb(76, 175, 80)
     - operator: default
       color: var(--disabled-text-color)
-    extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+    extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } } @keyframes machine-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }'
 - title: Synology
   path: synology
   icon: mdi:nas
