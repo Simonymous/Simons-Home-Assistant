@@ -31,12 +31,21 @@ views:
       heading_style: title
       icon: mdi:sofa
     - type: custom:mushroom-template-card
-      primary: '{{ states(''sensor.wohnzimmer_heizung_wohnzimmer_current_temperature'') }} °C'
-      secondary: '{{ states(''sensor.wohnzimmer_heizung_wohnzimmer_current_humidity'') }} % Luftfeuchtigkeit'
-      icon: mdi:thermometer
+      primary: >-
+        {% set t = states('sensor.wohnzimmer_heizung_wohnzimmer_current_temperature') %}
+        {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
+      secondary: >-
+        {% set h = states('sensor.wohnzimmer_heizung_wohnzimmer_current_humidity') %}
+        {% if h in ['unavailable', 'unknown', 'none', ''] %}Sensor offline{% else %}{{ h }} % Luftfeuchtigkeit{% endif %}
+      icon: >-
+        {% set t = states('sensor.wohnzimmer_heizung_wohnzimmer_current_temperature') %}
+        {{ 'mdi:thermometer-off' if t in ['unavailable', 'unknown', 'none', ''] else 'mdi:thermometer' }}
       icon_color: >-
-        {% set t = states('sensor.wohnzimmer_heizung_wohnzimmer_current_temperature') | float(0) %}
-        {% if t >= 23 %}orange{% elif t <= 19 %}blue{% else %}green{% endif %}
+        {% set t = states('sensor.wohnzimmer_heizung_wohnzimmer_current_temperature') %}
+        {% if t in ['unavailable', 'unknown', 'none', ''] %}grey{% else %}
+        {% set tf = t | float(0) %}
+        {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
+        {% endif %}
       layout: horizontal
     - type: custom:mushroom-chips-card
       alignment: start
@@ -99,19 +108,24 @@ views:
       icon: mdi:bed
     - type: custom:mushroom-template-card
       primary: >-
-        {% set t1 = states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_temperature') | float(0) %}
-        {% set t2 = states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_temperature') | float(0) %}
-        {{ ((t1 + t2) / 2) | round(1) }} °C
+        {% set t1 = states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_temperature') %}
+        {% set t2 = states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_temperature') %}
+        {% if t1 in ['unavailable', 'unknown', 'none', ''] or t2 in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ ((t1 | float(0) + t2 | float(0)) / 2) | round(1) }} °C{% endif %}
       secondary: >-
-        {% set h1 = states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_humidity') | float(0) %}
-        {% set h2 = states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_humidity') | float(0) %}
-        {{ ((h1 + h2) / 2) | round(0) }} % Luftfeuchtigkeit
-      icon: mdi:thermometer
+        {% set h1 = states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_humidity') %}
+        {% set h2 = states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_humidity') %}
+        {% if h1 in ['unavailable', 'unknown', 'none', ''] or h2 in ['unavailable', 'unknown', 'none', ''] %}Sensor offline{% else %}{{ ((h1 | float(0) + h2 | float(0)) / 2) | round(0) }} % Luftfeuchtigkeit{% endif %}
+      icon: >-
+        {% set t1 = states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_temperature') %}
+        {% set t2 = states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_temperature') %}
+        {{ 'mdi:thermometer-off' if (t1 in ['unavailable', 'unknown', 'none', ''] or t2 in ['unavailable', 'unknown', 'none', '']) else 'mdi:thermometer' }}
       icon_color: >-
-        {% set t1 = states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_temperature') | float(0) %}
-        {% set t2 = states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_temperature') | float(0) %}
-        {% set t = (t1 + t2) / 2 %}
+        {% set t1 = states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_temperature') %}
+        {% set t2 = states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_temperature') %}
+        {% if t1 in ['unavailable', 'unknown', 'none', ''] or t2 in ['unavailable', 'unknown', 'none', ''] %}grey{% else %}
+        {% set t = (t1 | float(0) + t2 | float(0)) / 2 %}
         {% if t >= 23 %}orange{% elif t <= 19 %}blue{% else %}green{% endif %}
+        {% endif %}
       layout: horizontal
     - type: grid
       columns: 2
@@ -273,12 +287,21 @@ views:
       heading_style: title
       icon: mdi:silverware-fork-knife
     - type: custom:mushroom-template-card
-      primary: '{{ states(''sensor.esszimmer_heizung_esszimmer_current_temperature_2'') }} °C'
-      secondary: '{{ states(''sensor.esszimmer_heizung_esszimmer_current_humidity_2'') }} % Luftfeuchtigkeit'
-      icon: mdi:thermometer
+      primary: >-
+        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature_2') %}
+        {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
+      secondary: >-
+        {% set h = states('sensor.esszimmer_heizung_esszimmer_current_humidity_2') %}
+        {% if h in ['unavailable', 'unknown', 'none', ''] %}Sensor offline{% else %}{{ h }} % Luftfeuchtigkeit{% endif %}
+      icon: >-
+        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature_2') %}
+        {{ 'mdi:thermometer-off' if t in ['unavailable', 'unknown', 'none', ''] else 'mdi:thermometer' }}
       icon_color: >-
-        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature_2') | float(0) %}
-        {% if t >= 23 %}orange{% elif t <= 19 %}blue{% else %}green{% endif %}
+        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature_2') %}
+        {% if t in ['unavailable', 'unknown', 'none', ''] %}grey{% else %}
+        {% set tf = t | float(0) %}
+        {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
+        {% endif %}
       layout: horizontal
     - type: custom:mushroom-chips-card
       alignment: start
@@ -312,12 +335,21 @@ views:
       heading_style: title
       icon: mdi:desktop-classic
     - type: custom:mushroom-template-card
-      primary: '{{ states(''sensor.buro_heizung_buro_current_temperature'') }} °C'
-      secondary: '{{ states(''sensor.buro_heizung_buro_current_humidity'') }} % Luftfeuchtigkeit'
-      icon: mdi:thermometer
+      primary: >-
+        {% set t = states('sensor.buro_heizung_buro_current_temperature') %}
+        {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
+      secondary: >-
+        {% set h = states('sensor.buro_heizung_buro_current_humidity') %}
+        {% if h in ['unavailable', 'unknown', 'none', ''] %}Sensor offline{% else %}{{ h }} % Luftfeuchtigkeit{% endif %}
+      icon: >-
+        {% set t = states('sensor.buro_heizung_buro_current_temperature') %}
+        {{ 'mdi:thermometer-off' if t in ['unavailable', 'unknown', 'none', ''] else 'mdi:thermometer' }}
       icon_color: >-
-        {% set t = states('sensor.buro_heizung_buro_current_temperature') | float(0) %}
-        {% if t >= 23 %}orange{% elif t <= 19 %}blue{% else %}green{% endif %}
+        {% set t = states('sensor.buro_heizung_buro_current_temperature') %}
+        {% if t in ['unavailable', 'unknown', 'none', ''] %}grey{% else %}
+        {% set tf = t | float(0) %}
+        {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
+        {% endif %}
       layout: horizontal
     - type: custom:button-card
       entity: fan.zhimi_de_533989040_za5_s_2_fan
@@ -379,12 +411,21 @@ views:
       heading_style: title
       icon: mdi:stove
     - type: custom:mushroom-template-card
-      primary: '{{ states(''sensor.kuche_heizung_kuche_current_temperature'') }} °C'
-      secondary: '{{ states(''sensor.kuche_heizung_kuche_current_humidity'') }} % Luftfeuchtigkeit'
-      icon: mdi:thermometer
+      primary: >-
+        {% set t = states('sensor.kuche_heizung_kuche_current_temperature') %}
+        {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
+      secondary: >-
+        {% set h = states('sensor.kuche_heizung_kuche_current_humidity') %}
+        {% if h in ['unavailable', 'unknown', 'none', ''] %}Sensor offline{% else %}{{ h }} % Luftfeuchtigkeit{% endif %}
+      icon: >-
+        {% set t = states('sensor.kuche_heizung_kuche_current_temperature') %}
+        {{ 'mdi:thermometer-off' if t in ['unavailable', 'unknown', 'none', ''] else 'mdi:thermometer' }}
       icon_color: >-
-        {% set t = states('sensor.kuche_heizung_kuche_current_temperature') | float(0) %}
-        {% if t >= 23 %}orange{% elif t <= 19 %}blue{% else %}green{% endif %}
+        {% set t = states('sensor.kuche_heizung_kuche_current_temperature') %}
+        {% if t in ['unavailable', 'unknown', 'none', ''] %}grey{% else %}
+        {% set tf = t | float(0) %}
+        {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
+        {% endif %}
       layout: horizontal
     - type: conditional
       conditions:
@@ -403,12 +444,21 @@ views:
       heading_style: title
       icon: mdi:shower
     - type: custom:mushroom-template-card
-      primary: '{{ states(''sensor.esszimmer_heizung_esszimmer_current_temperature'') }} °C'
-      secondary: '{{ states(''sensor.esszimmer_heizung_esszimmer_current_humidity'') }} % Luftfeuchtigkeit'
-      icon: mdi:thermometer
+      primary: >-
+        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature') %}
+        {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
+      secondary: >-
+        {% set h = states('sensor.esszimmer_heizung_esszimmer_current_humidity') %}
+        {% if h in ['unavailable', 'unknown', 'none', ''] %}Sensor offline{% else %}{{ h }} % Luftfeuchtigkeit{% endif %}
+      icon: >-
+        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature') %}
+        {{ 'mdi:thermometer-off' if t in ['unavailable', 'unknown', 'none', ''] else 'mdi:thermometer' }}
       icon_color: >-
-        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature') | float(0) %}
-        {% if t >= 23 %}orange{% elif t <= 19 %}blue{% else %}green{% endif %}
+        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature') %}
+        {% if t in ['unavailable', 'unknown', 'none', ''] %}grey{% else %}
+        {% set tf = t | float(0) %}
+        {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
+        {% endif %}
       layout: horizontal
     - type: custom:mushroom-chips-card
       alignment: start
