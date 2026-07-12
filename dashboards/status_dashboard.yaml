@@ -337,6 +337,47 @@ views:
             entity_id:
             - light.esszimmer_hue_go_1
             - light.esszimmer_hue_white_lamp_1
+    - type: custom:button-card
+      entity: vacuum.bob
+      name: Saugroboter Bob
+      icon: mdi:robot-vacuum
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      label: "[[[\n  const st = states['vacuum.bob'];\n  const state = st ? st.state : 'unknown';\n  const labels = {cleaning:'Läuft', docked:'Läuft nicht', idle:'Läuft nicht', paused:'Pausiert', returning:'Kehrt zurück', error:'Fehler', off:'Aus'};\n  const running = labels[state] || (state.charAt(0).toUpperCase() + state.slice(1));\n  const last = states['sensor.bob_letztes_reinigungsende'];\n  let lastTxt = '';\n  if (last && last.state && !['unknown','unavailable',''].includes(last.state)) {\n    const d = new Date(last.state);\n    if (!isNaN(d.getTime())) {\n      const dd = String(d.getDate()).padStart(2,'0');\n      const mm = String(d.getMonth()+1).padStart(2,'0');\n      const hh = String(d.getHours()).padStart(2,'0');\n      const mi = String(d.getMinutes()).padStart(2,'0');\n      lastTxt = 'Letzte Reinigung: ' + dd + '.' + mm + '. um ' + hh + ':' + mi;\n    }\n  }\n  return lastTxt ? (running + ' · ' + lastTxt) : running;\n]]]"
+      tap_action:
+        action: navigate
+        navigation_path: /dashboard-reinigung/roborock
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+      state:
+      - value: cleaning
+        color: rgb(76, 175, 80)
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite
+      - operator: default
+        color: var(--disabled-text-color)
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
   - type: vertical-stack
     cards:
     - type: heading
@@ -416,6 +457,46 @@ views:
           perform_action: light.toggle
           target:
             entity_id: light.buro_buro
+    - type: custom:button-card
+      entity: sensor.hp_envy_6400_series
+      name: HP Envy Drucker
+      icon: mdi:printer
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      label: "[[[\n  const st = states['sensor.hp_envy_6400_series'];\n  const status = st ? st.state : 'unknown';\n  const statusLabels = {idle:'Bereit', printing:'Druckt…', unknown:'Unbekannt'};\n  const black = states['sensor.hp_envy_6400_series_black_cartridge'];\n  const color = states['sensor.hp_envy_6400_series_tri_color_cartridge'];\n  const fmt = (s) => (!s || ['unavailable','unknown','none',''].includes(s.state)) ? '?' : (s.state + '%');\n  const parts = [statusLabels[status] || status];\n  parts.push('Schwarz ' + fmt(black));\n  parts.push('Farbe ' + fmt(color));\n  return parts.join(' · ');\n]]]"
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+      state:
+      - operator: template
+        value: "[[[\n  const black = states['sensor.hp_envy_6400_series_black_cartridge'];\n  const color = states['sensor.hp_envy_6400_series_tri_color_cartridge'];\n  const low = (s) => s && !isNaN(parseFloat(s.state)) && parseFloat(s.state) <= 10;\n  return low(black) || low(color);\n]]]"
+        icon: mdi:printer-alert
+        color: red
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite
+      - operator: default
+        color: var(--disabled-text-color)
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
   - type: vertical-stack
     cards:
     - type: heading
@@ -442,6 +523,49 @@ views:
         {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
         {% endif %}
       layout: horizontal
+    - type: custom:button-card
+      entity: sensor.spulmaschine_zustand
+      name: Spülmaschine
+      icon: mdi:dishwasher
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      label: "[[[\n  const zustand = states['sensor.spulmaschine_zustand'];\n  const state = zustand ? zustand.state : 'unknown';\n  const labels = {off:'Aus', idle:'Bereit', finished:'Fertig!', paused:'Pausiert', user_paused:'Pausiert', starting:'Startet…', ending:'Endet…', delay_wait:'Startverzögerung', interrupted:'Unterbrochen', force_stopped:'Gestoppt', clean:'Fertig – bitte ausräumen'};\n  if (state !== 'running') {\n    const base = labels[state] || (state.charAt(0).toUpperCase() + state.slice(1));\n    if (state === 'off') {\n      const last = states['input_datetime.letzter_lauf_spulmaschine'];\n      if (last && last.state) {\n        const m = last.state.match(/^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2})/);\n        if (m) return base + ' · Zuletzt gelaufen: ' + m[3] + '.' + m[2] + '. um ' + m[4] + ':' + m[5];\n      }\n    }\n    return base;\n  }\n  const program = states['sensor.spulmaschine_programm'] ? states['sensor.spulmaschine_programm'].state : 'off';\n  const minsRaw = states['sensor.spulmaschine_verbleibende_zeit'] ? states['sensor.spulmaschine_verbleibende_zeit'].state : 'unknown';\n  const mins = parseFloat(minsRaw);\n  const parts = [];\n  if (program && !['off','unknown','unavailable','none',''].includes(program)) parts.push(program);\n  if (!isNaN(mins) && mins >= 0) {\n    const finish = new Date(Date.now() + mins*60000);\n    const hh = String(finish.getHours()).padStart(2,'0');\n    const mm = String(finish.getMinutes()).padStart(2,'0');\n    const h = Math.floor(mins/60);\n    const m = Math.round(mins%60);\n    const dur = h > 0 ? (h + ':' + String(m).padStart(2,'0') + ' h') : (m + ' min');\n    parts.push('fertig ' + hh + ':' + mm);\n    parts.push(dur + ' verbleibend');\n  } else {\n    parts.push('Programm wird erkannt…');\n  }\n  return parts.join(' · ');\n]]]"
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+      state:
+      - value: running
+        color: rgb(33, 150, 243)
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite, machine-wobble 1.2s ease-in-out infinite
+      - value: finished
+        color: rgb(76, 175, 80)
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite
+      - operator: default
+        color: var(--disabled-text-color)
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } } @keyframes machine-wobble { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }'
     - type: conditional
       conditions:
       - condition: state
@@ -520,6 +644,98 @@ views:
           perform_action: light.toggle
           target:
             entity_id: light.flur_flur
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Keller
+      heading_style: title
+      icon: mdi:home-floor-b
+    - type: custom:button-card
+      entity: sensor.waschmaschine_zustand
+      name: Waschmaschine
+      icon: mdi:washing-machine
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      label: "[[[\n  const zustand = states['sensor.waschmaschine_zustand'];\n  const state = zustand ? zustand.state : 'unknown';\n  const labels = {off:'Aus', idle:'Bereit', finished:'Fertig!', paused:'Pausiert', user_paused:'Pausiert', starting:'Startet…', ending:'Endet…', delay_wait:'Startverzögerung', interrupted:'Unterbrochen', force_stopped:'Gestoppt', clean:'Fertig – bitte ausräumen'};\n  if (state !== 'running') {\n    const base = labels[state] || (state.charAt(0).toUpperCase() + state.slice(1));\n    if (state === 'off') {\n      const last = states['input_datetime.letzter_lauf_waschmaschine'];\n      if (last && last.state) {\n        const m = last.state.match(/^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2})/);\n        if (m) return base + ' · Zuletzt gelaufen: ' + m[3] + '.' + m[2] + '. um ' + m[4] + ':' + m[5];\n      }\n    }\n    return base;\n  }\n  const program = states['sensor.waschmaschine_programm'] ? states['sensor.waschmaschine_programm'].state : 'off';\n  const minsRaw = states['sensor.waschmaschine_verbleibende_zeit'] ? states['sensor.waschmaschine_verbleibende_zeit'].state : 'unknown';\n  const mins = parseFloat(minsRaw);\n  const parts = [];\n  if (program && !['off','unknown','unavailable','none',''].includes(program)) parts.push(program);\n  if (!isNaN(mins) && mins >= 0) {\n    const finish = new Date(Date.now() + mins*60000);\n    const hh = String(finish.getHours()).padStart(2,'0');\n    const mm = String(finish.getMinutes()).padStart(2,'0');\n    const h = Math.floor(mins/60);\n    const m = Math.round(mins%60);\n    const dur = h > 0 ? (h + ':' + String(m).padStart(2,'0') + ' h') : (m + ' min');\n    parts.push('fertig ' + hh + ':' + mm);\n    parts.push(dur + ' verbleibend');\n  } else {\n    parts.push('Programm wird erkannt…');\n  }\n  return parts.join(' · ');\n]]]"
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+      state:
+      - value: running
+        color: rgb(0, 150, 136)
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite, machine-spin 2.2s linear infinite
+      - value: finished
+        color: rgb(76, 175, 80)
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite
+      - operator: default
+        color: var(--disabled-text-color)
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } } @keyframes machine-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }'
+    - type: custom:button-card
+      entity: sensor.trockner_zustand
+      name: Trockner
+      icon: mdi:tumble-dryer
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      label: "[[[\n  const zustand = states['sensor.trockner_zustand'];\n  const state = zustand ? zustand.state : 'unknown';\n  const labels = {off:'Aus', idle:'Bereit', finished:'Fertig!', paused:'Pausiert', user_paused:'Pausiert', starting:'Startet…', ending:'Endet…', delay_wait:'Startverzögerung', interrupted:'Unterbrochen', force_stopped:'Gestoppt', clean:'Fertig – bitte ausräumen'};\n  if (state !== 'running') {\n    const base = labels[state] || (state.charAt(0).toUpperCase() + state.slice(1));\n    if (state === 'off') {\n      const last = states['input_datetime.letzter_lauf_trockner'];\n      if (last && last.state) {\n        const m = last.state.match(/^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2})/);\n        if (m) return base + ' · Zuletzt gelaufen: ' + m[3] + '.' + m[2] + '. um ' + m[4] + ':' + m[5];\n      }\n    }\n    return base;\n  }\n  const program = states['sensor.trockner_programm'] ? states['sensor.trockner_programm'].state : 'off';\n  const minsRaw = states['sensor.trockner_verbleibende_zeit'] ? states['sensor.trockner_verbleibende_zeit'].state : 'unknown';\n  const mins = parseFloat(minsRaw);\n  const parts = [];\n  if (program && !['off','unknown','unavailable','none',''].includes(program)) parts.push(program);\n  if (!isNaN(mins) && mins >= 0) {\n    const finish = new Date(Date.now() + mins*60000);\n    const hh = String(finish.getHours()).padStart(2,'0');\n    const mm = String(finish.getMinutes()).padStart(2,'0');\n    const h = Math.floor(mins/60);\n    const m = Math.round(mins%60);\n    const dur = h > 0 ? (h + ':' + String(m).padStart(2,'0') + ' h') : (m + ' min');\n    parts.push('fertig ' + hh + ':' + mm);\n    parts.push(dur + ' verbleibend');\n  } else {\n    parts.push('Programm wird erkannt…');\n  }\n  return parts.join(' · ');\n]]]"
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+      state:
+      - value: running
+        color: rgb(255, 152, 0)
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite, machine-spin 2.2s linear infinite
+      - value: finished
+        color: rgb(76, 175, 80)
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite
+      - operator: default
+        color: var(--disabled-text-color)
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } } @keyframes machine-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }'
 - title: Erledigungen
   path: erledigungen
   icon: mdi:clipboard-check-outline
@@ -708,216 +924,6 @@ views:
         {% for p in pkgs %}- **{{ p.retailer | default(''Unbekannter Shop'') }}** via {{ p.carrier | default(''?'') }} — {{ p.status | default(p.delivery_status) | default(''unterwegs'') }}
 
         {% endfor %}{% else %}_Aktuell ist nichts unterwegs._{% endif %}'
-- title: Maschinen
-  path: maschinen
-  icon: mdi:washing-machine
-  cards:
-  - type: vertical-stack
-    cards:
-    - type: custom:button-card
-      entity: sensor.spulmaschine_zustand
-      name: Spülmaschine
-      icon: mdi:dishwasher
-      show_name: true
-      show_state: false
-      show_label: true
-      show_icon: true
-      label: "[[[\n  const zustand = states['sensor.spulmaschine_zustand'];\n  const state = zustand ? zustand.state : 'unknown';\n  const labels = {off:'Aus', idle:'Bereit', finished:'Fertig!', paused:'Pausiert', user_paused:'Pausiert', starting:'Startet…', ending:'Endet…', delay_wait:'Startverzögerung', interrupted:'Unterbrochen', force_stopped:'Gestoppt', clean:'Fertig – bitte ausräumen'};\n  if (state !== 'running') {\n    const base = labels[state] || (state.charAt(0).toUpperCase() + state.slice(1));\n    if (state === 'off') {\n      const last = states['input_datetime.letzter_lauf_spulmaschine'];\n      if (last && last.state) {\n        const m = last.state.match(/^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2})/);\n        if (m) return base + ' · Zuletzt gelaufen: ' + m[3] + '.' + m[2] + '. um ' + m[4] + ':' + m[5];\n      }\n    }\n    return base;\n  }\n  const program = states['sensor.spulmaschine_programm'] ? states['sensor.spulmaschine_programm'].state : 'off';\n  const minsRaw = states['sensor.spulmaschine_verbleibende_zeit'] ? states['sensor.spulmaschine_verbleibende_zeit'].state : 'unknown';\n  const mins = parseFloat(minsRaw);\n  const parts = [];\n  if (program && !['off','unknown','unavailable','none',''].includes(program)) parts.push(program);\n  if (!isNaN(mins) && mins >= 0) {\n    const finish = new Date(Date.now() + mins*60000);\n\
-        \    const hh = String(finish.getHours()).padStart(2,'0');\n    const mm = String(finish.getMinutes()).padStart(2,'0');\n    const h = Math.floor(mins/60);\n    const m = Math.round(mins%60);\n    const dur = h > 0 ? (h + ':' + String(m).padStart(2,'0') + ' h') : (m + ' min');\n    parts.push('fertig ' + hh + ':' + mm);\n    parts.push(dur + ' verbleibend');\n  } else {\n    parts.push('Programm wird erkannt…');\n  }\n  return parts.join(' · ');\n]]]"
-      styles:
-        card:
-        - padding: 12px
-        - min-height: 66px
-        grid:
-        - grid-template-areas: '"i n" "i l"'
-        - grid-template-columns: 42px 1fr
-        - grid-template-rows: min-content min-content
-        icon:
-        - width: 24px
-        - height: 24px
-        name:
-        - justify-self: start
-        - font-weight: bold
-        - font-size: 14px
-        label:
-        - justify-self: start
-        - font-size: 12px
-        - color: var(--secondary-text-color)
-        - white-space: normal
-      state:
-      - value: running
-        color: rgb(33, 150, 243)
-        styles:
-          icon:
-          - animation: machine-blink 1.6s ease-in-out infinite, machine-wobble 1.2s ease-in-out infinite
-      - value: finished
-        color: rgb(76, 175, 80)
-      - operator: default
-        color: var(--disabled-text-color)
-      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } } @keyframes machine-wobble { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }'
-    - type: custom:button-card
-      entity: sensor.waschmaschine_zustand
-      name: Waschmaschine
-      icon: mdi:washing-machine
-      show_name: true
-      show_state: false
-      show_label: true
-      show_icon: true
-      label: "[[[\n  const zustand = states['sensor.waschmaschine_zustand'];\n  const state = zustand ? zustand.state : 'unknown';\n  const labels = {off:'Aus', idle:'Bereit', finished:'Fertig!', paused:'Pausiert', user_paused:'Pausiert', starting:'Startet…', ending:'Endet…', delay_wait:'Startverzögerung', interrupted:'Unterbrochen', force_stopped:'Gestoppt', clean:'Fertig – bitte ausräumen'};\n  if (state !== 'running') {\n    const base = labels[state] || (state.charAt(0).toUpperCase() + state.slice(1));\n    if (state === 'off') {\n      const last = states['input_datetime.letzter_lauf_waschmaschine'];\n      if (last && last.state) {\n        const m = last.state.match(/^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2})/);\n        if (m) return base + ' · Zuletzt gelaufen: ' + m[3] + '.' + m[2] + '. um ' + m[4] + ':' + m[5];\n      }\n    }\n    return base;\n  }\n  const program = states['sensor.waschmaschine_programm'] ? states['sensor.waschmaschine_programm'].state : 'off';\n  const minsRaw = states['sensor.waschmaschine_verbleibende_zeit'] ? states['sensor.waschmaschine_verbleibende_zeit'].state : 'unknown';\n  const mins = parseFloat(minsRaw);\n  const parts = [];\n  if (program && !['off','unknown','unavailable','none',''].includes(program)) parts.push(program);\n  if (!isNaN(mins) && mins >= 0) {\n    const finish = new Date(Date.now() +\
-        \ mins*60000);\n    const hh = String(finish.getHours()).padStart(2,'0');\n    const mm = String(finish.getMinutes()).padStart(2,'0');\n    const h = Math.floor(mins/60);\n    const m = Math.round(mins%60);\n    const dur = h > 0 ? (h + ':' + String(m).padStart(2,'0') + ' h') : (m + ' min');\n    parts.push('fertig ' + hh + ':' + mm);\n    parts.push(dur + ' verbleibend');\n  } else {\n    parts.push('Programm wird erkannt…');\n  }\n  return parts.join(' · ');\n]]]"
-      styles:
-        card:
-        - padding: 12px
-        - min-height: 66px
-        grid:
-        - grid-template-areas: '"i n" "i l"'
-        - grid-template-columns: 42px 1fr
-        - grid-template-rows: min-content min-content
-        icon:
-        - width: 24px
-        - height: 24px
-        name:
-        - justify-self: start
-        - font-weight: bold
-        - font-size: 14px
-        label:
-        - justify-self: start
-        - font-size: 12px
-        - color: var(--secondary-text-color)
-        - white-space: normal
-      state:
-      - value: running
-        color: rgb(0, 150, 136)
-        styles:
-          icon:
-          - animation: machine-blink 1.6s ease-in-out infinite, machine-spin 2.2s linear infinite
-      - value: finished
-        color: rgb(76, 175, 80)
-      - operator: default
-        color: var(--disabled-text-color)
-      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } } @keyframes machine-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }'
-    - type: custom:button-card
-      entity: sensor.trockner_zustand
-      name: Trockner
-      icon: mdi:tumble-dryer
-      show_name: true
-      show_state: false
-      show_label: true
-      show_icon: true
-      label: "[[[\n  const zustand = states['sensor.trockner_zustand'];\n  const state = zustand ? zustand.state : 'unknown';\n  const labels = {off:'Aus', idle:'Bereit', finished:'Fertig!', paused:'Pausiert', user_paused:'Pausiert', starting:'Startet…', ending:'Endet…', delay_wait:'Startverzögerung', interrupted:'Unterbrochen', force_stopped:'Gestoppt', clean:'Fertig – bitte ausräumen'};\n  if (state !== 'running') {\n    const base = labels[state] || (state.charAt(0).toUpperCase() + state.slice(1));\n    if (state === 'off') {\n      const last = states['input_datetime.letzter_lauf_trockner'];\n      if (last && last.state) {\n        const m = last.state.match(/^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2})/);\n        if (m) return base + ' · Zuletzt gelaufen: ' + m[3] + '.' + m[2] + '. um ' + m[4] + ':' + m[5];\n      }\n    }\n    return base;\n  }\n  const program = states['sensor.trockner_programm'] ? states['sensor.trockner_programm'].state : 'off';\n  const minsRaw = states['sensor.trockner_verbleibende_zeit'] ? states['sensor.trockner_verbleibende_zeit'].state : 'unknown';\n  const mins = parseFloat(minsRaw);\n  const parts = [];\n  if (program && !['off','unknown','unavailable','none',''].includes(program)) parts.push(program);\n  if (!isNaN(mins) && mins >= 0) {\n    const finish = new Date(Date.now() + mins*60000);\n    const hh\
-        \ = String(finish.getHours()).padStart(2,'0');\n    const mm = String(finish.getMinutes()).padStart(2,'0');\n    const h = Math.floor(mins/60);\n    const m = Math.round(mins%60);\n    const dur = h > 0 ? (h + ':' + String(m).padStart(2,'0') + ' h') : (m + ' min');\n    parts.push('fertig ' + hh + ':' + mm);\n    parts.push(dur + ' verbleibend');\n  } else {\n    parts.push('Programm wird erkannt…');\n  }\n  return parts.join(' · ');\n]]]"
-      styles:
-        card:
-        - padding: 12px
-        - min-height: 66px
-        grid:
-        - grid-template-areas: '"i n" "i l"'
-        - grid-template-columns: 42px 1fr
-        - grid-template-rows: min-content min-content
-        icon:
-        - width: 24px
-        - height: 24px
-        name:
-        - justify-self: start
-        - font-weight: bold
-        - font-size: 14px
-        label:
-        - justify-self: start
-        - font-size: 12px
-        - color: var(--secondary-text-color)
-        - white-space: normal
-      state:
-      - value: running
-        color: rgb(255, 152, 0)
-        styles:
-          icon:
-          - animation: machine-blink 1.6s ease-in-out infinite, machine-spin 2.2s linear infinite
-      - value: finished
-        color: rgb(76, 175, 80)
-      - operator: default
-        color: var(--disabled-text-color)
-      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } } @keyframes machine-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }'
-    - type: custom:button-card
-      entity: vacuum.bob
-      name: Saugroboter Bob
-      icon: mdi:robot-vacuum
-      show_name: true
-      show_state: false
-      show_label: true
-      show_icon: true
-      label: "[[[\n  const st = states['vacuum.bob'];\n  const state = st ? st.state : 'unknown';\n  const labels = {cleaning:'Läuft', docked:'Läuft nicht', idle:'Läuft nicht', paused:'Pausiert', returning:'Kehrt zurück', error:'Fehler', off:'Aus'};\n  const running = labels[state] || (state.charAt(0).toUpperCase() + state.slice(1));\n  const last = states['sensor.bob_letztes_reinigungsende'];\n  let lastTxt = '';\n  if (last && last.state && !['unknown','unavailable',''].includes(last.state)) {\n    const d = new Date(last.state);\n    if (!isNaN(d.getTime())) {\n      const dd = String(d.getDate()).padStart(2,'0');\n      const mm = String(d.getMonth()+1).padStart(2,'0');\n      const hh = String(d.getHours()).padStart(2,'0');\n      const mi = String(d.getMinutes()).padStart(2,'0');\n      lastTxt = 'Letzte Reinigung: ' + dd + '.' + mm + '. um ' + hh + ':' + mi;\n    }\n  }\n  return lastTxt ? (running + ' · ' + lastTxt) : running;\n]]]"
-      tap_action:
-        action: navigate
-        navigation_path: /dashboard-reinigung/roborock
-      styles:
-        card:
-        - padding: 12px
-        - min-height: 66px
-        grid:
-        - grid-template-areas: '"i n" "i l"'
-        - grid-template-columns: 42px 1fr
-        - grid-template-rows: min-content min-content
-        icon:
-        - width: 24px
-        - height: 24px
-        name:
-        - justify-self: start
-        - font-weight: bold
-        - font-size: 14px
-        label:
-        - justify-self: start
-        - font-size: 12px
-        - color: var(--secondary-text-color)
-        - white-space: normal
-      state:
-      - value: cleaning
-        color: rgb(76, 175, 80)
-        styles:
-          icon:
-          - animation: machine-blink 1.6s ease-in-out infinite
-      - operator: default
-        color: var(--disabled-text-color)
-      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
-    - type: custom:button-card
-      entity: sensor.hp_envy_6400_series
-      name: HP Envy Drucker
-      icon: mdi:printer
-      show_name: true
-      show_state: false
-      show_label: true
-      show_icon: true
-      label: "[[[\n  const st = states['sensor.hp_envy_6400_series'];\n  const status = st ? st.state : 'unknown';\n  const statusLabels = {idle:'Bereit', printing:'Druckt…', unknown:'Unbekannt'};\n  const black = states['sensor.hp_envy_6400_series_black_cartridge'];\n  const color = states['sensor.hp_envy_6400_series_tri_color_cartridge'];\n  const fmt = (s) => (!s || ['unavailable','unknown','none',''].includes(s.state)) ? '?' : (s.state + '%');\n  const parts = [statusLabels[status] || status];\n  parts.push('Schwarz ' + fmt(black));\n  parts.push('Farbe ' + fmt(color));\n  return parts.join(' · ');\n]]]"
-      styles:
-        card:
-        - padding: 12px
-        - min-height: 66px
-        grid:
-        - grid-template-areas: '"i n" "i l"'
-        - grid-template-columns: 42px 1fr
-        - grid-template-rows: min-content min-content
-        icon:
-        - width: 24px
-        - height: 24px
-        name:
-        - justify-self: start
-        - font-weight: bold
-        - font-size: 14px
-        label:
-        - justify-self: start
-        - font-size: 12px
-        - color: var(--secondary-text-color)
-        - white-space: normal
-      state:
-      - operator: template
-        value: "[[[\n  const black = states['sensor.hp_envy_6400_series_black_cartridge'];\n  const color = states['sensor.hp_envy_6400_series_tri_color_cartridge'];\n  const low = (s) => s && !isNaN(parseFloat(s.state)) && parseFloat(s.state) <= 10;\n  return low(black) || low(color);\n]]]"
-        icon: mdi:printer-alert
-        color: red
-        styles:
-          icon:
-          - animation: machine-blink 1.6s ease-in-out infinite
-      - operator: default
-        color: var(--disabled-text-color)
-      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
 - title: Auto
   path: auto
   icon: mdi:car-electric
@@ -925,7 +931,7 @@ views:
   - type: custom:vehicle-status-card
     name: BYD Seal U DM-i
     images:
-    - image: /local/byd_seal_u_dmi.jpg
+    - image: /local/byd_seal_u_dmi.png
     indicator_rows:
     - row_items:
       - type: entity
@@ -952,6 +958,16 @@ views:
         value_position: inside
       charging_entity: binary_sensor.byd_seal_u_dm_i_laden
       progress_color: '#4caf50'
+      bar_height: 16
+      bar_radius: 8
+    - energy_level:
+        entity: sensor.byd_seal_u_dm_i_kraftstofffullstand
+        icon: mdi:gas-station
+        value_position: inside
+      range_level:
+        entity: sensor.byd_seal_u_dm_i_restreichweite_kraftstoff
+        value_position: inside
+      progress_color: '#ff9800'
       bar_height: 16
       bar_radius: 8
     button_cards:
