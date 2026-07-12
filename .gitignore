@@ -26,6 +26,7 @@ deps/
 tts/
 image/
 www/community/
+www/ha_washdata/preview/
 custom_components/**/__pycache__/
 custom_components/**/*.pyc
 **/__pycache__/
