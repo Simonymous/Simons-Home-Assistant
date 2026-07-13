@@ -135,13 +135,41 @@ views:
         {% if t >= 23 %}orange{% elif t <= 19 %}blue{% else %}green{% endif %}
         {% endif %}
       layout: horizontal
-    - type: custom:mushroom-chips-card
-      alignment: start
-      chips:
-      - type: template
+    - type: custom:button-card
+      entity: cover.schlafzimmer_links
+      name: Beide Rollos
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+      state:
+      - operator: template
+        value: >-
+          [[[ return states['cover.schlafzimmer_links'].state === 'closed' ||
+          states['cover.schlafzimmer_rechts'].state === 'closed'; ]]]
+        label: Öffnen
         icon: mdi:arrow-expand-vertical
-        content: Beide öffnen
-        icon_color: blue
+        color: blue
         tap_action:
           action: perform-action
           perform_action: cover.open_cover
@@ -149,10 +177,10 @@ views:
             entity_id:
             - cover.schlafzimmer_links
             - cover.schlafzimmer_rechts
-      - type: template
+      - operator: default
+        label: Schließen
         icon: mdi:arrow-collapse-vertical
-        content: Beide schließen
-        icon_color: blue
+        color: blue
         tap_action:
           action: perform-action
           perform_action: cover.close_cover
