@@ -1418,6 +1418,59 @@ views:
           name: Tradfri Fernbedienung
         - entity: sensor.wohnzimmer_hue_dimmer_switch_wz_batterie
           name: Hue Dimmer Switch (Wohnzimmer)
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
+      heading: Einkaufsliste
+      heading_style: title
+      icon: mdi:cart-outline
+    - type: custom:button-card
+      entity: todo.couple
+      name: Einkaufsliste
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      icon: mdi:cart-outline
+      label: "[[[\n  const st = states['todo.couple'];\n  const n = st ? parseInt(st.state, 10) : 0;\n  if (isNaN(n) || n === 0) return 'Nichts auf der Liste';\n  if (n === 1) return '1 Sache auf der Liste';\n  return n + ' Sachen auf der Liste';\n]]]"
+      tap_action:
+        action: navigate
+        navigation_path: '#einkaufsliste'
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+      state:
+      - operator: template
+        value: "[[[ return states['todo.couple'] && parseInt(states['todo.couple'].state, 10) > 0; ]]]"
+        color: amber
+      - operator: default
+        color: var(--disabled-text-color)
+  - type: custom:bubble-card
+    card_type: pop-up
+    hash: '#einkaufsliste'
+    name: Einkaufsliste
+    icon: mdi:cart-outline
+    cards:
+    - type: todo-list
+      entity: todo.couple
+      title: Einkaufsliste
 - title: Auto
   path: auto
   icon: mdi:car-electric
