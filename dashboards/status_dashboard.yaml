@@ -928,18 +928,161 @@ views:
       heading: Sendungen & Pakete
       heading_style: title
       icon: mdi:package-variant-closed
-    - type: custom:mushroom-template-card
-      primary: '{% set count = states(''sensor.tracking_numbers_simon_triem_icloud_com_simon_triem_icloud_com_tracking_numbers'') | int(0) %}{% if count == 0 %} Keine Sendungen unterwegs {% elif count == 1 %} 1 Sendung unterwegs {% else %} {{ count }} Sendungen unterwegs {% endif %}'
-      secondary: '{% set by_carrier = state_attr(''sensor.tracking_numbers_simon_triem_icloud_com_simon_triem_icloud_com_tracking_numbers'', ''summary'').by_carrier if state_attr(''sensor.tracking_numbers_simon_triem_icloud_com_simon_triem_icloud_com_tracking_numbers'', ''summary'') else {} %}{% if by_carrier %} {% for carrier, n in by_carrier.items() %}{{ carrier }}: {{ n }}{% if not loop.last %} · {% endif %}{% endfor %} {% else %} Alles zugestellt {% endif %}'
-      icon: mdi:truck-delivery
-      icon_color: '{% if states(''sensor.tracking_numbers_simon_triem_icloud_com_simon_triem_icloud_com_tracking_numbers'') | int(0) > 0 %} purple {% else %} grey {% endif %}'
-      layout: horizontal
+    - type: grid
+      columns: 3
+      square: false
+      cards:
+      - type: custom:button-card
+        name: Offen
+        icon: mdi:cart-outline
+        show_name: true
+        show_state: false
+        show_label: true
+        show_icon: true
+        label: "[[[\n  const n = parseInt(states['sensor.pakete_offen'] ? states['sensor.pakete_offen'].state : '0') || 0;\n  if (n === 0) return 'Keine offenen Bestellungen';\n  if (n === 1) return '1 offene Bestellung';\n  return n + ' offene Bestellungen';\n]]]"
+        tap_action:
+          action: navigate
+          navigation_path: '#pakete-offen'
+        styles:
+          card:
+          - padding: 12px
+          - min-height: 66px
+          grid:
+          - grid-template-areas: '"i n" "i l"'
+          - grid-template-columns: 42px 1fr
+          - grid-template-rows: min-content min-content
+          icon:
+          - width: 24px
+          - height: 24px
+          name:
+          - justify-self: start
+          - font-weight: bold
+          - font-size: 14px
+          label:
+          - justify-self: start
+          - font-size: 12px
+          - color: var(--secondary-text-color)
+          - white-space: normal
+        state:
+        - operator: template
+          value: '[[[ return parseInt(states[''sensor.pakete_offen''] ? states[''sensor.pakete_offen''].state : ''0'') > 0; ]]]'
+          color: amber
+        - operator: default
+          color: var(--disabled-text-color)
+      - type: custom:button-card
+        name: Unterwegs
+        icon: mdi:truck-delivery-outline
+        show_name: true
+        show_state: false
+        show_label: true
+        show_icon: true
+        label: "[[[\n  const n = parseInt(states['sensor.pakete_unterwegs'] ? states['sensor.pakete_unterwegs'].state : '0') || 0;\n  if (n === 0) return 'Nichts unterwegs';\n  if (n === 1) return '1 Sendung unterwegs';\n  return n + ' Sendungen unterwegs';\n]]]"
+        tap_action:
+          action: navigate
+          navigation_path: '#pakete-unterwegs'
+        styles:
+          card:
+          - padding: 12px
+          - min-height: 66px
+          grid:
+          - grid-template-areas: '"i n" "i l"'
+          - grid-template-columns: 42px 1fr
+          - grid-template-rows: min-content min-content
+          icon:
+          - width: 24px
+          - height: 24px
+          name:
+          - justify-self: start
+          - font-weight: bold
+          - font-size: 14px
+          label:
+          - justify-self: start
+          - font-size: 12px
+          - color: var(--secondary-text-color)
+          - white-space: normal
+        state:
+        - operator: template
+          value: '[[[ return parseInt(states[''sensor.pakete_unterwegs''] ? states[''sensor.pakete_unterwegs''].state : ''0'') > 0; ]]]'
+          color: blue
+        - operator: default
+          color: var(--disabled-text-color)
+      - type: custom:button-card
+        name: Heute
+        icon: mdi:home-import-outline
+        show_name: true
+        show_state: false
+        show_label: true
+        show_icon: true
+        label: "[[[\n  const n = parseInt(states['sensor.pakete_heute'] ? states['sensor.pakete_heute'].state : '0') || 0;\n  if (n === 0) return 'Heute kommt nichts an';\n  if (n === 1) return '1 Sendung kommt heute an';\n  return n + ' Sendungen kommen heute an';\n]]]"
+        tap_action:
+          action: navigate
+          navigation_path: '#pakete-heute'
+        styles:
+          card:
+          - padding: 12px
+          - min-height: 66px
+          grid:
+          - grid-template-areas: '"i n" "i l"'
+          - grid-template-columns: 42px 1fr
+          - grid-template-rows: min-content min-content
+          icon:
+          - width: 24px
+          - height: 24px
+          name:
+          - justify-self: start
+          - font-weight: bold
+          - font-size: 14px
+          label:
+          - justify-self: start
+          - font-size: 12px
+          - color: var(--secondary-text-color)
+          - white-space: normal
+        state:
+        - operator: template
+          value: '[[[ return parseInt(states[''sensor.pakete_heute''] ? states[''sensor.pakete_heute''].state : ''0'') > 0; ]]]'
+          color: rgb(76, 175, 80)
+          styles:
+            icon:
+            - animation: machine-blink 1.6s ease-in-out infinite
+        - operator: default
+          color: var(--disabled-text-color)
+        extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+  - type: custom:bubble-card
+    card_type: pop-up
+    hash: '#pakete-offen'
+    name: Offene Bestellungen
+    icon: mdi:cart-outline
+    cards:
     - type: markdown
-      content: '{% set pkgs = state_attr(''sensor.tracking_numbers_simon_triem_icloud_com_simon_triem_icloud_com_tracking_numbers'', ''packages'') or [] %}{% if pkgs %}
+      content: '{% set pkgs = state_attr(''sensor.pakete_offen'', ''pakete'') or [] %}{% if pkgs %}
 
-        {% for p in pkgs %}- **{{ p.retailer | default(''Unbekannter Shop'') }}** via {{ p.carrier | default(''?'') }} — {{ p.status | default(p.delivery_status) | default(''unterwegs'') }}
+        {% for p in pkgs %}- **{{ p.carrier | default(''?'') }}** — {{ p.beschreibung | default(''Unbekannter Artikel'') }}{% if p.erwartet %} · erwartet: {{ p.erwartet }}{% endif %}
 
-        {% endfor %}{% else %}_Aktuell ist nichts unterwegs._{% endif %}'
+        {% endfor %}{% else %}_Aktuell nichts offen._{% endif %}'
+  - type: custom:bubble-card
+    card_type: pop-up
+    hash: '#pakete-unterwegs'
+    name: Sendungen unterwegs
+    icon: mdi:truck-delivery-outline
+    cards:
+    - type: markdown
+      content: '{% set pkgs = state_attr(''sensor.pakete_unterwegs'', ''pakete'') or [] %}{% if pkgs %}
+
+        {% for p in pkgs %}- **{{ p.carrier | default(''?'') }}** — {{ p.beschreibung | default(''Unbekannter Artikel'') }}{% if p.erwartet %} · erwartet: {{ p.erwartet }}{% endif %}
+
+        {% endfor %}{% else %}_Aktuell nichts unterwegs._{% endif %}'
+  - type: custom:bubble-card
+    card_type: pop-up
+    hash: '#pakete-heute'
+    name: Kommt heute an
+    icon: mdi:home-import-outline
+    cards:
+    - type: markdown
+      content: '{% set pkgs = state_attr(''sensor.pakete_heute'', ''pakete'') or [] %}{% if pkgs %}
+
+        {% for p in pkgs %}- **{{ p.carrier | default(''?'') }}** — {{ p.beschreibung | default(''Unbekannter Artikel'') }}{% if p.erwartet %} · erwartet: {{ p.erwartet }}{% endif %}
+
+        {% endfor %}{% else %}_Heute kommt nichts an._{% endif %}'
   - type: vertical-stack
     cards:
     - type: heading

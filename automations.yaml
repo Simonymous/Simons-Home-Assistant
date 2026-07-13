@@ -132,8 +132,8 @@
   mode: restart
 - id: '1783778455548'
   alias: 'Synology: Download abgeschlossen'
-  description: Protokolliert den Zeitpunkt und meldet, wenn der Download auf der
-    Synology beendet ist.
+  description: Protokolliert den Zeitpunkt und meldet, wenn der Download auf der Synology
+    beendet ist.
   triggers:
   - entity_id: binary_sensor.synology_download_aktiv
     from: 'on'
@@ -210,7 +210,7 @@
         media_content_id: media-source://media_source/local/doorbell.mp3
         media_content_type: audio/mpeg
         metadata: {}
-  - action: notify.mobile_app_eierphone_simon
+  - action: notify.notify
     data:
       title: "\U0001F514 Es hat geklingelt!"
       message: Jemand steht am Vordereingang. Haustür öffnen?
@@ -276,8 +276,7 @@
 - id: '1783786435282'
   alias: 'Waschmaschine: Fertig-Benachrichtigung'
   description: Sendet eine Push-Nachricht, wenn die Waschmaschine fertig ist. Der
-    Text unterscheidet, ob nur der Schleudergang oder das ganze Programm beendet
-    wurde.
+    Text unterscheidet, ob nur der Schleudergang oder das ganze Programm beendet wurde.
   triggers:
   - entity_id: sensor.waschmaschine_zustand
     to: finished
@@ -286,10 +285,12 @@
   actions:
   - action: notify.notify
     data:
-      title: >-
-        {% if states('sensor.waschmaschine_programm') == 'Schleudern' %}🌀 Waschmaschine fertig mit Schleudern!{% else %}🧺 Waschmaschine fertig!{% endif %}
-      message: >-
-        {% if states('sensor.waschmaschine_programm') == 'Schleudern' %}Der Schleudergang ist beendet.{% else %}Das Programm ist beendet. Du kannst die Wäsche jetzt raushängen!{% endif %}
+      title: "{% if states('sensor.waschmaschine_programm') == 'Schleudern' %}\U0001F300
+        Waschmaschine fertig mit Schleudern!{% else %}\U0001F9FA Waschmaschine fertig!{%
+        endif %}"
+      message: '{% if states(''sensor.waschmaschine_programm'') == ''Schleudern''
+        %}Der Schleudergang ist beendet.{% else %}Das Programm ist beendet. Du kannst
+        die Wäsche jetzt raushängen!{% endif %}'
       data:
         push:
           sound: default
@@ -329,7 +330,8 @@
   mode: single
 - id: '1783786435285'
   alias: 'Waschmaschine: Letzten Lauf protokollieren'
-  description: Speichert den Zeitpunkt, an dem die Waschmaschine zuletzt gelaufen ist.
+  description: Speichert den Zeitpunkt, an dem die Waschmaschine zuletzt gelaufen
+    ist.
   triggers:
   - entity_id: binary_sensor.waschmaschine_lauft
     from: 'on'
@@ -396,8 +398,8 @@
 - id: '1783786435289'
   alias: 'Waschmaschine: Live-Timer starten'
   description: Startet beim Einschalten eine persistente Live Activity auf Simons
-    iPhone. Zeigt zunächst nur, dass das Gerät läuft, solange die Restzeit noch
-    nicht bekannt ist.
+    iPhone. Zeigt zunächst nur, dass das Gerät läuft, solange die Restzeit noch nicht
+    bekannt ist.
   triggers:
   - entity_id: binary_sensor.waschmaschine_lauft
     from: 'off'
@@ -427,20 +429,26 @@
     entity_id: binary_sensor.waschmaschine_lauft
     state: 'on'
   - condition: template
-    value_template: "{{ trigger.to_state.state not in ['detecting...', 'off', 'none', 'unknown', ''] }}"
+    value_template: '{{ trigger.to_state.state not in [''detecting...'', ''off'',
+      ''none'', ''unknown'', ''''] }}'
   - condition: template
-    value_template: "{{ states('sensor.waschmaschine_verbleibende_zeit') not in ['unknown', 'unavailable', ''] }}"
+    value_template: '{{ states(''sensor.waschmaschine_verbleibende_zeit'') not in
+      [''unknown'', ''unavailable'', ''''] }}'
   actions:
   - action: notify.notify
     data:
       title: Waschmaschine
-      message: "{% set mins = states('sensor.waschmaschine_verbleibende_zeit') | float(0) %}{% set finish = (now() + timedelta(minutes=mins)).strftime('%H:%M') %}{{ trigger.to_state.state }} · noch {{ mins | round | int }} min · fertig um {{ finish }}"
+      message: '{% set mins = states(''sensor.waschmaschine_verbleibende_zeit'') |
+        float(0) %}{% set finish = (now() + timedelta(minutes=mins)).strftime(''%H:%M'')
+        %}{{ trigger.to_state.state }} · noch {{ mins | round | int }} min · fertig
+        um {{ finish }}'
       data:
         tag: waschmaschine_timer
         live_update: true
         chronometer: true
         when_relative: true
-        when: "{{ (states('sensor.waschmaschine_verbleibende_zeit') | float(0) * 60) | int }}"
+        when: '{{ (states(''sensor.waschmaschine_verbleibende_zeit'') | float(0) *
+          60) | int }}'
         notification_icon: mdi:washing-machine
         notification_icon_color: '#2196F3'
   mode: single
@@ -463,8 +471,8 @@
 - id: '1783786435292'
   alias: 'Trockner: Live-Timer starten'
   description: Startet beim Einschalten eine persistente Live Activity auf Simons
-    iPhone. Zeigt zunächst nur, dass das Gerät läuft, solange die Restzeit noch
-    nicht bekannt ist.
+    iPhone. Zeigt zunächst nur, dass das Gerät läuft, solange die Restzeit noch nicht
+    bekannt ist.
   triggers:
   - entity_id: binary_sensor.trockner_lauft
     from: 'off'
@@ -494,20 +502,26 @@
     entity_id: binary_sensor.trockner_lauft
     state: 'on'
   - condition: template
-    value_template: "{{ trigger.to_state.state not in ['detecting...', 'off', 'none', 'unknown', ''] }}"
+    value_template: '{{ trigger.to_state.state not in [''detecting...'', ''off'',
+      ''none'', ''unknown'', ''''] }}'
   - condition: template
-    value_template: "{{ states('sensor.trockner_verbleibende_zeit') not in ['unknown', 'unavailable', ''] }}"
+    value_template: '{{ states(''sensor.trockner_verbleibende_zeit'') not in [''unknown'',
+      ''unavailable'', ''''] }}'
   actions:
   - action: notify.notify
     data:
       title: Trockner
-      message: "{% set mins = states('sensor.trockner_verbleibende_zeit') | float(0) %}{% set finish = (now() + timedelta(minutes=mins)).strftime('%H:%M') %}{{ trigger.to_state.state }} · noch {{ mins | round | int }} min · fertig um {{ finish }}"
+      message: '{% set mins = states(''sensor.trockner_verbleibende_zeit'') | float(0)
+        %}{% set finish = (now() + timedelta(minutes=mins)).strftime(''%H:%M'') %}{{
+        trigger.to_state.state }} · noch {{ mins | round | int }} min · fertig um
+        {{ finish }}'
       data:
         tag: trockner_timer
         live_update: true
         chronometer: true
         when_relative: true
-        when: "{{ (states('sensor.trockner_verbleibende_zeit') | float(0) * 60) | int }}"
+        when: '{{ (states(''sensor.trockner_verbleibende_zeit'') | float(0) * 60)
+          | int }}'
         notification_icon: mdi:tumble-dryer
         notification_icon_color: '#FF9800'
   mode: single
@@ -530,8 +544,8 @@
 - id: '1783786435295'
   alias: 'Spülmaschine: Live-Timer starten'
   description: Startet beim Einschalten eine persistente Live Activity auf Simons
-    iPhone. Zeigt zunächst nur, dass das Gerät läuft, solange die Restzeit noch
-    nicht bekannt ist.
+    iPhone. Zeigt zunächst nur, dass das Gerät läuft, solange die Restzeit noch nicht
+    bekannt ist.
   triggers:
   - entity_id: binary_sensor.spulmaschine_lauft
     from: 'off'
@@ -561,20 +575,26 @@
     entity_id: binary_sensor.spulmaschine_lauft
     state: 'on'
   - condition: template
-    value_template: "{{ trigger.to_state.state not in ['detecting...', 'off', 'none', 'unknown', ''] }}"
+    value_template: '{{ trigger.to_state.state not in [''detecting...'', ''off'',
+      ''none'', ''unknown'', ''''] }}'
   - condition: template
-    value_template: "{{ states('sensor.spulmaschine_verbleibende_zeit') not in ['unknown', 'unavailable', ''] }}"
+    value_template: '{{ states(''sensor.spulmaschine_verbleibende_zeit'') not in [''unknown'',
+      ''unavailable'', ''''] }}'
   actions:
   - action: notify.notify
     data:
       title: Spülmaschine
-      message: "{% set mins = states('sensor.spulmaschine_verbleibende_zeit') | float(0) %}{% set finish = (now() + timedelta(minutes=mins)).strftime('%H:%M') %}{{ trigger.to_state.state }} · noch {{ mins | round | int }} min · fertig um {{ finish }}"
+      message: '{% set mins = states(''sensor.spulmaschine_verbleibende_zeit'') |
+        float(0) %}{% set finish = (now() + timedelta(minutes=mins)).strftime(''%H:%M'')
+        %}{{ trigger.to_state.state }} · noch {{ mins | round | int }} min · fertig
+        um {{ finish }}'
       data:
         tag: spulmaschine_timer
         live_update: true
         chronometer: true
         when_relative: true
-        when: "{{ (states('sensor.spulmaschine_verbleibende_zeit') | float(0) * 60) | int }}"
+        when: '{{ (states(''sensor.spulmaschine_verbleibende_zeit'') | float(0) *
+          60) | int }}'
         notification_icon: mdi:dishwasher
         notification_icon_color: '#009688'
   mode: single
