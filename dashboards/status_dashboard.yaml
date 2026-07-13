@@ -59,12 +59,12 @@ views:
         icon: mdi:ceiling-light
         content: Decke
         icon_color: >-
-          {{ 'amber' if is_state('light.wohnzimmer_hue_centris_ceiling_1', 'on') else 'grey' }}
+          {{ 'amber' if is_state('light.wohnzimmer_wohnzimmer', 'on') else 'grey' }}
         tap_action:
           action: perform-action
           perform_action: light.toggle
           target:
-            entity_id: light.wohnzimmer_hue_centris_ceiling_1
+            entity_id: light.wohnzimmer_wohnzimmer
       - type: template
         icon: mdi:sofa-outline
         content: Wohnwand
