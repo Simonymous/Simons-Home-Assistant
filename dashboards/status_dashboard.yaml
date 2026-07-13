@@ -406,46 +406,16 @@ views:
         {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
         {% endif %}
       layout: horizontal
-    - type: custom:button-card
+    - type: custom:mushroom-fan-card
       entity: fan.zhimi_de_533989040_za5_s_2_fan
       name: Ventilator
-      show_name: true
-      show_state: false
-      show_label: true
-      show_icon: true
       icon: mdi:fan
-      label: "[[[\n  const st = states['fan.zhimi_de_533989040_za5_s_2_fan'];\n  if (!st || st.state !== 'on') return 'Aus';\n  const pct = st.attributes.percentage;\n  return (pct !== undefined && pct !== null) ? ('An · ' + pct + ' %') : 'An';\n]]]"
+      icon_animation: true
+      show_percentage_control: true
+      layout: horizontal
+      icon_color: cyan
       tap_action:
         action: toggle
-      styles:
-        card:
-        - padding: 12px
-        - min-height: 66px
-        grid:
-        - grid-template-areas: '"i n" "i l"'
-        - grid-template-columns: 42px 1fr
-        - grid-template-rows: min-content min-content
-        icon:
-        - width: 24px
-        - height: 24px
-        name:
-        - justify-self: start
-        - font-weight: bold
-        - font-size: 14px
-        label:
-        - justify-self: start
-        - font-size: 12px
-        - color: var(--secondary-text-color)
-        - white-space: normal
-      state:
-      - value: 'on'
-        color: rgb(0, 188, 212)
-        styles:
-          icon:
-          - animation: fan-spin 1s linear infinite
-      - operator: default
-        color: var(--disabled-text-color)
-      extra_styles: '@keyframes fan-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }'
     - type: custom:mushroom-chips-card
       alignment: start
       chips:
