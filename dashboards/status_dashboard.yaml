@@ -1263,13 +1263,6 @@ views:
         show_name: true
         show_state: true
         show_icon: true
-      - type: entity
-        entity: sensor.byd_seal_u_dm_i_elektrische_reichweite
-        name: Elektrisch
-        icon: mdi:lightning-bolt
-        show_name: true
-        show_state: true
-        show_icon: true
       alignment: center
     range_info:
     - energy_level:
