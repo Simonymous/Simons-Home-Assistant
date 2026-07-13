@@ -916,6 +916,11 @@ views:
   icon: mdi:clipboard-check-outline
   background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%) fixed'
   cards:
+  - type: weather-forecast
+    entity: weather.quierschied
+    forecast_type: daily
+    show_current: true
+    secondary_info_attribute: humidity
   - type: vertical-stack
     cards:
     - type: heading
@@ -1673,136 +1678,4 @@ views:
         label: Sensoren
         icon: mdi:radar
         entity: sensor.bob_verbleibende_sensorzeit
-        unit: h
-- title: Wetter
-  path: wetter
-  icon: mdi:weather-partly-cloudy
-  background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%) fixed'
-  cards:
-  - type: weather-forecast
-    entity: weather.quierschied
-    forecast_type: daily
-    show_current: true
-    secondary_info_attribute: humidity
-  - type: vertical-stack
-    cards:
-    - type: heading
-      heading: Details
-      heading_style: title
-      icon: mdi:thermometer-lines
-    - type: grid
-      columns: 4
-      square: false
-      cards:
-      - type: custom:mushroom-template-card
-        entity: sensor.quierschied_taupunkt
-        primary: Taupunkt
-        secondary: '{{ states(''sensor.quierschied_taupunkt'') }} °C'
-        icon: mdi:water-thermometer-outline
-        icon_color: blue
-        tap_action:
-          action: more-info
-      - type: custom:mushroom-template-card
-        entity: sensor.quierschied_relative_luftfeuchtigkeit
-        primary: Luftfeuchtigkeit
-        secondary: '{{ states(''sensor.quierschied_relative_luftfeuchtigkeit'') }} %'
-        icon: mdi:water-percent
-        icon_color: blue
-        tap_action:
-          action: more-info
-      - type: custom:mushroom-template-card
-        entity: sensor.quierschied_druck
-        primary: Luftdruck
-        secondary: '{{ states(''sensor.quierschied_druck'') }} hPa'
-        icon: mdi:gauge
-        icon_color: blue
-        tap_action:
-          action: more-info
-      - type: custom:mushroom-template-card
-        entity: sensor.quierschied_windgeschwindigkeit
-        primary: Wind
-        secondary: >-
-          {{ states('sensor.quierschied_windgeschwindigkeit') }} km/h · Böen {{ states('sensor.quierschied_windboen') }} km/h
-        icon: mdi:weather-windy
-        icon_color: blue
-        tap_action:
-          action: more-info
-      - type: custom:mushroom-template-card
-        entity: sensor.quierschied_niederschlagswahrscheinlichkeit
-        primary: Regenwahrscheinlichkeit
-        secondary: '{{ states(''sensor.quierschied_niederschlagswahrscheinlichkeit'') }} %'
-        icon: mdi:weather-rainy
-        icon_color: blue
-        tap_action:
-          action: more-info
-      - type: custom:mushroom-template-card
-        entity: sensor.quierschied_sichtweite
-        primary: Sichtweite
-        secondary: '{{ states(''sensor.quierschied_sichtweite'') }} km'
-        icon: mdi:eye-outline
-        icon_color: blue
-        tap_action:
-          action: more-info
-      - type: custom:mushroom-template-card
-        entity: sensor.quierschied_uv_index
-        primary: UV-Index
-        secondary: '{{ states(''sensor.quierschied_uv_index'') }}'
-        icon: mdi:sun-wireless-outline
-        icon_color: >-
-          {% set uv = states('sensor.quierschied_uv_index') | float(0) %}
-          {% if uv >= 8 %}red{% elif uv >= 6 %}orange{% elif uv >= 3 %}amber{% else %}green{% endif %}
-        tap_action:
-          action: more-info
-      - type: custom:mushroom-template-card
-        entity: sensor.quierschied_sonnenscheindauer
-        primary: Sonnenschein heute
-        secondary: >-
-          {% set s = states('sensor.quierschied_sonnenscheindauer') | float(0) %}
-          {{ (s / 3600) | round(1) }} h
-        icon: mdi:weather-sunny
-        icon_color: amber
-        tap_action:
-          action: more-info
-  - type: vertical-stack
-    cards:
-    - type: heading
-      heading: Luftqualität
-      heading_style: title
-      icon: mdi:air-filter
-    - type: grid
-      columns: 4
-      square: false
-      cards:
-      - type: custom:mushroom-template-card
-        entity: sensor.quierschied_luftqualitat_stickstoffdioxid
-        primary: NO₂
-        secondary: '{{ states(''sensor.quierschied_luftqualitat_stickstoffdioxid'') }} µg/m³'
-        icon: mdi:molecule
-        icon_color: grey
-        tap_action:
-          action: more-info
-      - type: custom:mushroom-template-card
-        entity: sensor.quierschied_luftqualitat_ozon
-        primary: Ozon
-        secondary: '{{ states(''sensor.quierschied_luftqualitat_ozon'') }} µg/m³'
-        icon: mdi:molecule
-        icon_color: grey
-        tap_action:
-          action: more-info
-      - type: custom:mushroom-template-card
-        entity: sensor.quierschied_luftqualitat_pm2_5
-        primary: PM2.5
-        secondary: '{{ states(''sensor.quierschied_luftqualitat_pm2_5'') }} µg/m³'
-        icon: mdi:blur
-        icon_color: grey
-        tap_action:
-          action: more-info
-      - type: custom:mushroom-template-card
-        entity: sensor.quierschied_luftqualitat_pm10
-        primary: PM10
-        secondary: '{{ states(''sensor.quierschied_luftqualitat_pm10'') }} µg/m³'
-        icon: mdi:blur
-        icon_color: grey
-        tap_action:
-          action: more-info
         unit: h
