@@ -1451,17 +1451,27 @@ views:
     - name: Klimaanlage
       entity: climate.byd_seal_u_dm_i_klima
       icon: mdi:air-conditioner
+      button_type: action
       tap_action:
         action: more-info
     - name: Innenraum
       entity: sensor.byd_seal_u_dm_i_innenraumtemperatur
       icon: mdi:thermometer
+      button_type: action
+      tap_action:
+        action: more-info
     - name: Außen
       entity: sensor.byd_seal_u_dm_i_aussentemperatur
       icon: mdi:thermometer
+      button_type: action
+      tap_action:
+        action: more-info
     - name: Kilometerstand
       entity: sensor.byd_seal_u_dm_i_kilometerzahler
       icon: mdi:counter
+      button_type: action
+      tap_action:
+        action: more-info
     mini_map:
       device_tracker: device_tracker.byd_seal_u_dm_i_standort
       map_zoom: 14
