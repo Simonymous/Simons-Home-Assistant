@@ -85,6 +85,27 @@ views:
         entity: media_player.wohnzimmer_appletv_wohnzimmer_appletv
         use_media_info: true
         show_volume_level: false
+        icon: >-
+          {% set app = state_attr('media_player.wohnzimmer_appletv_wohnzimmer_appletv', 'app_id') %}
+          {% if app == 'com.netflix.Netflix' %}mdi:netflix
+          {% elif app == 'com.google.ios.youtube' %}mdi:youtube
+          {% elif app in ['com.amazon.aiv.AIVApp', 'com.amazon.Lounge'] %}mdi:amazon
+          {% elif app == 'com.disney.disneyplus' %}mdi:disney-plus
+          {% elif app == 'com.spotify.client' %}mdi:spotify
+          {% elif app == 'com.plexapp.plex' %}mdi:plex
+          {% elif app == 'com.apple.TVWatchList' %}mdi:apple
+          {% else %}mdi:apple-tv
+          {% endif %}
+        icon_color: >-
+          {% set app = state_attr('media_player.wohnzimmer_appletv_wohnzimmer_appletv', 'app_id') %}
+          {% if app == 'com.netflix.Netflix' %}#E50914
+          {% elif app == 'com.google.ios.youtube' %}#FF0000
+          {% elif app in ['com.amazon.aiv.AIVApp', 'com.amazon.Lounge'] %}#00A8E1
+          {% elif app == 'com.disney.disneyplus' %}#113CCF
+          {% elif app == 'com.spotify.client' %}#1DB954
+          {% elif app == 'com.plexapp.plex' %}#E5A00D
+          {% else %}white
+          {% endif %}
     - type: conditional
       conditions:
       - condition: state
@@ -135,6 +156,29 @@ views:
         {% if t >= 23 %}orange{% elif t <= 19 %}blue{% else %}green{% endif %}
         {% endif %}
       layout: horizontal
+    - type: custom:mushroom-chips-card
+      alignment: start
+      chips:
+      - type: template
+        icon: mdi:ceiling-light
+        content: Decke
+        icon_color: >-
+          {{ 'amber' if is_state('light.schlafzimmer_schlafzimmer', 'on') else 'grey' }}
+        tap_action:
+          action: perform-action
+          perform_action: light.toggle
+          target:
+            entity_id: light.schlafzimmer_schlafzimmer
+      - type: template
+        icon: mdi:led-strip-variant
+        content: Bett-LED
+        icon_color: >-
+          {{ 'amber' if is_state('light.schlafzimmer_smart_led_strip', 'on') else 'grey' }}
+        tap_action:
+          action: perform-action
+          perform_action: light.toggle
+          target:
+            entity_id: light.schlafzimmer_smart_led_strip
     - type: custom:button-card
       entity: cover.schlafzimmer_links
       name: Beide Rollos
@@ -302,29 +346,6 @@ views:
           icon: mdi:window-shutter-alert
           color: grey
         extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
-    - type: custom:mushroom-chips-card
-      alignment: start
-      chips:
-      - type: template
-        icon: mdi:ceiling-light
-        content: Decke
-        icon_color: >-
-          {{ 'amber' if is_state('light.schlafzimmer_schlafzimmer', 'on') else 'grey' }}
-        tap_action:
-          action: perform-action
-          perform_action: light.toggle
-          target:
-            entity_id: light.schlafzimmer_schlafzimmer
-      - type: template
-        icon: mdi:led-strip-variant
-        content: Bett-LED
-        icon_color: >-
-          {{ 'amber' if is_state('light.schlafzimmer_smart_led_strip', 'on') else 'grey' }}
-        tap_action:
-          action: perform-action
-          perform_action: light.toggle
-          target:
-            entity_id: light.schlafzimmer_smart_led_strip
     - type: conditional
       conditions:
       - condition: state
@@ -335,6 +356,27 @@ views:
         entity: media_player.schlafzimmer_appletv_schlafzimmer_appletv
         use_media_info: true
         show_volume_level: false
+        icon: >-
+          {% set app = state_attr('media_player.schlafzimmer_appletv_schlafzimmer_appletv', 'app_id') %}
+          {% if app == 'com.netflix.Netflix' %}mdi:netflix
+          {% elif app == 'com.google.ios.youtube' %}mdi:youtube
+          {% elif app in ['com.amazon.aiv.AIVApp', 'com.amazon.Lounge'] %}mdi:amazon
+          {% elif app == 'com.disney.disneyplus' %}mdi:disney-plus
+          {% elif app == 'com.spotify.client' %}mdi:spotify
+          {% elif app == 'com.plexapp.plex' %}mdi:plex
+          {% elif app == 'com.apple.TVWatchList' %}mdi:apple
+          {% else %}mdi:apple-tv
+          {% endif %}
+        icon_color: >-
+          {% set app = state_attr('media_player.schlafzimmer_appletv_schlafzimmer_appletv', 'app_id') %}
+          {% if app == 'com.netflix.Netflix' %}#E50914
+          {% elif app == 'com.google.ios.youtube' %}#FF0000
+          {% elif app in ['com.amazon.aiv.AIVApp', 'com.amazon.Lounge'] %}#00A8E1
+          {% elif app == 'com.disney.disneyplus' %}#113CCF
+          {% elif app == 'com.spotify.client' %}#1DB954
+          {% elif app == 'com.plexapp.plex' %}#E5A00D
+          {% else %}white
+          {% endif %}
     - type: conditional
       conditions:
       - condition: state
@@ -703,6 +745,24 @@ views:
       heading: Eingang
       heading_style: title
       icon: mdi:door
+    - type: custom:mushroom-template-card
+      entity: sensor.flur_bewegungsmelder_flur_temperatur
+      tap_action:
+        action: more-info
+      primary: >-
+        {% set t = states('sensor.flur_bewegungsmelder_flur_temperatur') %}
+        {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
+      secondary: Temperatur am Eingang
+      icon: >-
+        {% set t = states('sensor.flur_bewegungsmelder_flur_temperatur') %}
+        {{ 'mdi:thermometer-off' if t in ['unavailable', 'unknown', 'none', ''] else 'mdi:thermometer' }}
+      icon_color: >-
+        {% set t = states('sensor.flur_bewegungsmelder_flur_temperatur') %}
+        {% if t in ['unavailable', 'unknown', 'none', ''] %}grey{% else %}
+        {% set tf = t | float(0) %}
+        {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
+        {% endif %}
+      layout: horizontal
     - type: custom:mushroom-chips-card
       alignment: start
       chips:
@@ -1156,6 +1216,10 @@ views:
           - font-size: 12px
           - color: var(--secondary-text-color)
           - white-space: normal
+          - display: -webkit-box
+          - -webkit-line-clamp: '2'
+          - -webkit-box-orient: vertical
+          - overflow: hidden
         state:
         - operator: template
           value: '[[[ return parseInt(states[''sensor.pakete_offen''] ? states[''sensor.pakete_offen''].state : ''0'') > 0; ]]]'
@@ -1193,6 +1257,10 @@ views:
           - font-size: 12px
           - color: var(--secondary-text-color)
           - white-space: normal
+          - display: -webkit-box
+          - -webkit-line-clamp: '2'
+          - -webkit-box-orient: vertical
+          - overflow: hidden
         state:
         - operator: template
           value: '[[[ return parseInt(states[''sensor.pakete_unterwegs''] ? states[''sensor.pakete_unterwegs''].state : ''0'') > 0; ]]]'
@@ -1230,6 +1298,10 @@ views:
           - font-size: 12px
           - color: var(--secondary-text-color)
           - white-space: normal
+          - display: -webkit-box
+          - -webkit-line-clamp: '2'
+          - -webkit-box-orient: vertical
+          - overflow: hidden
         state:
         - operator: template
           value: '[[[ return parseInt(states[''sensor.pakete_heute''] ? states[''sensor.pakete_heute''].state : ''0'') > 0; ]]]'
