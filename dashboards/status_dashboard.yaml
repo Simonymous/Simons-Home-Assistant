@@ -387,20 +387,20 @@ views:
       heading_style: title
       icon: mdi:desktop-classic
     - type: custom:mushroom-template-card
-      entity: climate.buro_heizung_buro
+      entity: climate.esszimmer_heizung_esszimmer
       tap_action:
         action: more-info
       primary: >-
-        {% set t = states('sensor.buro_heizung_buro_current_temperature') %}
+        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature') %}
         {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
       secondary: >-
-        {% set h = states('sensor.buro_heizung_buro_current_humidity') %}
+        {% set h = states('sensor.esszimmer_heizung_esszimmer_current_humidity') %}
         {% if h in ['unavailable', 'unknown', 'none', ''] %}Sensor offline{% else %}{{ h }} % Luftfeuchtigkeit{% endif %}
       icon: >-
-        {% set t = states('sensor.buro_heizung_buro_current_temperature') %}
+        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature') %}
         {{ 'mdi:thermometer-off' if t in ['unavailable', 'unknown', 'none', ''] else 'mdi:thermometer' }}
       icon_color: >-
-        {% set t = states('sensor.buro_heizung_buro_current_temperature') %}
+        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature') %}
         {% if t in ['unavailable', 'unknown', 'none', ''] %}grey{% else %}
         {% set tf = t | float(0) %}
         {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
@@ -598,20 +598,20 @@ views:
       heading_style: title
       icon: mdi:shower
     - type: custom:mushroom-template-card
-      entity: climate.esszimmer_heizung_esszimmer
+      entity: climate.buro_heizung_buro
       tap_action:
         action: more-info
       primary: >-
-        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature') %}
+        {% set t = states('sensor.buro_heizung_buro_current_temperature') %}
         {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
       secondary: >-
-        {% set h = states('sensor.esszimmer_heizung_esszimmer_current_humidity') %}
+        {% set h = states('sensor.buro_heizung_buro_current_humidity') %}
         {% if h in ['unavailable', 'unknown', 'none', ''] %}Sensor offline{% else %}{{ h }} % Luftfeuchtigkeit{% endif %}
       icon: >-
-        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature') %}
+        {% set t = states('sensor.buro_heizung_buro_current_temperature') %}
         {{ 'mdi:thermometer-off' if t in ['unavailable', 'unknown', 'none', ''] else 'mdi:thermometer' }}
       icon_color: >-
-        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature') %}
+        {% set t = states('sensor.buro_heizung_buro_current_temperature') %}
         {% if t in ['unavailable', 'unknown', 'none', ''] %}grey{% else %}
         {% set tf = t | float(0) %}
         {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
