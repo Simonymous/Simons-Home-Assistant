@@ -614,3 +614,34 @@
       data:
         tag: spulmaschine_timer
   mode: single
+- id: '1783786435298'
+  alias: 'Eingang: Letzte Bewegung protokollieren'
+  description: Speichert den Zeitpunkt der letzten erkannten Bewegung am Eingang.
+  triggers:
+  - entity_id: binary_sensor.flur_bewegungsmelder_flur_bewegung
+    to: 'on'
+    trigger: state
+  conditions: []
+  actions:
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.letzte_bewegung_flur
+    data:
+      timestamp: '{{ now().timestamp() }}'
+  mode: single
+- id: '1783786435299'
+  alias: 'Wohnungsschloss: Letztes Aufschließen protokollieren'
+  description: Speichert den Zeitpunkt, an dem das Wohnungsschloss zuletzt aufgeschlossen
+    wurde.
+  triggers:
+  - entity_id: lock.smart_lock_pro
+    to: unlocked
+    trigger: state
+  conditions: []
+  actions:
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.letztes_aufschliessen_wohnung
+    data:
+      timestamp: '{{ now().timestamp() }}'
+  mode: single

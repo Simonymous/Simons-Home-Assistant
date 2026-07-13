@@ -672,9 +672,9 @@ views:
   - type: vertical-stack
     cards:
     - type: heading
-      heading: Flur
+      heading: Eingang
       heading_style: title
-      icon: mdi:door-closed
+      icon: mdi:door
     - type: custom:mushroom-chips-card
       alignment: start
       chips:
@@ -688,6 +688,137 @@ views:
           perform_action: light.toggle
           target:
             entity_id: light.flur_flur
+    - type: custom:button-card
+      entity: binary_sensor.flur_bewegungsmelder_flur_bewegung
+      name: Letzte Bewegung
+      icon: mdi:motion-sensor
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      tap_action:
+        action: more-info
+      label: "[[[\n  const st = states['binary_sensor.flur_bewegungsmelder_flur_bewegung'];\n  const state = st ? st.state : 'unknown';\n  if (state === 'on') return 'Bewegung erkannt';\n  const last = states['input_datetime.letzte_bewegung_flur'];\n  if (last && last.state) {\n    const m = last.state.match(/^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2})/);\n    if (m) return 'Zuletzt: ' + m[3] + '.' + m[2] + '. um ' + m[4] + ':' + m[5];\n  }\n  return 'Keine Bewegung erkannt';\n]]]"
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+      state:
+      - value: 'on'
+        color: amber
+        styles:
+          icon:
+          - animation: machine-blink 1.2s ease-in-out infinite
+      - operator: default
+        color: var(--disabled-text-color)
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+    - type: custom:button-card
+      entity: button.vordereingang_tur_offnen
+      name: Haustür öffnen
+      icon: mdi:door-open
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      tap_action:
+        action: perform-action
+        perform_action: button.press
+        target:
+          entity_id: button.vordereingang_tur_offnen
+      label: "[[[\n  const st = states['button.vordereingang_tur_offnen'];\n  if (!st || !st.state || ['unknown','unavailable'].includes(st.state)) return 'Noch nie geöffnet';\n  const d = new Date(st.state);\n  if (isNaN(d.getTime())) return 'Noch nie geöffnet';\n  const dd = String(d.getDate()).padStart(2,'0');\n  const mm = String(d.getMonth()+1).padStart(2,'0');\n  const hh = String(d.getHours()).padStart(2,'0');\n  const mi = String(d.getMinutes()).padStart(2,'0');\n  return 'Zuletzt geöffnet: ' + dd + '.' + mm + '. um ' + hh + ':' + mi;\n]]]"
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        - color: '#0A84FF'
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+    - type: custom:button-card
+      entity: lock.smart_lock_pro
+      name: Wohnungsschloss
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      tap_action:
+        action: toggle
+      label: "[[[\n  const st = states['lock.smart_lock_pro'];\n  const state = st ? st.state : 'unknown';\n  const labels = {locked:'Abgeschlossen', unlocked:'Aufgeschlossen', locking:'Schließt ab…', unlocking:'Schließt auf…', jammed:'Blockiert!'};\n  const base = labels[state] || 'Unbekannt';\n  const last = states['input_datetime.letztes_aufschliessen_wohnung'];\n  if (last && last.state) {\n    const m = last.state.match(/^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2})/);\n    if (m) return base + ' · zuletzt auf: ' + m[3] + '.' + m[2] + '. um ' + m[4] + ':' + m[5];\n  }\n  return base;\n]]]"
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+      state:
+      - value: locked
+        icon: mdi:lock
+        color: green
+      - value: unlocked
+        icon: mdi:lock-open-variant
+        color: orange
+        styles:
+          icon:
+          - animation: machine-blink 1.2s ease-in-out infinite
+      - value: locking
+        icon: mdi:lock-clock
+        color: blue
+      - value: unlocking
+        icon: mdi:lock-clock
+        color: blue
+      - value: jammed
+        icon: mdi:lock-alert
+        color: red
+        styles:
+          icon:
+          - animation: machine-blink 0.8s ease-in-out infinite
+      - operator: default
+        icon: mdi:lock-question
+        color: grey
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
   - type: vertical-stack
     cards:
     - type: heading

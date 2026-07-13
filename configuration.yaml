@@ -46,6 +46,14 @@ input_datetime:
     name: Letzter Lauf Heißluftfritteuse
     has_date: true
     has_time: true
+  letzte_bewegung_flur:
+    name: Letzte Bewegung Flur
+    has_date: true
+    has_time: true
+  letztes_aufschliessen_wohnung:
+    name: Letztes Aufschließen Wohnungsschloss
+    has_date: true
+    has_time: true
 
 template:
   - sensor:
