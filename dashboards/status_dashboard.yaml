@@ -135,6 +135,31 @@ views:
         {% if t >= 23 %}orange{% elif t <= 19 %}blue{% else %}green{% endif %}
         {% endif %}
       layout: horizontal
+    - type: custom:mushroom-chips-card
+      alignment: start
+      chips:
+      - type: template
+        icon: mdi:arrow-expand-vertical
+        content: Beide öffnen
+        icon_color: blue
+        tap_action:
+          action: perform-action
+          perform_action: cover.open_cover
+          target:
+            entity_id:
+            - cover.schlafzimmer_links
+            - cover.schlafzimmer_rechts
+      - type: template
+        icon: mdi:arrow-collapse-vertical
+        content: Beide schließen
+        icon_color: blue
+        tap_action:
+          action: perform-action
+          perform_action: cover.close_cover
+          target:
+            entity_id:
+            - cover.schlafzimmer_links
+            - cover.schlafzimmer_rechts
     - type: grid
       columns: 2
       square: false
