@@ -67,29 +67,35 @@ views:
         {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
         {% endif %}
       layout: horizontal
-    - type: custom:mushroom-chips-card
-      alignment: start
-      chips:
-      - type: template
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: custom:mushroom-light-card
+        entity: light.wohnzimmer_wohnzimmer
+        name: Decke
         icon: mdi:ceiling-light
-        content: Decke
-        icon_color: >-
-          {{ 'amber' if is_state('light.wohnzimmer_wohnzimmer', 'on') else 'grey' }}
+        layout: vertical
+        show_brightness_control: true
+        use_light_color: true
         tap_action:
-          action: perform-action
-          perform_action: light.toggle
-          target:
-            entity_id: light.wohnzimmer_wohnzimmer
-      - type: template
+          action: toggle
+        hold_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: switch.wohnzimmer_wohnwand_outlet
+        primary: Wohnwand
+        secondary: "{{ 'An' if is_state('switch.wohnzimmer_wohnwand_outlet', 'on') else 'Aus' }}"
         icon: mdi:sofa-outline
-        content: Wohnwand
-        icon_color: >-
-          {{ 'amber' if is_state('switch.wohnzimmer_wohnwand_outlet', 'on') else 'grey' }}
+        icon_color: "{{ 'amber' if is_state('switch.wohnzimmer_wohnwand_outlet', 'on') else 'grey' }}"
+        layout: vertical
         tap_action:
           action: perform-action
           perform_action: switch.toggle
           target:
             entity_id: switch.wohnzimmer_wohnwand_outlet
+        hold_action:
+          action: more-info
     - type: conditional
       conditions:
       - condition: state
@@ -172,29 +178,32 @@ views:
         {% if t >= 23 %}orange{% elif t <= 19 %}blue{% else %}green{% endif %}
         {% endif %}
       layout: horizontal
-    - type: custom:mushroom-chips-card
-      alignment: start
-      chips:
-      - type: template
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: custom:mushroom-light-card
+        entity: light.schlafzimmer_schlafzimmer
+        name: Decke
         icon: mdi:ceiling-light
-        content: Decke
-        icon_color: >-
-          {{ 'amber' if is_state('light.schlafzimmer_schlafzimmer', 'on') else 'grey' }}
+        layout: vertical
+        show_brightness_control: true
+        use_light_color: true
         tap_action:
-          action: perform-action
-          perform_action: light.toggle
-          target:
-            entity_id: light.schlafzimmer_schlafzimmer
-      - type: template
+          action: toggle
+        hold_action:
+          action: more-info
+      - type: custom:mushroom-light-card
+        entity: light.schlafzimmer_smart_led_strip
+        name: Bett-LED
         icon: mdi:led-strip-variant
-        content: Bett-LED
-        icon_color: >-
-          {{ 'amber' if is_state('light.schlafzimmer_smart_led_strip', 'on') else 'grey' }}
+        layout: vertical
+        show_brightness_control: true
+        use_light_color: true
         tap_action:
-          action: perform-action
-          perform_action: light.toggle
-          target:
-            entity_id: light.schlafzimmer_smart_led_strip
+          action: toggle
+        hold_action:
+          action: more-info
     - type: custom:button-card
       entity: cover.schlafzimmer_links
       name: Beide Rollos
@@ -430,24 +439,30 @@ views:
         {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
         {% endif %}
       layout: horizontal
-    - type: custom:mushroom-chips-card
-      alignment: start
-      chips:
-      - type: template
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: custom:mushroom-light-card
+        entity: light.esszimmer_esszimmer_decke
+        name: Decke
         icon: mdi:ceiling-light
-        content: Decke
-        icon_color: >-
-          {{ 'amber' if is_state('light.esszimmer_esszimmer_decke', 'on') else 'grey' }}
+        layout: vertical
+        show_brightness_control: true
+        use_light_color: true
         tap_action:
-          action: perform-action
-          perform_action: light.toggle
-          target:
-            entity_id: light.esszimmer_esszimmer_decke
-      - type: template
+          action: toggle
+        hold_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: light.esszimmer_hue_go_1
+        primary: Hue-Lampen
+        secondary: >-
+          {{ 'An' if (is_state('light.esszimmer_hue_go_1', 'on') or is_state('light.esszimmer_hue_white_lamp_1', 'on')) else 'Aus' }}
         icon: mdi:lightbulb-group
-        content: Hue-Lampen
         icon_color: >-
           {{ 'amber' if (is_state('light.esszimmer_hue_go_1', 'on') or is_state('light.esszimmer_hue_white_lamp_1', 'on')) else 'grey' }}
+        layout: vertical
         tap_action:
           action: perform-action
           perform_action: light.toggle
@@ -455,6 +470,8 @@ views:
             entity_id:
             - light.esszimmer_hue_go_1
             - light.esszimmer_hue_white_lamp_1
+        hold_action:
+          action: more-info
     - type: custom:button-card
       entity: vacuum.bob
       name: Saugroboter Bob
@@ -533,19 +550,17 @@ views:
       icon_color: cyan
       tap_action:
         action: toggle
-    - type: custom:mushroom-chips-card
-      alignment: start
-      chips:
-      - type: template
-        icon: mdi:ceiling-light
-        content: Decke
-        icon_color: >-
-          {{ 'amber' if is_state('light.buro_buro', 'on') else 'grey' }}
-        tap_action:
-          action: perform-action
-          perform_action: light.toggle
-          target:
-            entity_id: light.buro_buro
+    - type: custom:mushroom-light-card
+      entity: light.buro_buro
+      name: Decke
+      icon: mdi:ceiling-light
+      layout: horizontal
+      show_brightness_control: true
+      use_light_color: true
+      tap_action:
+        action: toggle
+      hold_action:
+        action: more-info
     - type: custom:button-card
       entity: sensor.hp_envy_6400_series
       name: HP Envy Drucker
@@ -736,19 +751,17 @@ views:
         {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
         {% endif %}
       layout: horizontal
-    - type: custom:mushroom-chips-card
-      alignment: start
-      chips:
-      - type: template
-        icon: mdi:ceiling-light
-        content: Decke
-        icon_color: >-
-          {{ 'amber' if is_state('light.badezimmer_badezimmer', 'on') else 'grey' }}
-        tap_action:
-          action: perform-action
-          perform_action: light.toggle
-          target:
-            entity_id: light.badezimmer_badezimmer
+    - type: custom:mushroom-light-card
+      entity: light.badezimmer_badezimmer
+      name: Decke
+      icon: mdi:ceiling-light
+      layout: horizontal
+      show_brightness_control: true
+      use_light_color: true
+      tap_action:
+        action: toggle
+      hold_action:
+        action: more-info
     - type: conditional
       conditions:
       - condition: state
@@ -784,19 +797,17 @@ views:
         {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
         {% endif %}
       layout: horizontal
-    - type: custom:mushroom-chips-card
-      alignment: start
-      chips:
-      - type: template
-        icon: mdi:ceiling-light
-        content: Decke
-        icon_color: >-
-          {{ 'amber' if is_state('light.flur_flur', 'on') else 'grey' }}
-        tap_action:
-          action: perform-action
-          perform_action: light.toggle
-          target:
-            entity_id: light.flur_flur
+    - type: custom:mushroom-light-card
+      entity: light.flur_flur
+      name: Decke
+      icon: mdi:ceiling-light
+      layout: horizontal
+      show_brightness_control: true
+      use_light_color: true
+      tap_action:
+        action: toggle
+      hold_action:
+        action: more-info
     - type: custom:button-card
       entity: binary_sensor.flur_bewegungsmelder_flur_bewegung
       name: Letzte Bewegung
