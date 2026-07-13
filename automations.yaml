@@ -396,7 +396,8 @@
 - id: '1783786435289'
   alias: 'Waschmaschine: Live-Timer starten'
   description: Startet beim Einschalten eine persistente Live Activity auf Simons
-    iPhone. Solange das Programm noch nicht erkannt ist, ohne Restzeit.
+    iPhone. Zeigt zunächst nur, dass das Gerät läuft, solange die Restzeit noch
+    nicht bekannt ist.
   triggers:
   - entity_id: binary_sensor.waschmaschine_lauft
     from: 'off'
@@ -407,7 +408,7 @@
   - action: notify.mobile_app_eierphone_simon
     data:
       title: Waschmaschine
-      message: Programm wird erkannt – Gerät läuft
+      message: Läuft – Restzeit noch nicht bekannt
       data:
         tag: waschmaschine_timer
         live_update: true
@@ -416,8 +417,8 @@
   mode: single
 - id: '1783786435290'
   alias: 'Waschmaschine: Live-Timer aktualisieren'
-  description: Sobald ein Programm erkannt wurde, wird die Live Activity um einen
-    Countdown mit der Restzeit ergänzt.
+  description: Sobald ein Programm erkannt wurde, wird die Live Activity um Programmname,
+    Restzeit-Countdown und die voraussichtliche Fertig-Uhrzeit ergänzt.
   triggers:
   - entity_id: sensor.waschmaschine_programm
     trigger: state
@@ -426,14 +427,14 @@
     entity_id: binary_sensor.waschmaschine_lauft
     state: 'on'
   - condition: template
-    value_template: "{{ trigger.to_state.state not in ['detecting...', 'none', 'unknown', ''] }}"
+    value_template: "{{ trigger.to_state.state not in ['detecting...', 'off', 'none', 'unknown', ''] }}"
   - condition: template
     value_template: "{{ states('sensor.waschmaschine_verbleibende_zeit') not in ['unknown', 'unavailable', ''] }}"
   actions:
   - action: notify.mobile_app_eierphone_simon
     data:
       title: Waschmaschine
-      message: '{{ trigger.to_state.state }} läuft'
+      message: "{% set mins = states('sensor.waschmaschine_verbleibende_zeit') | float(0) %}{% set finish = (now() + timedelta(minutes=mins)).strftime('%H:%M') %}{{ trigger.to_state.state }} · noch {{ mins | round | int }} min · fertig um {{ finish }}"
       data:
         tag: waschmaschine_timer
         live_update: true
@@ -445,7 +446,7 @@
   mode: single
 - id: '1783786435291'
   alias: 'Waschmaschine: Live-Timer beenden'
-  description: Schließt die Live Activity, sobald die Waschmaschine ausgeht.
+  description: Schließt die Live Activity, sobald waschmaschine ausgeht.
   triggers:
   - entity_id: binary_sensor.waschmaschine_lauft
     from: 'on'
@@ -458,4 +459,138 @@
       message: clear_notification
       data:
         tag: waschmaschine_timer
+  mode: single
+- id: '1783786435292'
+  alias: 'Trockner: Live-Timer starten'
+  description: Startet beim Einschalten eine persistente Live Activity auf Simons
+    iPhone. Zeigt zunächst nur, dass das Gerät läuft, solange die Restzeit noch
+    nicht bekannt ist.
+  triggers:
+  - entity_id: binary_sensor.trockner_lauft
+    from: 'off'
+    to: 'on'
+    trigger: state
+  conditions: []
+  actions:
+  - action: notify.mobile_app_eierphone_simon
+    data:
+      title: Trockner
+      message: Läuft – Restzeit noch nicht bekannt
+      data:
+        tag: trockner_timer
+        live_update: true
+        notification_icon: mdi:tumble-dryer
+        notification_icon_color: '#FF9800'
+  mode: single
+- id: '1783786435293'
+  alias: 'Trockner: Live-Timer aktualisieren'
+  description: Sobald ein Programm erkannt wurde, wird die Live Activity um Programmname,
+    Restzeit-Countdown und die voraussichtliche Fertig-Uhrzeit ergänzt.
+  triggers:
+  - entity_id: sensor.trockner_programm
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.trockner_lauft
+    state: 'on'
+  - condition: template
+    value_template: "{{ trigger.to_state.state not in ['detecting...', 'off', 'none', 'unknown', ''] }}"
+  - condition: template
+    value_template: "{{ states('sensor.trockner_verbleibende_zeit') not in ['unknown', 'unavailable', ''] }}"
+  actions:
+  - action: notify.mobile_app_eierphone_simon
+    data:
+      title: Trockner
+      message: "{% set mins = states('sensor.trockner_verbleibende_zeit') | float(0) %}{% set finish = (now() + timedelta(minutes=mins)).strftime('%H:%M') %}{{ trigger.to_state.state }} · noch {{ mins | round | int }} min · fertig um {{ finish }}"
+      data:
+        tag: trockner_timer
+        live_update: true
+        chronometer: true
+        when_relative: true
+        when: "{{ (states('sensor.trockner_verbleibende_zeit') | float(0) * 60) | int }}"
+        notification_icon: mdi:tumble-dryer
+        notification_icon_color: '#FF9800'
+  mode: single
+- id: '1783786435294'
+  alias: 'Trockner: Live-Timer beenden'
+  description: Schließt die Live Activity, sobald trockner ausgeht.
+  triggers:
+  - entity_id: binary_sensor.trockner_lauft
+    from: 'on'
+    to: 'off'
+    trigger: state
+  conditions: []
+  actions:
+  - action: notify.mobile_app_eierphone_simon
+    data:
+      message: clear_notification
+      data:
+        tag: trockner_timer
+  mode: single
+- id: '1783786435295'
+  alias: 'Spülmaschine: Live-Timer starten'
+  description: Startet beim Einschalten eine persistente Live Activity auf Simons
+    iPhone. Zeigt zunächst nur, dass das Gerät läuft, solange die Restzeit noch
+    nicht bekannt ist.
+  triggers:
+  - entity_id: binary_sensor.spulmaschine_lauft
+    from: 'off'
+    to: 'on'
+    trigger: state
+  conditions: []
+  actions:
+  - action: notify.mobile_app_eierphone_simon
+    data:
+      title: Spülmaschine
+      message: Läuft – Restzeit noch nicht bekannt
+      data:
+        tag: spulmaschine_timer
+        live_update: true
+        notification_icon: mdi:dishwasher
+        notification_icon_color: '#009688'
+  mode: single
+- id: '1783786435296'
+  alias: 'Spülmaschine: Live-Timer aktualisieren'
+  description: Sobald ein Programm erkannt wurde, wird die Live Activity um Programmname,
+    Restzeit-Countdown und die voraussichtliche Fertig-Uhrzeit ergänzt.
+  triggers:
+  - entity_id: sensor.spulmaschine_programm
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.spulmaschine_lauft
+    state: 'on'
+  - condition: template
+    value_template: "{{ trigger.to_state.state not in ['detecting...', 'off', 'none', 'unknown', ''] }}"
+  - condition: template
+    value_template: "{{ states('sensor.spulmaschine_verbleibende_zeit') not in ['unknown', 'unavailable', ''] }}"
+  actions:
+  - action: notify.mobile_app_eierphone_simon
+    data:
+      title: Spülmaschine
+      message: "{% set mins = states('sensor.spulmaschine_verbleibende_zeit') | float(0) %}{% set finish = (now() + timedelta(minutes=mins)).strftime('%H:%M') %}{{ trigger.to_state.state }} · noch {{ mins | round | int }} min · fertig um {{ finish }}"
+      data:
+        tag: spulmaschine_timer
+        live_update: true
+        chronometer: true
+        when_relative: true
+        when: "{{ (states('sensor.spulmaschine_verbleibende_zeit') | float(0) * 60) | int }}"
+        notification_icon: mdi:dishwasher
+        notification_icon_color: '#009688'
+  mode: single
+- id: '1783786435297'
+  alias: 'Spülmaschine: Live-Timer beenden'
+  description: Schließt die Live Activity, sobald die Spülmaschine ausgeht.
+  triggers:
+  - entity_id: binary_sensor.spulmaschine_lauft
+    from: 'on'
+    to: 'off'
+    trigger: state
+  conditions: []
+  actions:
+  - action: notify.mobile_app_eierphone_simon
+    data:
+      message: clear_notification
+      data:
+        tag: spulmaschine_timer
   mode: single
