@@ -12,6 +12,20 @@ views:
       heading: Anwesenheit
       heading_style: title
       icon: mdi:account-multiple
+      card_mod: &heading_card_mod
+        style: |
+          ha-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 2px 12px 2px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            margin-bottom: 4px;
+          }
+          ha-card ha-state-icon, ha-card ha-icon {
+            color: var(--primary-color);
+            --mdc-icon-size: 22px;
+          }
     - type: grid
       columns: 2
       square: false
@@ -32,6 +46,7 @@ views:
       heading: Wohnzimmer
       heading_style: title
       icon: mdi:sofa
+      card_mod: *heading_card_mod
     - type: custom:mushroom-template-card
       entity: climate.wohnzimmer_heizung_wohnzimmer
       tap_action:
@@ -132,6 +147,7 @@ views:
       heading: Schlafzimmer
       heading_style: title
       icon: mdi:bed
+      card_mod: *heading_card_mod
     - type: custom:mushroom-template-card
       entity: climate.schlafzimmer_heizung_schlafzimmer_links
       tap_action:
@@ -393,6 +409,7 @@ views:
       heading: Esszimmer
       heading_style: title
       icon: mdi:silverware-fork-knife
+      card_mod: *heading_card_mod
     - type: custom:mushroom-template-card
       entity: climate.esszimmer_heizung_esszimmer_2
       tap_action:
@@ -485,6 +502,7 @@ views:
       heading: Büro
       heading_style: title
       icon: mdi:desktop-classic
+      card_mod: *heading_card_mod
     - type: custom:mushroom-template-card
       entity: climate.esszimmer_heizung_esszimmer
       tap_action:
@@ -574,6 +592,7 @@ views:
       heading: Küche
       heading_style: title
       icon: mdi:stove
+      card_mod: *heading_card_mod
     - type: custom:mushroom-template-card
       entity: climate.kuche_heizung_kuche
       tap_action:
@@ -696,6 +715,7 @@ views:
       heading: Bad
       heading_style: title
       icon: mdi:shower
+      card_mod: *heading_card_mod
     - type: custom:mushroom-template-card
       entity: climate.buro_heizung_buro
       tap_action:
@@ -745,6 +765,7 @@ views:
       heading: Eingang
       heading_style: title
       icon: mdi:door
+      card_mod: *heading_card_mod
     - type: custom:mushroom-template-card
       entity: sensor.flur_bewegungsmelder_flur_temperatur
       tap_action:
@@ -913,6 +934,7 @@ views:
       heading: Keller
       heading_style: title
       icon: mdi:home-floor-b
+      card_mod: *heading_card_mod
     - type: custom:button-card
       entity: sensor.waschmaschine_zustand
       name: Waschmaschine
@@ -1015,6 +1037,7 @@ views:
       heading: Müllabfuhr
       heading_style: title
       icon: mdi:trash-can
+      card_mod: *heading_card_mod
     - type: grid
       columns: 2
       square: false
@@ -1181,6 +1204,7 @@ views:
       heading: Sendungen & Pakete
       heading_style: title
       icon: mdi:package-variant-closed
+      card_mod: *heading_card_mod
     - type: grid
       columns: 3
       square: false
@@ -1354,6 +1378,7 @@ views:
       heading: Batteriestatus
       heading_style: title
       icon: mdi:battery-alert-variant-outline
+      card_mod: *heading_card_mod
     - type: grid
       columns: 2
       square: false
@@ -1496,6 +1521,7 @@ views:
       heading: Einkaufsliste
       heading_style: title
       icon: mdi:cart-outline
+      card_mod: *heading_card_mod
     - type: custom:button-card
       entity: todo.couple
       name: Einkaufsliste
@@ -1651,6 +1677,7 @@ views:
       heading: Downloads
       heading_style: title
       icon: mdi:download-network
+      card_mod: *heading_card_mod
     - type: grid
       columns: 2
       square: false
@@ -1705,6 +1732,7 @@ views:
       heading: System
       heading_style: title
       icon: mdi:chip
+      card_mod: *heading_card_mod
     - type: grid
       columns: 2
       square: false
@@ -1725,6 +1753,7 @@ views:
       heading: Speicher
       heading_style: title
       icon: mdi:harddisk
+      card_mod: *heading_card_mod
     - type: grid
       columns: 2
       square: false
@@ -1745,6 +1774,7 @@ views:
       heading: Netzwerk
       heading_style: title
       icon: mdi:swap-vertical
+      card_mod: *heading_card_mod
     - type: grid
       columns: 2
       square: false
@@ -1765,6 +1795,7 @@ views:
       heading: Status
       heading_style: title
       icon: mdi:shield-check
+      card_mod: *heading_card_mod
     - type: grid
       columns: 2
       square: false
@@ -1790,6 +1821,7 @@ views:
       heading: Bob – Wohnungskarte
       heading_style: title
       icon: mdi:robot-vacuum
+      card_mod: *heading_card_mod
     - type: custom:xiaomi-vacuum-map-card
       title: Bob
       entity: vacuum.bob
