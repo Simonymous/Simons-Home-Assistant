@@ -275,7 +275,9 @@
   mode: single
 - id: '1783786435282'
   alias: 'Waschmaschine: Fertig-Benachrichtigung'
-  description: Sendet eine Push-Nachricht, wenn die Waschmaschine fertig ist.
+  description: Sendet eine Push-Nachricht, wenn die Waschmaschine fertig ist. Der
+    Text unterscheidet, ob nur der Schleudergang oder das ganze Programm beendet
+    wurde.
   triggers:
   - entity_id: sensor.waschmaschine_zustand
     to: finished
@@ -284,8 +286,10 @@
   actions:
   - action: notify.notify
     data:
-      title: "\U0001F9FA Waschmaschine fertig!"
-      message: Das Programm ist beendet. Du kannst die Wäsche jetzt raushängen!
+      title: >-
+        {% if states('sensor.waschmaschine_programm') == 'Schleudern' %}🌀 Waschmaschine fertig mit Schleudern!{% else %}🧺 Waschmaschine fertig!{% endif %}
+      message: >-
+        {% if states('sensor.waschmaschine_programm') == 'Schleudern' %}Der Schleudergang ist beendet.{% else %}Das Programm ist beendet. Du kannst die Wäsche jetzt raushängen!{% endif %}
       data:
         push:
           sound: default
@@ -388,4 +392,70 @@
       entity_id: input_datetime.letzter_lauf_heissluftfritteuse
     data:
       timestamp: '{{ now().timestamp() }}'
+  mode: single
+- id: '1783786435289'
+  alias: 'Waschmaschine: Live-Timer starten'
+  description: Startet beim Einschalten eine persistente Live Activity auf Simons
+    iPhone. Solange das Programm noch nicht erkannt ist, ohne Restzeit.
+  triggers:
+  - entity_id: binary_sensor.waschmaschine_lauft
+    from: 'off'
+    to: 'on'
+    trigger: state
+  conditions: []
+  actions:
+  - action: notify.mobile_app_eierphone_simon
+    data:
+      title: Waschmaschine
+      message: Programm wird erkannt – Gerät läuft
+      data:
+        tag: waschmaschine_timer
+        live_update: true
+        notification_icon: mdi:washing-machine
+        notification_icon_color: '#2196F3'
+  mode: single
+- id: '1783786435290'
+  alias: 'Waschmaschine: Live-Timer aktualisieren'
+  description: Sobald ein Programm erkannt wurde, wird die Live Activity um einen
+    Countdown mit der Restzeit ergänzt.
+  triggers:
+  - entity_id: sensor.waschmaschine_programm
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.waschmaschine_lauft
+    state: 'on'
+  - condition: template
+    value_template: "{{ trigger.to_state.state not in ['detecting...', 'none', 'unknown', ''] }}"
+  - condition: template
+    value_template: "{{ states('sensor.waschmaschine_verbleibende_zeit') not in ['unknown', 'unavailable', ''] }}"
+  actions:
+  - action: notify.mobile_app_eierphone_simon
+    data:
+      title: Waschmaschine
+      message: '{{ trigger.to_state.state }} läuft'
+      data:
+        tag: waschmaschine_timer
+        live_update: true
+        chronometer: true
+        when_relative: true
+        when: "{{ (states('sensor.waschmaschine_verbleibende_zeit') | float(0) * 60) | int }}"
+        notification_icon: mdi:washing-machine
+        notification_icon_color: '#2196F3'
+  mode: single
+- id: '1783786435291'
+  alias: 'Waschmaschine: Live-Timer beenden'
+  description: Schließt die Live Activity, sobald die Waschmaschine ausgeht.
+  triggers:
+  - entity_id: binary_sensor.waschmaschine_lauft
+    from: 'on'
+    to: 'off'
+    trigger: state
+  conditions: []
+  actions:
+  - action: notify.mobile_app_eierphone_simon
+    data:
+      message: clear_notification
+      data:
+        tag: waschmaschine_timer
   mode: single
