@@ -355,3 +355,37 @@
     data:
       timestamp: '{{ now().timestamp() }}'
   mode: single
+- id: '1783786435287'
+  alias: 'Heißluftfritteuse: Fertig-Benachrichtigung'
+  description: Sendet eine Push-Nachricht, wenn die Heißluftfritteuse fertig ist.
+  triggers:
+  - entity_id: sensor.ninja_heissluftfritteuse_zustand
+    to: finished
+    trigger: state
+  conditions: []
+  actions:
+  - action: notify.notify
+    data:
+      title: "\U0001F35F Heißluftfritteuse fertig!"
+      message: Das Programm ist beendet. Dein Essen ist fertig!
+      data:
+        push:
+          sound: default
+  mode: single
+- id: '1783786435288'
+  alias: 'Heißluftfritteuse: Letzten Lauf protokollieren'
+  description: Speichert den Zeitpunkt, an dem die Heißluftfritteuse zuletzt gelaufen
+    ist.
+  triggers:
+  - entity_id: binary_sensor.ninja_heissluftfritteuse_lauft
+    from: 'on'
+    to: 'off'
+    trigger: state
+  conditions: []
+  actions:
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.letzter_lauf_heissluftfritteuse
+    data:
+      timestamp: '{{ now().timestamp() }}'
+  mode: single

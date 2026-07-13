@@ -69,12 +69,12 @@ views:
         icon: mdi:sofa-outline
         content: Wohnwand
         icon_color: >-
-          {{ 'amber' if is_state('light.wohnzimmer_wohnwand_dnd', 'on') else 'grey' }}
+          {{ 'amber' if is_state('switch.wohnzimmer_wohnwand_outlet', 'on') else 'grey' }}
         tap_action:
           action: perform-action
-          perform_action: light.toggle
+          perform_action: switch.toggle
           target:
-            entity_id: light.wohnzimmer_wohnwand_dnd
+            entity_id: switch.wohnzimmer_wohnwand_outlet
     - type: conditional
       conditions:
       - condition: state
@@ -568,6 +568,49 @@ views:
       - operator: default
         color: var(--disabled-text-color)
       extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } } @keyframes machine-wobble { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }'
+    - type: custom:button-card
+      entity: sensor.ninja_heissluftfritteuse_zustand
+      name: Heißluftfritteuse
+      icon: mdi:pot-steam
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      label: "[[[\n  const zustand = states['sensor.ninja_heissluftfritteuse_zustand'];\n  const state = zustand ? zustand.state : 'unknown';\n  const labels = {off:'Aus', idle:'Bereit', finished:'Fertig!', paused:'Pausiert', user_paused:'Pausiert', starting:'Startet…', ending:'Endet…', delay_wait:'Startverzögerung', interrupted:'Unterbrochen', force_stopped:'Gestoppt', clean:'Fertig – bitte ausräumen'};\n  if (state !== 'running') {\n    const base = labels[state] || (state.charAt(0).toUpperCase() + state.slice(1));\n    if (state === 'off') {\n      const last = states['input_datetime.letzter_lauf_heissluftfritteuse'];\n      if (last && last.state) {\n        const m = last.state.match(/^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2})/);\n        if (m) return base + ' · Zuletzt gelaufen: ' + m[3] + '.' + m[2] + '. um ' + m[4] + ':' + m[5];\n      }\n    }\n    return base;\n  }\n  const program = states['sensor.ninja_heissluftfritteuse_programm'] ? states['sensor.ninja_heissluftfritteuse_programm'].state : 'off';\n  const minsRaw = states['sensor.ninja_heissluftfritteuse_verbleibende_zeit'] ? states['sensor.ninja_heissluftfritteuse_verbleibende_zeit'].state : 'unknown';\n  const mins = parseFloat(minsRaw);\n  const parts = [];\n  if (program && !['off','unknown','unavailable','none',''].includes(program)) parts.push(program);\n  if (!isNaN(mins) && mins >= 0) {\n    const finish = new Date(Date.now() + mins*60000);\n    const hh = String(finish.getHours()).padStart(2,'0');\n    const mm = String(finish.getMinutes()).padStart(2,'0');\n    const h = Math.floor(mins/60);\n    const m = Math.round(mins%60);\n    const dur = h > 0 ? (h + ':' + String(m).padStart(2,'0') + ' h') : (m + ' min');\n    parts.push('fertig ' + hh + ':' + mm);\n    parts.push(dur + ' verbleibend');\n  } else {\n    parts.push('Programm wird erkannt…');\n  }\n  return parts.join(' · ');\n]]]"
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+      state:
+      - value: running
+        color: rgb(255, 87, 34)
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite
+      - value: finished
+        color: rgb(76, 175, 80)
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite
+      - operator: default
+        color: var(--disabled-text-color)
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
     - type: conditional
       conditions:
       - condition: state
@@ -1332,3 +1375,29 @@ views:
           vacuum:
             x: 0
             y: 100
+      append_tiles: true
+      tiles:
+      - tile_id: main_brush_left
+        replace_config: true
+        label: Hauptbürste
+        icon: mdi:brush
+        entity: sensor.bob_verbleibende_zeit_der_hauptburste
+        unit: h
+      - tile_id: side_brush_left
+        replace_config: true
+        label: Seitenbürste
+        icon: mdi:brush
+        entity: sensor.bob_verbleibende_zeit_der_seitenburste
+        unit: h
+      - tile_id: filter_left
+        replace_config: true
+        label: Filter
+        icon: mdi:air-filter
+        entity: sensor.bob_verbleibende_filterzeit
+        unit: h
+      - tile_id: sensor_dirty_left
+        replace_config: true
+        label: Sensoren
+        icon: mdi:radar
+        entity: sensor.bob_verbleibende_sensorzeit
+        unit: h

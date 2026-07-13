@@ -38,6 +38,10 @@ input_datetime:
     name: Letzter Lauf Trockner
     has_date: true
     has_time: true
+  letzter_lauf_heissluftfritteuse:
+    name: Letzter Lauf Heißluftfritteuse
+    has_date: true
+    has_time: true
 
 template:
   - sensor:
