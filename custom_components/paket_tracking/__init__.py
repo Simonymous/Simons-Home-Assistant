@@ -49,8 +49,16 @@ class PaketTrackingManager:
         subject = data.get("subject") or ""
         text = data.get("text") or ""
 
+        _LOGGER.debug(
+            "imap_content empfangen: sender=%r subject=%r text_len=%d",
+            sender,
+            subject,
+            len(text),
+        )
+
         parsed = parse_email(sender, subject, text)
         if parsed is None:
+            _LOGGER.debug("Keine passende Regel für sender=%r subject=%r", sender, subject)
             return
 
         if parsed.status == STATUS_ZUGESTELLT:

@@ -10,6 +10,9 @@ automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 paket_tracking:
+logger:
+  logs:
+    custom_components.paket_tracking: debug
 lovelace:
   dashboards:
     dashboard-reinigung:
