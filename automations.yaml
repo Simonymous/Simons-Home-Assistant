@@ -405,7 +405,7 @@
     trigger: state
   conditions: []
   actions:
-  - action: notify.mobile_app_eierphone_simon
+  - action: notify.notify
     data:
       title: Waschmaschine
       message: Läuft – Restzeit noch nicht bekannt
@@ -431,7 +431,7 @@
   - condition: template
     value_template: "{{ states('sensor.waschmaschine_verbleibende_zeit') not in ['unknown', 'unavailable', ''] }}"
   actions:
-  - action: notify.mobile_app_eierphone_simon
+  - action: notify.notify
     data:
       title: Waschmaschine
       message: "{% set mins = states('sensor.waschmaschine_verbleibende_zeit') | float(0) %}{% set finish = (now() + timedelta(minutes=mins)).strftime('%H:%M') %}{{ trigger.to_state.state }} · noch {{ mins | round | int }} min · fertig um {{ finish }}"
@@ -454,7 +454,7 @@
     trigger: state
   conditions: []
   actions:
-  - action: notify.mobile_app_eierphone_simon
+  - action: notify.notify
     data:
       message: clear_notification
       data:
@@ -472,7 +472,7 @@
     trigger: state
   conditions: []
   actions:
-  - action: notify.mobile_app_eierphone_simon
+  - action: notify.notify
     data:
       title: Trockner
       message: Läuft – Restzeit noch nicht bekannt
@@ -498,7 +498,7 @@
   - condition: template
     value_template: "{{ states('sensor.trockner_verbleibende_zeit') not in ['unknown', 'unavailable', ''] }}"
   actions:
-  - action: notify.mobile_app_eierphone_simon
+  - action: notify.notify
     data:
       title: Trockner
       message: "{% set mins = states('sensor.trockner_verbleibende_zeit') | float(0) %}{% set finish = (now() + timedelta(minutes=mins)).strftime('%H:%M') %}{{ trigger.to_state.state }} · noch {{ mins | round | int }} min · fertig um {{ finish }}"
@@ -521,7 +521,7 @@
     trigger: state
   conditions: []
   actions:
-  - action: notify.mobile_app_eierphone_simon
+  - action: notify.notify
     data:
       message: clear_notification
       data:
@@ -539,7 +539,7 @@
     trigger: state
   conditions: []
   actions:
-  - action: notify.mobile_app_eierphone_simon
+  - action: notify.notify
     data:
       title: Spülmaschine
       message: Läuft – Restzeit noch nicht bekannt
@@ -565,7 +565,7 @@
   - condition: template
     value_template: "{{ states('sensor.spulmaschine_verbleibende_zeit') not in ['unknown', 'unavailable', ''] }}"
   actions:
-  - action: notify.mobile_app_eierphone_simon
+  - action: notify.notify
     data:
       title: Spülmaschine
       message: "{% set mins = states('sensor.spulmaschine_verbleibende_zeit') | float(0) %}{% set finish = (now() + timedelta(minutes=mins)).strftime('%H:%M') %}{{ trigger.to_state.state }} · noch {{ mins | round | int }} min · fertig um {{ finish }}"
@@ -588,7 +588,7 @@
     trigger: state
   conditions: []
   actions:
-  - action: notify.mobile_app_eierphone_simon
+  - action: notify.notify
     data:
       message: clear_notification
       data:
