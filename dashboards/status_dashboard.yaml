@@ -146,7 +146,7 @@ views:
         show_state: false
         show_label: true
         show_icon: true
-        label: "[[[\n  const st = states['cover.schlafzimmer_links'];\n  const state = st ? st.state : 'unknown';\n  const labels = {open:'Offen', closed:'Geschlossen', opening:'Öffnet…', closing:'Schließt…'};\n  return labels[state] || 'Unbekannt';\n]]]"
+        label: "[[[\n  const st = states['cover.schlafzimmer_links'];\n  const state = st ? st.state : 'unknown';\n  const bewegung = states['sensor.rollo_links_bewegung'] ? states['sensor.rollo_links_bewegung'].state : 'ruht';\n  if (bewegung === 'oeffnet') return 'Öffnet…';\n  if (bewegung === 'schliesst') return 'Schließt…';\n  const labels = {open:'Offen', closed:'Geschlossen'};\n  return labels[state] || 'Unbekannt';\n]]]"
         tap_action:
           action: toggle
         styles:
@@ -170,24 +170,26 @@ views:
           - color: var(--secondary-text-color)
           - white-space: normal
         state:
+        - operator: template
+          value: '[[[ return states[''sensor.rollo_links_bewegung''] && states[''sensor.rollo_links_bewegung''].state === ''oeffnet''; ]]]'
+          icon: mdi:window-shutter-open
+          color: blue
+          styles:
+            icon:
+            - animation: machine-blink 1.2s ease-in-out infinite
+        - operator: template
+          value: '[[[ return states[''sensor.rollo_links_bewegung''] && states[''sensor.rollo_links_bewegung''].state === ''schliesst''; ]]]'
+          icon: mdi:window-shutter
+          color: blue
+          styles:
+            icon:
+            - animation: machine-blink 1.2s ease-in-out infinite
         - value: open
           icon: mdi:window-shutter-open
           color: blue
         - value: closed
           icon: mdi:window-shutter
           color: var(--disabled-text-color)
-        - value: opening
-          icon: mdi:window-shutter-open
-          color: blue
-          styles:
-            icon:
-            - animation: machine-blink 1.2s ease-in-out infinite
-        - value: closing
-          icon: mdi:window-shutter
-          color: blue
-          styles:
-            icon:
-            - animation: machine-blink 1.2s ease-in-out infinite
         - operator: default
           icon: mdi:window-shutter-alert
           color: grey
@@ -199,7 +201,7 @@ views:
         show_state: false
         show_label: true
         show_icon: true
-        label: "[[[\n  const st = states['cover.schlafzimmer_rechts'];\n  const state = st ? st.state : 'unknown';\n  const labels = {open:'Offen', closed:'Geschlossen', opening:'Öffnet…', closing:'Schließt…'};\n  return labels[state] || 'Unbekannt';\n]]]"
+        label: "[[[\n  const st = states['cover.schlafzimmer_rechts'];\n  const state = st ? st.state : 'unknown';\n  const bewegung = states['sensor.rollo_rechts_bewegung'] ? states['sensor.rollo_rechts_bewegung'].state : 'ruht';\n  if (bewegung === 'oeffnet') return 'Öffnet…';\n  if (bewegung === 'schliesst') return 'Schließt…';\n  const labels = {open:'Offen', closed:'Geschlossen'};\n  return labels[state] || 'Unbekannt';\n]]]"
         tap_action:
           action: toggle
         styles:
@@ -223,24 +225,26 @@ views:
           - color: var(--secondary-text-color)
           - white-space: normal
         state:
+        - operator: template
+          value: '[[[ return states[''sensor.rollo_rechts_bewegung''] && states[''sensor.rollo_rechts_bewegung''].state === ''oeffnet''; ]]]'
+          icon: mdi:window-shutter-open
+          color: blue
+          styles:
+            icon:
+            - animation: machine-blink 1.2s ease-in-out infinite
+        - operator: template
+          value: '[[[ return states[''sensor.rollo_rechts_bewegung''] && states[''sensor.rollo_rechts_bewegung''].state === ''schliesst''; ]]]'
+          icon: mdi:window-shutter
+          color: blue
+          styles:
+            icon:
+            - animation: machine-blink 1.2s ease-in-out infinite
         - value: open
           icon: mdi:window-shutter-open
           color: blue
         - value: closed
           icon: mdi:window-shutter
           color: var(--disabled-text-color)
-        - value: opening
-          icon: mdi:window-shutter-open
-          color: blue
-          styles:
-            icon:
-            - animation: machine-blink 1.2s ease-in-out infinite
-        - value: closing
-          icon: mdi:window-shutter
-          color: blue
-          styles:
-            icon:
-            - animation: machine-blink 1.2s ease-in-out infinite
         - operator: default
           icon: mdi:window-shutter-alert
           color: grey

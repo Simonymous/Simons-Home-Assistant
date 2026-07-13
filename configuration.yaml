@@ -128,3 +128,53 @@ template:
         delay_off:
           minutes: 2
         state: "{{ states('sensor.simon_synology_download_durchsatz') | float(0) > 50 }}"
+
+  - trigger:
+      - trigger: state
+        entity_id: cover.schlafzimmer_links
+        attribute: current_position
+        id: change
+      - trigger: state
+        entity_id: cover.schlafzimmer_links
+        attribute: current_position
+        for:
+          seconds: 3
+        id: settled
+    sensor:
+      - name: "Rollo Links Bewegung"
+        unique_id: rollo_links_bewegung
+        state: >-
+          {% if trigger.id == 'settled' %}ruht
+          {% else %}
+            {% set von = trigger.from_state.attributes.current_position if trigger.from_state else none %}
+            {% set bis = trigger.to_state.attributes.current_position %}
+            {% if von is none or bis == von %}ruht
+            {% elif bis > von %}oeffnet
+            {% else %}schliesst
+            {% endif %}
+          {% endif %}
+
+  - trigger:
+      - trigger: state
+        entity_id: cover.schlafzimmer_rechts
+        attribute: current_position
+        id: change
+      - trigger: state
+        entity_id: cover.schlafzimmer_rechts
+        attribute: current_position
+        for:
+          seconds: 3
+        id: settled
+    sensor:
+      - name: "Rollo Rechts Bewegung"
+        unique_id: rollo_rechts_bewegung
+        state: >-
+          {% if trigger.id == 'settled' %}ruht
+          {% else %}
+            {% set von = trigger.from_state.attributes.current_position if trigger.from_state else none %}
+            {% set bis = trigger.to_state.attributes.current_position %}
+            {% if von is none or bis == von %}ruht
+            {% elif bis > von %}oeffnet
+            {% else %}schliesst
+            {% endif %}
+          {% endif %}
