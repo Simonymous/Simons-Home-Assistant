@@ -2,27 +2,25 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
+from typing import Any
 
+from homeassistant.const import Platform
 from homeassistant.core import Event, HomeAssistant, callback
-from homeassistant.helpers.entity_component import EntityComponent
+from homeassistant.helpers import discovery
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import dt as dt_util
 
 from .const import (
-    BUCKETS,
     DOMAIN,
     EVENT_IMAP_CONTENT,
     MAX_AGE_DAYS,
-    SENSOR_ICONS,
-    SENSOR_NAMES,
     STATUS_ZUGESTELLT,
     STORAGE_KEY,
     STORAGE_VERSION,
 )
 from .parsers import parse_email
-from .sensor import PaketBucketSensor
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,7 +30,7 @@ class PaketTrackingManager:
         self.hass = hass
         self._store = Store(hass, STORAGE_VERSION, STORAGE_KEY)
         self.packages: dict[str, dict] = {}
-        self.entities: dict[str, PaketBucketSensor] = {}
+        self.entities: dict[str, Any] = {}
 
     async def async_load(self) -> None:
         data = await self._store.async_load()
@@ -100,14 +98,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     await manager.async_load()
     hass.data[DOMAIN] = manager
 
-    component = EntityComponent(_LOGGER, DOMAIN, hass)
-    entities = [
-        PaketBucketSensor(manager, status, SENSOR_NAMES[status], SENSOR_ICONS[status])
-        for status in BUCKETS
-    ]
-    for entity in entities:
-        manager.entities[entity.status] = entity
-    await component.async_add_entities(entities)
+    hass.async_create_task(
+        discovery.async_load_platform(hass, Platform.SENSOR, DOMAIN, {}, config)
+    )
 
     hass.bus.async_listen(EVENT_IMAP_CONTENT, manager.handle_event)
     async_track_time_interval(hass, manager.async_prune_stale, timedelta(hours=6))
