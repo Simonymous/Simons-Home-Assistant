@@ -15,7 +15,9 @@ from homeassistant.util import dt as dt_util
 from .const import (
     DOMAIN,
     EVENT_IMAP_CONTENT,
+    HEUTE_MAX_AGE_DAYS,
     MAX_AGE_DAYS,
+    STATUS_HEUTE,
     STATUS_ZUGESTELLT,
     STORAGE_KEY,
     STORAGE_VERSION,
@@ -86,12 +88,17 @@ class PaketTrackingManager:
     @callback
     def async_prune_stale(self, _now=None) -> None:
         # Safety net for missed/unmatched "zugestellt" emails, so a parser gap
-        # can't leave a package stuck in a bucket forever.
-        cutoff = dt_util.now() - timedelta(days=MAX_AGE_DAYS)
+        # can't leave a package stuck in a bucket forever. "Heute" gets a much
+        # tighter cutoff than the other buckets - an entry stuck there for days
+        # means the delivery email was missed, not that it's still "today".
+        now = dt_util.now()
+        cutoff = now - timedelta(days=MAX_AGE_DAYS)
+        heute_cutoff = now - timedelta(days=HEUTE_MAX_AGE_DAYS)
         stale = [
             key
             for key, pkg in self.packages.items()
-            if (dt_util.parse_datetime(pkg.get("updated_at", "")) or dt_util.now()) < cutoff
+            if (dt_util.parse_datetime(pkg.get("updated_at", "")) or now)
+            < (heute_cutoff if pkg.get("status") == STATUS_HEUTE else cutoff)
         ]
         if not stale:
             return

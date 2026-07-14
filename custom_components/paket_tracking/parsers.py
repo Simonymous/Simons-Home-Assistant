@@ -47,12 +47,14 @@ def parse_amazon(sender: str, subject: str, text: str) -> ParsedEmail | None:
 
     if "bestellbestaetigung@amazon" in sender:
         status = STATUS_OFFEN
-    elif "shipment-tracking@amazon" in sender:
+    elif "versandbestaetigung@amazon" in sender:
+        status = STATUS_UNTERWEGS
+    elif "shipment-tracking@amazon" in sender or "order-update@amazon" in sender:
         if subject.startswith("Zugestellt"):
             status = STATUS_ZUGESTELLT
         elif subject.startswith("In Zustellung") or subject.startswith("Heute"):
             status = STATUS_HEUTE
-        elif subject.startswith("Unterwegs") or "Versendet" in subject:
+        elif subject.startswith("Unterwegs") or subject.startswith("Versandt") or "Versendet" in subject:
             status = STATUS_UNTERWEGS
         else:
             return None

@@ -9,10 +9,15 @@ frontend:
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
+timer:
+  ladesaeule_parkplatz:
+    name: Ladesäule Parkplatz
+    duration: "02:50:00"
 paket_tracking:
 logger:
   logs:
     custom_components.paket_tracking: debug
+    custom_components.philips_sonicare_ble: debug
 lovelace:
   dashboards:
     dashboard-reinigung:

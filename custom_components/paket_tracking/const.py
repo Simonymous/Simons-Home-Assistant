@@ -5,6 +5,9 @@ EVENT_IMAP_CONTENT = "imap_content"
 STORAGE_VERSION = 1
 STORAGE_KEY = "paket_tracking.packages"
 MAX_AGE_DAYS = 10
+# "Heute" means today - if an entry has been stuck there for days, the
+# zugestellt email was almost certainly missed, not actually still in transit.
+HEUTE_MAX_AGE_DAYS = 3
 
 STATUS_OFFEN = "offen"
 STATUS_UNTERWEGS = "unterwegs"
