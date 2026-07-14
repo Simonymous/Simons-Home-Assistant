@@ -665,8 +665,8 @@
   mode: single
 - id: '1783786435301'
   alias: 'Ladesäule Parkplatz: Timer abbrechen'
-  description: Bricht die Parkuhr ab, sobald das Auto ausgesteckt wird oder den
-    Parkplatz verlässt - dann ist die 3h-Grenze hinfällig.
+  description: Bricht die Parkuhr ab, sobald das Auto ausgesteckt wird oder den Parkplatz
+    verlässt - dann ist die 3h-Grenze hinfällig.
   triggers:
   - entity_id: binary_sensor.byd_seal_u_dm_i_stecker
     from: 'on'
@@ -687,8 +687,8 @@
   mode: single
 - id: '1783786435302'
   alias: 'Ladesäule Parkplatz: 10-Minuten-Warnung'
-  description: Benachrichtigt Simon, wenn an der Ladesäule nur noch 10 Minuten
-    von den 3h Parkzeit übrig sind.
+  description: Benachrichtigt Simon, wenn an der Ladesäule nur noch 10 Minuten von
+    den 3h Parkzeit übrig sind.
   triggers:
   - trigger: event
     event_type: timer.finished
@@ -721,16 +721,14 @@
       entity_id: switch.wohnzimmer_wohnwand_outlet
   mode: single
 - id: '1783786435304'
-  alias: 'Wohnwand: Aus mit Apple TV (abends)'
-  description: Schaltet die Wohnwand-Steckdose mit aus, wenn der Wohnzimmer-AppleTV
-    abends nach Sonnenuntergang ausgeht.
+  alias: 'Wohnwand: Aus mit Apple TV (immer)'
+  description: Schaltet immer die Wohnwand-Steckdose mit aus, wenn der Wohnzimmer-AppleTV
+    ausgeht.
   triggers:
   - entity_id: media_player.wohnzimmer_appletv_wohnzimmer_appletv
     to: 'off'
     trigger: state
-  conditions:
-  - condition: sun
-    after: sunset
+  conditions: []
   actions:
   - action: switch.turn_off
     target:
