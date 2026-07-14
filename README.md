@@ -7,9 +7,9 @@ Persönliche Home-Assistant-Konfiguration — kein Fremd-Tutorial-Setup, sondern
 - **Ein durchgestyltes Status-Dashboard** (`dashboards/status_dashboard.yaml`) im [Liquid-Glass-Theme](themes/liquid_glass.yaml) — Räume mit Klima/Licht/Rollo-Steuerung, Anwesenheit, Haushaltsgeräte-Live-Timer (inkl. iOS Live Activities), Auto-Status, Synology, Saugroboter, Müllabfuhr, Batteriestatus, Einkaufsliste, Wettervorhersage.
 - **Drei selbstgeschriebene Custom Components**, weil es dafür nichts Fertiges gab:
   - [`paket_tracking`](custom_components/paket_tracking) — wertet Bestell-/Versand-/Zustellmails (DHL, UPS, Hermes, Amazon) per IMAP aus und pflegt drei Zähler (offen/unterwegs/heute) inkl. automatischem Ablauf hängengebliebener Einträge.
-  - [`philips_sonicare_ble`](custom_components/philips_sonicare_ble) *(lokaler Fork/Patch)* — Debug-Instrumentierung für die BLE-Kopplung einer Sonicare-Zahnbürste.
+  - [`philips_sonicare_ble`](custom_components/philips_sonicare_ble) *(lokaler Fork/Patch)* — BLE-Anbindung einer Sonicare-Zahnbürste; ein hartnäckiger Pairing-Bug (BlueZ verweigerte die Just-Works-Bestätigung mangels registriertem D-Bus-Agent) ist inzwischen gefunden und umgangen, Integration läuft jetzt sauber (Akkustand, Bürstenkopf-Verschleiß, Putz-Historie).
   - `ha_mcp_tools` — vom [ha-mcp](https://github.com/homeassistant-ai/ha-mcp)-Add-on selbst verwaltet, gibt einem LLM-Client (z. B. Claude) kontrollierten Zugriff auf die Instanz.
-- **31 Automationen** für Haushaltsgeräte-Benachrichtigungen, Rollo-Bewegungserkennung, Tür-/Schloss-Protokollierung, Ladesäulen-Parkzeit-Warnung und mehr.
+- **34 Automationen** für Haushaltsgeräte-Benachrichtigungen, Rollo-Bewegungserkennung, Tür-/Schloss-Protokollierung, Ladesäulen-Parkzeit-Warnung, Bürstenkopf-Verschleiß und mehr.
 - **HACS-Integrationen** für BYD-Fahrzeug, Meross, Xiaomi/Mi Home, DWD-Wetter und Müllabfuhr-Kalender.
 
 ## Struktur
@@ -33,6 +33,8 @@ blueprints/               Automation-/Script-Blueprints
 ```
 
 Bewusst ausgeschlossen: `.storage/` (enthält Secrets wie IMAP-App-Passwort, Lock-Zugangsdaten), `secrets.yaml`, Recorder-DB, Logs, `www/community/` (HACS-Assets, reproduzierbar).
+
+**Öffentliches Repo:** Es liegen bewusst keine Zugangsdaten, Tokens oder exakten Standortdaten in diesem Repo — die liegen ausschließlich in `.storage/`, das nie synchronisiert wird.
 
 ## Nicht gedacht zum 1:1-Nachbauen
 
