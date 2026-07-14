@@ -414,6 +414,8 @@
       data:
         tag: waschmaschine_timer
         live_update: true
+        progress: 0
+        progress_max: 100
         notification_icon: mdi:washing-machine
         notification_icon_color: '#2196F3'
   mode: single
@@ -452,6 +454,10 @@
       data:
         tag: waschmaschine_timer
         live_update: true
+        progress: '{{ states(''sensor.waschmaschine_fortschritt'') | float(0) | round
+          | int }}'
+        progress_max: 100
+        progress_bar_color: '#2196F3'
         chronometer: true
         when_relative: true
         when: '{{ (states(''sensor.waschmaschine_verbleibende_zeit'') | float(0) *
@@ -494,6 +500,8 @@
       data:
         tag: trockner_timer
         live_update: true
+        progress: 0
+        progress_max: 100
         notification_icon: mdi:tumble-dryer
         notification_icon_color: '#FF9800'
   mode: single
@@ -532,6 +540,10 @@
       data:
         tag: trockner_timer
         live_update: true
+        progress: '{{ states(''sensor.trockner_fortschritt'') | float(0) | round
+          | int }}'
+        progress_max: 100
+        progress_bar_color: '#FF9800'
         chronometer: true
         when_relative: true
         when: '{{ (states(''sensor.trockner_verbleibende_zeit'') | float(0) * 60)
@@ -574,6 +586,8 @@
       data:
         tag: spulmaschine_timer
         live_update: true
+        progress: 0
+        progress_max: 100
         notification_icon: mdi:dishwasher
         notification_icon_color: '#009688'
   mode: single
@@ -612,6 +626,10 @@
       data:
         tag: spulmaschine_timer
         live_update: true
+        progress: '{{ states(''sensor.spulmaschine_fortschritt'') | float(0) | round
+          | int }}'
+        progress_max: 100
+        progress_bar_color: '#009688'
         chronometer: true
         when_relative: true
         when: '{{ (states(''sensor.spulmaschine_verbleibende_zeit'') | float(0) *
