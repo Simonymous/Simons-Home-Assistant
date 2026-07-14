@@ -130,6 +130,29 @@ views:
     - type: conditional
       conditions:
       - condition: state
+        entity: media_player.wohnzimmer_appletv_wohnzimmer_appletv
+        state: playing
+      - condition: state
+        entity: media_player.wohnzimmer_appletv_wohnzimmer_appletv
+        attribute: app_id
+        state: com.google.ios.youtube
+      card:
+        type: custom:button-card
+        entity: media_player.wohnzimmer_appletv_wohnzimmer_appletv
+        name: Auf YouTube weiterschauen
+        label: Sucht Titel + Kanal auf YouTube
+        icon: mdi:youtube
+        color: rgb(255, 0, 0)
+        layout: icon_name_state2nd
+        size: 28px
+        tap_action:
+          action: url
+          url_path: >
+            [[[ return 'https://www.youtube.com/results?search_query=' +
+            encodeURIComponent((entity.attributes.media_title || '') + ' ' + (entity.attributes.media_artist || '')) ]]]
+    - type: conditional
+      conditions:
+      - condition: state
         entity: media_player.lg_webos_tv_65nano759pa
         state: playing
       card:
@@ -402,6 +425,29 @@ views:
           {% elif app == 'com.plexapp.plex' %}#E5A00D
           {% else %}white
           {% endif %}
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: media_player.schlafzimmer_appletv_schlafzimmer_appletv
+        state: playing
+      - condition: state
+        entity: media_player.schlafzimmer_appletv_schlafzimmer_appletv
+        attribute: app_id
+        state: com.google.ios.youtube
+      card:
+        type: custom:button-card
+        entity: media_player.schlafzimmer_appletv_schlafzimmer_appletv
+        name: Auf YouTube weiterschauen
+        label: Sucht Titel + Kanal auf YouTube
+        icon: mdi:youtube
+        color: rgb(255, 0, 0)
+        layout: icon_name_state2nd
+        size: 28px
+        tap_action:
+          action: url
+          url_path: >
+            [[[ return 'https://www.youtube.com/results?search_query=' +
+            encodeURIComponent((entity.attributes.media_title || '') + ' ' + (entity.attributes.media_artist || '')) ]]]
     - type: conditional
       conditions:
       - condition: state
