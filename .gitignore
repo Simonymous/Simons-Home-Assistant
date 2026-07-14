@@ -18,6 +18,8 @@ secrets.yaml
 .ha_run.lock
 home-assistant.log
 home-assistant.log.*
+*.log
+.ha_mcp/
 
 # --- Caches, generierte & herunterladbare Inhalte ---
 .cache/
