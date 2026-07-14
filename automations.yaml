@@ -734,3 +734,22 @@
     target:
       entity_id: switch.wohnzimmer_wohnwand_outlet
   mode: single
+- id: '1783786435305'
+  alias: 'Zahnbürste: Neuer Bürstenkopf fällig'
+  description: Benachrichtigt Simon, wenn der Sonicare-Bürstenkopf laut Verschleiß-Sensor
+    fast verbraucht ist.
+  triggers:
+  - trigger: numeric_state
+    entity_id: sensor.sonicare_simon_brush_head_wear
+    above: 90
+  conditions: []
+  actions:
+  - action: notify.mobile_app_eierphone_simon
+    data:
+      title: Zahnbürste
+      message: Der Bürstenkopf ist zu {{ states('sensor.sonicare_simon_brush_head_wear') }}%
+        verschlissen - Zeit für einen neuen.
+      data:
+        notification_icon: mdi:toothbrush-electric
+        notification_icon_color: '#FF9800'
+  mode: single
