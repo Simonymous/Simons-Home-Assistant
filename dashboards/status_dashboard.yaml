@@ -1228,7 +1228,7 @@ views:
       icon: mdi:update
       card_mod: *heading_card_mod
     - type: custom:button-card
-      name: Updates verfügbar
+      name: Updates
       icon: mdi:update
       show_name: true
       show_state: false
