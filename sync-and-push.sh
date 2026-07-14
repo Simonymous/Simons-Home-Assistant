@@ -21,6 +21,7 @@ SOURCE="/Volumes/config"
 # gets deleted on every run.
 rsync -a --delete \
   --exclude "/sync-and-push.sh" \
+  --exclude "/README.md" \
   --exclude ".git/" \
   --exclude ".storage/" \
   --exclude "secrets.yaml" \
