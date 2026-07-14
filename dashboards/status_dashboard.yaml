@@ -1037,6 +1037,17 @@ views:
   icon: mdi:clipboard-check-outline
   background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%) fixed'
   cards:
+  - type: conditional
+    conditions:
+    - condition: state
+      entity: timer.ladesaeule_parkplatz
+      state: active
+    card:
+      type: tile
+      entity: timer.ladesaeule_parkplatz
+      name: Ladesäule Parkplatz
+      icon: mdi:ev-station
+      color: orange
   - type: weather-forecast
     entity: weather.quierschied
     forecast_type: daily
@@ -1246,6 +1257,7 @@ views:
           - justify-self: start
           - font-weight: bold
           - font-size: 14px
+          - white-space: normal
           label:
           - justify-self: start
           - font-size: 12px
@@ -1287,6 +1299,7 @@ views:
           - justify-self: start
           - font-weight: bold
           - font-size: 14px
+          - white-space: normal
           label:
           - justify-self: start
           - font-size: 12px
@@ -1328,6 +1341,7 @@ views:
           - justify-self: start
           - font-weight: bold
           - font-size: 14px
+          - white-space: normal
           label:
           - justify-self: start
           - font-size: 12px

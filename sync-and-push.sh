@@ -28,6 +28,8 @@ rsync -a --delete \
   --exclude "*.sqlite" --exclude "*.sqlite-shm" --exclude "*.sqlite-wal" \
   --exclude ".ha_run.lock" \
   --exclude "home-assistant.log*" \
+  --exclude "*.log" \
+  --exclude ".ha_mcp/" \
   --exclude ".cache/" \
   --exclude ".cloud/" \
   --exclude "deps/" \
