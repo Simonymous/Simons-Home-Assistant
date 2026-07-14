@@ -368,6 +368,24 @@ class PhilipsSonicareConfigFlow(ConfigFlow, domain=DOMAIN):
             if gatt_services:
                 result["services"] = gatt_services
 
+            # DIAGNOSTIC (temporary, Simon): dump the full GATT profile so an
+            # unrecognized model's service/characteristic UUIDs can be copied
+            # into a GitHub issue. Debug-gated, safe to leave in — will be
+            # overwritten on the next HACS update of this integration anyway.
+            _LOGGER.debug(
+                "%s: full GATT profile — %d service(s): %s",
+                address, len(gatt_services), gatt_services,
+            )
+            for service in client.services:
+                chars_desc = [
+                    f"{char.uuid} (props={','.join(char.properties)})"
+                    for char in service.characteristics
+                ]
+                _LOGGER.debug(
+                    "%s: service %s -> characteristics: %s",
+                    address, service.uuid, chars_desc,
+                )
+
             # Condor brushes (HX742X / Series 7100) require BLE bonding
             # before the e50b… handshake's first CCCD write is accepted.
             # The probe below only touches Device-Info chars which are
