@@ -1055,8 +1055,12 @@ views:
     - type: custom:mushroom-template-card
       entity: binary_sensor.sonicare_simon_brushing
       tap_action:
-        action: more-info
-      primary: Zahnbürste
+        action: call-service
+        service: input_boolean.toggle
+        target:
+          entity_id: input_boolean.zahnburste_details_offen
+      primary: >-
+        Zahnbürste {{ '▲' if is_state('input_boolean.zahnburste_details_offen', 'on') else '▼' }}
       secondary: >-
         {% if is_state('binary_sensor.sonicare_simon_brushing', 'on') %}
         Putzt gerade …
@@ -1066,6 +1070,14 @@ views:
       icon: mdi:toothbrush-electric
       icon_color: "{{ 'blue' if is_state('binary_sensor.sonicare_simon_brushing', 'on') else 'grey' }}"
       layout: horizontal
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: input_boolean.zahnburste_details_offen
+        state: 'on'
+      card:
+        type: custom:toothbrush-card
+        device_id: efa4a8300d09682c3e3096745972c39d
   - type: custom:stack-in-card
     cards:
     - type: heading
