@@ -704,3 +704,35 @@
         notification_icon: mdi:ev-station
         notification_icon_color: '#FF9800'
   mode: single
+- id: '1783786435303'
+  alias: 'Wohnwand: Ein mit Apple TV (abends)'
+  description: Schaltet die Wohnwand-Steckdose mit ein, wenn der Wohnzimmer-AppleTV
+    abends nach Sonnenuntergang aktiviert wird.
+  triggers:
+  - entity_id: media_player.wohnzimmer_appletv_wohnzimmer_appletv
+    from: 'off'
+    trigger: state
+  conditions:
+  - condition: sun
+    after: sunset
+  actions:
+  - action: switch.turn_on
+    target:
+      entity_id: switch.wohnzimmer_wohnwand_outlet
+  mode: single
+- id: '1783786435304'
+  alias: 'Wohnwand: Aus mit Apple TV (abends)'
+  description: Schaltet die Wohnwand-Steckdose mit aus, wenn der Wohnzimmer-AppleTV
+    abends nach Sonnenuntergang ausgeht.
+  triggers:
+  - entity_id: media_player.wohnzimmer_appletv_wohnzimmer_appletv
+    to: 'off'
+    trigger: state
+  conditions:
+  - condition: sun
+    after: sunset
+  actions:
+  - action: switch.turn_off
+    target:
+      entity_id: switch.wohnzimmer_wohnwand_outlet
+  mode: single

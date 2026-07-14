@@ -1223,6 +1223,55 @@ views:
   - type: custom:stack-in-card
     cards:
     - type: heading
+      heading: Updates
+      heading_style: title
+      icon: mdi:update
+      card_mod: *heading_card_mod
+    - type: custom:button-card
+      name: Updates verfügbar
+      icon: mdi:update
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      label: "[[[\n  const ids = Object.keys(states).filter((id) => id.startsWith('update.') && states[id].state === 'on');\n  if (ids.length === 0) return 'Alles aktuell';\n  if (ids.length === 1) return '1 Update verfügbar';\n  return ids.length + ' Updates verfügbar';\n]]]"
+      tap_action:
+        action: navigate
+        navigation_path: '#updates-liste'
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        - white-space: normal
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+      state:
+      - operator: template
+        value: "[[[ return Object.keys(states).filter((id) => id.startsWith('update.') && states[id].state === 'on').length > 0; ]]]"
+        color: amber
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite
+      - operator: default
+        color: rgb(76, 175, 80)
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
       heading: Sendungen & Pakete
       heading_style: title
       icon: mdi:package-variant-closed
@@ -1361,42 +1410,6 @@ views:
         - operator: default
           color: var(--disabled-text-color)
         extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
-  - type: custom:bubble-card
-    card_type: pop-up
-    hash: '#pakete-offen'
-    name: Offene Bestellungen
-    icon: mdi:cart-outline
-    cards:
-    - type: markdown
-      content: '{% set pkgs = state_attr(''sensor.pakete_offen'', ''pakete'') or [] %}{% if pkgs %}
-
-        {% for p in pkgs %}- **{{ p.carrier | default(''?'') }}** — {{ p.beschreibung | default(''Unbekannter Artikel'') }}{% if p.erwartet %} · erwartet: {{ p.erwartet }}{% endif %}
-
-        {% endfor %}{% else %}_Aktuell nichts offen._{% endif %}'
-  - type: custom:bubble-card
-    card_type: pop-up
-    hash: '#pakete-unterwegs'
-    name: Sendungen unterwegs
-    icon: mdi:truck-delivery-outline
-    cards:
-    - type: markdown
-      content: '{% set pkgs = state_attr(''sensor.pakete_unterwegs'', ''pakete'') or [] %}{% if pkgs %}
-
-        {% for p in pkgs %}- **{{ p.carrier | default(''?'') }}** — {{ p.beschreibung | default(''Unbekannter Artikel'') }}{% if p.erwartet %} · erwartet: {{ p.erwartet }}{% endif %}
-
-        {% endfor %}{% else %}_Aktuell nichts unterwegs._{% endif %}'
-  - type: custom:bubble-card
-    card_type: pop-up
-    hash: '#pakete-heute'
-    name: Kommt heute an
-    icon: mdi:home-import-outline
-    cards:
-    - type: markdown
-      content: '{% set pkgs = state_attr(''sensor.pakete_heute'', ''pakete'') or [] %}{% if pkgs %}
-
-        {% for p in pkgs %}- **{{ p.carrier | default(''?'') }}** — {{ p.beschreibung | default(''Unbekannter Artikel'') }}{% if p.erwartet %} · erwartet: {{ p.erwartet }}{% endif %}
-
-        {% endfor %}{% else %}_Heute kommt nichts an._{% endif %}'
   - type: custom:stack-in-card
     cards:
     - type: heading
@@ -1594,6 +1607,59 @@ views:
     - type: todo-list
       entity: todo.couple
       title: Einkaufsliste
+  - type: custom:bubble-card
+    card_type: pop-up
+    hash: '#pakete-offen'
+    name: Offene Bestellungen
+    icon: mdi:cart-outline
+    cards:
+    - type: markdown
+      content: '{% set pkgs = state_attr(''sensor.pakete_offen'', ''pakete'') or [] %}{% if pkgs %}
+
+        {% for p in pkgs %}- **{{ p.carrier | default(''?'') }}** — {{ p.beschreibung | default(''Unbekannter Artikel'') }}{% if p.erwartet %} · erwartet: {{ p.erwartet }}{% endif %}
+
+        {% endfor %}{% else %}_Aktuell nichts offen._{% endif %}'
+  - type: custom:bubble-card
+    card_type: pop-up
+    hash: '#pakete-unterwegs'
+    name: Sendungen unterwegs
+    icon: mdi:truck-delivery-outline
+    cards:
+    - type: markdown
+      content: '{% set pkgs = state_attr(''sensor.pakete_unterwegs'', ''pakete'') or [] %}{% if pkgs %}
+
+        {% for p in pkgs %}- **{{ p.carrier | default(''?'') }}** — {{ p.beschreibung | default(''Unbekannter Artikel'') }}{% if p.erwartet %} · erwartet: {{ p.erwartet }}{% endif %}
+
+        {% endfor %}{% else %}_Aktuell nichts unterwegs._{% endif %}'
+  - type: custom:bubble-card
+    card_type: pop-up
+    hash: '#pakete-heute'
+    name: Kommt heute an
+    icon: mdi:home-import-outline
+    cards:
+    - type: markdown
+      content: '{% set pkgs = state_attr(''sensor.pakete_heute'', ''pakete'') or [] %}{% if pkgs %}
+
+        {% for p in pkgs %}- **{{ p.carrier | default(''?'') }}** — {{ p.beschreibung | default(''Unbekannter Artikel'') }}{% if p.erwartet %} · erwartet: {{ p.erwartet }}{% endif %}
+
+        {% endfor %}{% else %}_Heute kommt nichts an._{% endif %}'
+  - type: custom:bubble-card
+    card_type: pop-up
+    hash: '#updates-liste'
+    name: Verfügbare Updates
+    icon: mdi:update
+    cards:
+    - type: markdown
+      content: >-
+        {% set ids = states.update | selectattr('state','eq','on') |
+        map(attribute='entity_id') | list %}
+        {% if ids %}
+
+        {% for eid in ids %}- **{{ state_attr(eid, 'title') or eid }}**{% if
+        state_attr(eid,'latest_version') %} → {{
+        state_attr(eid,'latest_version') }}{% endif %}
+
+        {% endfor %}{% else %}_Alles aktuell._{% endif %}
 - title: Auto
   path: auto
   icon: mdi:car-electric
@@ -1899,3 +1965,44 @@ views:
         icon: mdi:radar
         entity: sensor.bob_verbleibende_sensorzeit
         unit: h
+    - type: custom:button-card
+      entity: binary_sensor.bob_wasserknappheit
+      name: Wasserkasten
+      icon: mdi:cup-water
+      show_name: true
+      show_state: false
+      show_label: true
+      show_icon: true
+      label: "[[[\n  const attached = states['binary_sensor.bob_wasserkasten_angebracht'];\n  if (attached && attached.state === 'off') return 'Nicht angebracht';\n  const low = states['binary_sensor.bob_wasserknappheit'];\n  return (low && low.state === 'on') ? 'Fast leer' : 'Ausreichend Wasser';\n]]]"
+      tap_action:
+        action: more-info
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        - white-space: normal
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+      state:
+      - value: 'on'
+        color: red
+        styles:
+          icon:
+          - animation: machine-blink 1.2s ease-in-out infinite
+      - operator: default
+        color: rgb(76, 175, 80)
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
