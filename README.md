@@ -2,14 +2,14 @@
 
 Persönliche Home-Assistant-Konfiguration — kein Fremd-Tutorial-Setup, sondern über Zeit gewachsen und für genau eine Wohnung zugeschnitten. Dieses Repo ist das Backup/Versionsarchiv der Config, die live auf einem Raspberry Pi (Home Assistant OS) läuft.
 
-Nebenbei ist das hier auch ein Experimentierfeld: über [ha-mcp](https://github.com/homeassistant-ai/ha-mcp) bekommt ein LLM (Claude) direkten, kontrollierten Zugriff auf die laufende Instanz — Dashboard-Änderungen, Automationen, Debugging, alles mit KI-Unterstützung statt von Hand. Ein Blick darauf, wie weit sich Smart-Home-Pflege heute schon an eine KI delegieren lässt.
+Nebenbei ist das hier auch ein Experimentierfeld: über [ha-mcp](https://github.com/homeassistant-ai/ha-mcp) bekommt ein LLM (Claude) direkten, kontrollierten Zugriff auf die laufende Instanz. Vieles mache ich weiterhin von Hand — es geht darum, auszuprobieren, was sich im Smart-Home-Bereich sinnvoll mit KI-Unterstützung machen lässt (Dashboard-Änderungen, Automationen, Debugging) und wo die Grenzen liegen.
 
 ## Was hier drinsteckt
 
 - **Ein durchgestyltes Status-Dashboard** (`dashboards/status_dashboard.yaml`) im [Liquid-Glass-Theme](themes/liquid_glass.yaml) — Räume mit Klima/Licht/Rollo-Steuerung, Anwesenheit, Haushaltsgeräte-Live-Timer (inkl. iOS Live Activities), Auto-Status, Synology, Saugroboter, Müllabfuhr, Batteriestatus, Einkaufsliste, Wettervorhersage.
-- **Drei selbstgeschriebene Custom Components**, weil es dafür nichts Fertiges gab:
-  - [`paket_tracking`](custom_components/paket_tracking) — wertet Bestell-/Versand-/Zustellmails (DHL, UPS, Hermes, Amazon) per IMAP aus und pflegt drei Zähler (offen/unterwegs/heute) inkl. automatischem Ablauf hängengebliebener Einträge.
-  - [`philips_sonicare_ble`](custom_components/philips_sonicare_ble) *(lokaler Fork/Patch)* — BLE-Anbindung einer Sonicare-Zahnbürste; ein hartnäckiger Pairing-Bug (BlueZ verweigerte die Just-Works-Bestätigung mangels registriertem D-Bus-Agent) ist inzwischen gefunden und umgangen, Integration läuft jetzt sauber (Akkustand, Bürstenkopf-Verschleiß, Putz-Historie).
+- **Bemerkenswerte Custom Components:**
+  - [`paket_tracking`](custom_components/paket_tracking) *(selbstgeschrieben)* — wertet Bestell-/Versand-/Zustellmails (DHL, UPS, Hermes, Amazon) per IMAP aus und pflegt drei Zähler (offen/unterwegs/heute) inkl. automatischem Ablauf hängengebliebener Einträge.
+  - [`philips_sonicare_ble`](custom_components/philips_sonicare_ble) *(reguläre HACS-Integration)* — BLE-Anbindung einer Sonicare-Zahnbürste; ein hartnäckiger Pairing-Bug (BlueZ verweigerte die Just-Works-Bestätigung mangels registriertem D-Bus-Agent) wurde gemeinsam mit dem Maintainer diagnostiziert, Integration läuft jetzt sauber (Akkustand, Bürstenkopf-Verschleiß, Putz-Historie).
   - `ha_mcp_tools` — vom [ha-mcp](https://github.com/homeassistant-ai/ha-mcp)-Add-on selbst verwaltet, gibt einem LLM-Client (z. B. Claude) kontrollierten Zugriff auf die Instanz.
 - **34 Automationen** für Haushaltsgeräte-Benachrichtigungen, Rollo-Bewegungserkennung, Tür-/Schloss-Protokollierung, Ladesäulen-Parkzeit-Warnung, Bürstenkopf-Verschleiß und mehr.
 - **HACS-Integrationen** für BYD-Fahrzeug, Meross, Xiaomi/Mi Home, DWD-Wetter und Müllabfuhr-Kalender.
@@ -21,7 +21,7 @@ configuration.yaml       Haupteinstiegspunkt, Helper (input_datetime, timer, tem
 automations.yaml         Alle Automationen
 scripts.yaml / scenes.yaml
 dashboards/               Lovelace-Dashboard(s), YAML-Modus
-custom_components/        Eigene + gepatchte Integrationen
+custom_components/        Eigene + Drittanbieter-Integrationen
 themes/                   Liquid-Glass-Theme
 blueprints/               Automation-/Script-Blueprints
 ```
