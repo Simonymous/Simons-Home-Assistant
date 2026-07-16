@@ -1,0 +1,24 @@
+remove_package:
+  name: Paket manuell entfernen
+  description: >-
+    Entfernt einen fehlerhaft erkannten oder veralteten Paket-Eintrag aus der
+    Verfolgung (z. B. eine stornierte Teilbestellung, die als eigener Eintrag
+    hängen geblieben ist).
+  fields:
+    key:
+      name: Schlüssel
+      description: >-
+        Interner Tracking-Key, sichtbar im "schluessel"-Attribut von
+        sensor.pakete_offen / _unterwegs / _heute.
+      example: "amazon:302-9392724-4377910"
+      selector:
+        text:
+    query:
+      name: Suchbegriff
+      description: >-
+        Entfernt alle Einträge, deren Beschreibung diesen Text enthält
+        (Groß-/Kleinschreibung egal). Alternative zu "key", falls der Key
+        nicht bekannt ist.
+      example: Broadlink
+      selector:
+        text:

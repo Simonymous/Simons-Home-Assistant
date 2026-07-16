@@ -48,6 +48,7 @@ class PaketBucketSensor(SensorEntity):
                 "beschreibung": p.get("description"),
                 "erwartet": p.get("expected"),
                 "aktualisiert": p.get("updated_at"),
+                "schluessel": p.get("key"),
             }
             for p in self.manager.packages_for(self.status)
         ]
