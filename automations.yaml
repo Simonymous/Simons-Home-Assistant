@@ -712,7 +712,7 @@
         live_update: true
         chronometer: true
         when_relative: true
-        when: '{{ (now() + timedelta(hours=3)).timestamp() | int }}'
+        when: 10800
         notification_icon: mdi:ev-station
         notification_icon_color: '#FF9800'
   mode: single
