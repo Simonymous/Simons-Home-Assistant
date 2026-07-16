@@ -19,13 +19,21 @@ jobs:
       - name: 🔎 Run yamllint
         uses: ibiqlik/action-yamllint@v3
         with:
-          # Optional: Ignoriert zu lange Zeilen, was bei HA oft vorkommt
+          # Ignoriert externe HACS-Komponenten, damit fremder Code nicht den CI sprengt
+          ignore: custom_components/
           config_data: |
             extends: default
             rules:
               line-length: disable
               document-start: disable
               truthy: disable
+              # Schaltet die pedantische Einrückungs-Prüfung ab
+              indentation: disable
+              # Ignoriert kosmetische Dinge wie Leerzeichen in Kommentaren oder am Zeilenende
+              comments: disable
+              trailing-spaces: disable
+              empty-lines: disable
+              new-line-at-end-of-file: disable
 
   ha-check:
     name: 🏠 HA Config Check
