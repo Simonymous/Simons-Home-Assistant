@@ -4,9 +4,10 @@ import logging
 from datetime import timedelta
 from typing import Any
 
+import voluptuous as vol
 from homeassistant.const import Platform
-from homeassistant.core import Event, HomeAssistant, callback
-from homeassistant.helpers import discovery
+from homeassistant.core import Event, HomeAssistant, ServiceCall, callback
+from homeassistant.helpers import config_validation as cv, discovery
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.typing import ConfigType
@@ -26,6 +27,17 @@ from .parsers import parse_email
 
 _LOGGER = logging.getLogger(__name__)
 
+SERVICE_REMOVE_PACKAGE = "remove_package"
+REMOVE_PACKAGE_SCHEMA = vol.All(
+    vol.Schema(
+        {
+            vol.Optional("key"): cv.string,
+            vol.Optional("query"): cv.string,
+        }
+    ),
+    cv.has_at_least_one_key("key", "query"),
+)
+
 
 class PaketTrackingManager:
     def __init__(self, hass: HomeAssistant) -> None:
@@ -42,7 +54,25 @@ class PaketTrackingManager:
         self._store.async_delay_save(lambda: {"packages": self.packages}, 5)
 
     def packages_for(self, status: str) -> list[dict]:
-        return [p for p in self.packages.values() if p["status"] == status]
+        return [
+            {**pkg, "key": key}
+            for key, pkg in self.packages.items()
+            if pkg["status"] == status
+        ]
+
+    def remove_package(self, key: str | None, query: str | None) -> list[str]:
+        removed: list[str] = []
+        if key and self.packages.pop(key, None) is not None:
+            removed.append(key)
+        if query:
+            needle = query.strip().lower()
+            for pkg_key, pkg in list(self.packages.items()):
+                if needle in (pkg.get("description") or "").lower():
+                    self.packages.pop(pkg_key, None)
+                    removed.append(pkg_key)
+        if removed:
+            self._notify_and_save()
+        return removed
 
     @callback
     def handle_event(self, event: Event) -> None:
@@ -119,5 +149,23 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
     hass.bus.async_listen(EVENT_IMAP_CONTENT, manager.handle_event)
     async_track_time_interval(hass, manager.async_prune_stale, timedelta(hours=6))
+
+    async def async_handle_remove_package(call: ServiceCall) -> None:
+        key = call.data.get("key")
+        query = call.data.get("query")
+        removed = manager.remove_package(key, query)
+        if removed:
+            _LOGGER.info("Manuell entfernt (Service remove_package): %s", removed)
+        else:
+            _LOGGER.warning(
+                "remove_package: kein Paket gefunden für key=%r query=%r", key, query
+            )
+
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_REMOVE_PACKAGE,
+        async_handle_remove_package,
+        schema=REMOVE_PACKAGE_SCHEMA,
+    )
 
     return True
