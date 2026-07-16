@@ -15,11 +15,12 @@ views:
       card_mod: &heading_card_mod
         style: |
           ha-card {
-            display: flex;
+            display: flex !important;
             align-items: center;
             gap: 10px;
-            padding: 10px 2px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 12px 20px !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
             margin-bottom: 4px;
           }
           ha-card ha-state-icon, ha-card ha-icon {
