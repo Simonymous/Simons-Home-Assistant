@@ -18,12 +18,21 @@ from datetime import timedelta
 
 DOMAIN = "ha_mcp_tools"
 
+# Component version, kept in lockstep with ``manifest.json``'s ``version``.
+# ``ha_mcp_tools/info`` reports this so the server can display/debug the running
+# component build; ``TestManifestVersionParity`` pins the two together so a
+# manifest bump that forgets this constant (or vice-versa) fails in CI. The
+# capability negotiation — not this version — gates each WS command (see
+# ``websocket_api.CAPABILITIES``).
+COMPONENT_VERSION = "1.1.0"
+
 # Config-entry discriminator (``entry.data[CONF_ENTRY_TYPE]``). A missing value
 # means "tools" so the pre-existing services entry keeps working across the
 # component update with no migration.
 CONF_ENTRY_TYPE = "entry_type"
 ENTRY_TYPE_TOOLS = "tools"
 ENTRY_TYPE_SERVER = "server"
+MIN_EMBEDDED_HOME_ASSISTANT_VERSION = "2026.6.0"
 
 # Allowed directories for file operations (relative to config dir)
 ALLOWED_READ_DIRS = ["www", "themes", "custom_templates", "dashboards"]
@@ -66,7 +75,9 @@ ALLOWED_VOLUME_ROOTS = ("/share", "/media", "/ssl", "/backup")
 
 # Files allowed for managed YAML editing
 ALLOWED_YAML_CONFIG_FILES = ["configuration.yaml"]
-# Also allows packages/*.yaml via pattern matching
+# Also allows <packages-folder>/*.yaml via pattern matching, where the folder is
+# the one the user binds under ``homeassistant: packages:`` (default "packages",
+# detected at runtime — see _detect_package_dirs), plus themes/*.yaml.
 
 # Top-level YAML keys allowed for editing in any allowed file
 # (configuration.yaml or packages/*.yaml).
@@ -94,6 +105,11 @@ ALLOWED_YAML_KEYS = frozenset(
         "notify",
         "group",
         "utility_meter",
+        # recorder is YAML-only (no UI or storage-mode helper): purge_keep_days,
+        # include/exclude, commit_interval. Its surface is smaller than keys
+        # already here — it only controls what HA records and for how long, with
+        # no code-execution path like command_line/shell_command/rest (#1852).
+        "recorder",
     }
 )
 

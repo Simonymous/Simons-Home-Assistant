@@ -84,7 +84,6 @@ from .const import (
     DEFAULT_NOTIFY_THROTTLE,
     CONF_WARN_COUNTERFEIT,
     DEFAULT_WARN_COUNTERFEIT,
-    COUNTERFEIT_SERIAL,
     COUNTERFEIT_DETECTION_DELAY,
 )
 
@@ -220,6 +219,11 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             ha_bluetooth, "async_clear_advertisement_history"
         )
         self._wake_event = asyncio.Event()
+        # Wake REASON for _wake_event: True only when a real ADV/RSSI signal
+        # arrived (_handle_wake). The disconnect callback sets the event too
+        # (to nudge the poll loop), so the reconnect loop must not treat a
+        # bare set event as "device is awake".
+        self._adv_wake = False
         self._sensor_subscribed = False
         self._brushhead_read_pending = False
         self._live_cb: Callable | None = None
@@ -273,6 +277,7 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "brushhead_lifetime_limit": None,
             "brushhead_lifetime_usage": None,
             "brushhead_wear_pct": None,
+            "brushhead_sessions_left": None,
             "brushhead_serial": None,
             "brushhead_date": None,
             "brushhead_nfc_version": None,
@@ -361,7 +366,17 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if not self.transport.is_connected and self.data:
             self.data["_connecting"] = True
             self.async_set_updated_data(self.data)
+        self._adv_wake = True
         self._wake_event.set()
+
+    def _consume_wake(self) -> None:
+        """Consume a pending wake: event and wake-reason flag together.
+
+        The two form one unit of state — clearing only one of them would
+        desync the reconnect gate.
+        """
+        self._wake_event.clear()
+        self._adv_wake = False
 
     @callback
     def _clear_adv_history(self) -> None:
@@ -391,9 +406,15 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         @callback
         def _advertisement_callback(service_info, change):
-            # Ignore stale/cached history data (fires on registration)
+            # Ignore stale/cached history data (fires on registration, and on
+            # BlueZ RSSI-invalidation events for cached devices). Such an
+            # event still re-populated habluetooth's dedup history, spending
+            # the one-shot _clear_adv_history arm — re-open the guard, or the
+            # next real (identical-payload) ADV would be deduplicated away
+            # and this callback would never fire again.
             if service_info.rssi is not None and service_info.rssi <= -127:
-                _LOGGER.debug("ADV ignored (stale RSSI %s)", service_info.rssi)
+                _LOGGER.debug("%s: ADV ignored (stale RSSI %s) — re-arming dedup guard", service_info.address, service_info.rssi)
+                self._clear_adv_history()
                 return
             if not self.transport.is_connected:
                 _LOGGER.info(
@@ -554,8 +575,25 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         usage = new_data.get("brushhead_lifetime_usage")
         if limit and usage is not None and limit > 0:
             new_data["brushhead_wear_pct"] = min(round(usage / limit * 100, 1), 100.0)
-        elif usage == 0:
+            # Estimated sessions left on the head: remaining lifetime seconds
+            # divided by the handle's routine length (120 s when unknown).
+            routine = new_data.get("routine_length") or 120
+            new_data["brushhead_sessions_left"] = max(0, (limit - usage) // routine)
+        elif usage == 0 and self._is_valid_serial(
+            new_data.get("brushhead_serial")
+        ):
+            # usage 0 only means "brand-new head" while a head is actually
+            # attached (valid serial); a bare handle reports usage 0 too.
             new_data["brushhead_wear_pct"] = 0.0
+
+        # A bare handle answers the type characteristic with 0x00, which is
+        # also the Adaptive Clean code. A genuine Adaptive Clean head always
+        # carries a readable chip, so type 0 without a valid serial is an
+        # empty reading, not a head. Other type codes stay untouched.
+        if new_data.get("brushhead_type") == "adaptive_clean" and not self._is_valid_serial(
+            new_data.get("brushhead_serial")
+        ):
+            new_data["brushhead_type"] = None
 
         # Change detection: only update last_seen when data actually changed
         # or every 30s as heartbeat for availability tracking
@@ -598,8 +636,14 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     # ------------------------------------------------------------------
 
     def _is_valid_serial(self, serial: str | None) -> bool:
-        """True when the serial represents a successfully-read NFC chip."""
-        return serial is not None and serial != COUNTERFEIT_SERIAL
+        """True when the serial represents a successfully-read NFC chip.
+
+        An all-zero serial means no chip was read — either no head is
+        attached or the head carries no readable chip. Its byte length
+        varies per model (7 or 8 bytes), so match the pattern, not a
+        fixed string.
+        """
+        return serial is not None and any(c not in "0:" for c in serial)
 
     def _looks_counterfeit(self, data: dict) -> bool:
         """True when the serial indicates no valid NFC chip was read.
@@ -742,16 +786,22 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             # Direct BLE: wait for ADV/D-Bus signal
             # ESP bridge: skips — connect() sets up listeners, then we wait below
             if not self._is_esp_bridge and not self.transport.is_connected:
-                    if self._wake_event.is_set():
-                        self._wake_event.clear()
+                    if self._wake_event.is_set() and self._adv_wake:
+                        self._consume_wake()
                         _LOGGER.info("Advertisement already pending — connecting to %s", self.address)
                     else:
+                        # A set wake event without _adv_wake is the disconnect
+                        # nudge, not a wake. Connecting on it blind-hammers a
+                        # brush that just went to sleep (20 s timeouts) while
+                        # the dedup guard stays closed — so consume the event
+                        # and arm the ADV path instead.
+                        self._consume_wake()
                         # Re-open the dedup guard so the next ADV wakes us even
                         # though the payload is identical to the last one seen.
                         self._clear_adv_history()
                         _LOGGER.debug("Waiting for advertisement from %s...", self.address)
                         await self._wake_event.wait()
-                        self._wake_event.clear()
+                        self._consume_wake()
                         _LOGGER.info("Advertisement received — connecting to %s", self.address)
 
             # ---- Connect and set up live monitoring ----
@@ -764,7 +814,7 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                         and isinstance(self.transport, EspBridgeTransport)
                         and self.transport.needs_resubscribe
                     ):
-                        _LOGGER.info("ESP bridge requires resubscription")
+                        _LOGGER.info("%s: ESP bridge requires resubscription", self.address)
                         self.transport.acknowledge_resubscribe()
                         self._live_setup_done = False
 
@@ -790,6 +840,11 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                                 self.data["brushing_state"] = None
                                 self.data["brushing_state_value"] = None
                                 self.data.pop("_connecting", None)
+                            # ADVs seen before the drop no longer prove the
+                            # brush is awake — it keeps advertising right up
+                            # to the link drop when falling asleep (live-
+                            # verified), so require a fresh ADV to reconnect.
+                            self._adv_wake = False
                             # Wake the loop so it observes the disconnect
                             # before the brush reconnects — otherwise the
                             # 5 s poll below can miss the transition
@@ -911,7 +966,7 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                         and self.transport.needs_resubscribe
                     ):
                         self.transport.acknowledge_resubscribe()
-                        _LOGGER.info("ESP bridge rebooted — forcing re-setup")
+                        _LOGGER.info("%s: ESP bridge rebooted — forcing re-setup", self.address)
                         break
 
                     # A disconnect we never saw as is_connected == False:
@@ -940,7 +995,7 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             except asyncio.CancelledError:
                 raise
             except Exception as err:
-                _LOGGER.error("Unexpected error in live monitoring: %s", err)
+                _LOGGER.error("%s: unexpected error in live monitoring: %s", self.address, err)
             finally:
                 self._live_setup_done = False
                 self._sensor_subscribed = False
@@ -999,8 +1054,9 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 },
             )
             _LOGGER.warning(
-                "ESP bridge v%s is outdated (minimum: v%s) — "
+                "%s: ESP bridge v%s is outdated (minimum: v%s) — "
                 "rebuild and flash your ESPHome device",
+                self.address,
                 version,
                 MIN_BRIDGE_VERSION,
             )
@@ -1056,15 +1112,17 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """Clear all brush head data when head is removed (like OEM app)."""
         if not self.data:
             return
+        self.data["brushhead_serial"] = None
         self.data["brushhead_nfc_version"] = None
         self.data["brushhead_type"] = None
         self.data["brushhead_date"] = None
         self.data["brushhead_lifetime_limit"] = None
         self.data["brushhead_lifetime_usage"] = None
         self.data["brushhead_wear_pct"] = None
+        self.data["brushhead_sessions_left"] = None
         self.data["brushhead_ring_id"] = None
         self.data["brushhead_payload"] = None
-        _LOGGER.info("Brush head removed — data cleared")
+        _LOGGER.info("%s: brush head removed — data cleared", self.address)
 
     # Chars to re-read after brush head attach notification.
     # OEM app reads only 4 (version, limit, usage, ring_id) — but their
@@ -1087,14 +1145,14 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         try:
             if not self.transport.is_connected:
                 return
-            _LOGGER.info("Brush head detected — reading NFC data")
+            _LOGGER.info("%s: brush head detected — reading NFC data", self.address)
             # Short delay to let the handle finish processing the NFC chip
             await asyncio.sleep(1)
             results = await self._protocol.read_chars(self._BRUSHHEAD_REREAD_CHARS)
             if any(v is not None for v in results.values()):
                 new_data = self._process_results(results)
                 self.async_set_updated_data(new_data)
-                _LOGGER.info("Brush head data updated")
+                _LOGGER.info("%s: brush head data updated", self.address)
         finally:
             self._brushhead_read_pending = False
 
@@ -1320,11 +1378,11 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return
         mask = self._compute_sensor_enable_mask()
         if mask == 0:
-            _LOGGER.debug("All sensors disabled in options — skipping sensor subscribe")
+            _LOGGER.debug("%s: all sensors disabled in options — skipping sensor subscribe", self.address)
             return
         if await self._protocol.start_sensor_stream(mask, self._live_cb):
             self._sensor_subscribed = True
-            _LOGGER.info("Sensor data stream subscribed (session active)")
+            _LOGGER.info("%s: sensor data stream subscribed (session active)", self.address)
 
     async def _unsubscribe_sensor_data(self) -> None:
         """Unsubscribe from sensor data stream and disable sensors."""
@@ -1332,7 +1390,7 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return
         await self._protocol.stop_sensor_stream()
         self._sensor_subscribed = False
-        _LOGGER.info("Sensor data stream unsubscribed (session ended)")
+        _LOGGER.info("%s: sensor data stream unsubscribed (session ended)", self.address)
 
     async def _stop_all_notifications(self) -> None:
         """Stop all GATT notifications."""
