@@ -23,6 +23,7 @@ rsync -a --delete \
   --exclude "/sync-and-push.sh" \
   --exclude "/README.md" \
   --exclude ".git/" \
+  --exclude ".github/" \
   --exclude ".storage/" \
   --exclude "secrets.yaml" \
   --exclude "*.db" --exclude "*.db-shm" --exclude "*.db-wal" \
