@@ -813,3 +813,27 @@
         notification_icon: mdi:toothbrush-electric
         notification_icon_color: '#FF9800'
   mode: single
+- id: '1784227346716'
+  alias: 'Drucker: Tinte fast leer'
+  description: Benachrichtigt Simon, wenn eine Patrone des HP Envy 6400 fast leer ist.
+  triggers:
+  - trigger: numeric_state
+    entity_id: sensor.hp_envy_6400_series_black_cartridge
+    below: 11
+    id: schwarz
+  - trigger: numeric_state
+    entity_id: sensor.hp_envy_6400_series_tri_color_cartridge
+    below: 11
+    id: farbe
+  conditions: []
+  actions:
+  - action: notify.mobile_app_eierphone_simon
+    data:
+      title: Drucker
+      message: >-
+        {{ 'Die schwarze Patrone' if trigger.id == 'schwarz' else 'Die Farbpatrone' }}
+        ist nur noch bei {{ trigger.to_state.state }}% - bald nachbestellen.
+      data:
+        notification_icon: mdi:printer
+        notification_icon_color: '#F44336'
+  mode: single

@@ -347,6 +347,20 @@ BRUSHHEAD_TYPES = {
     6: "non_rfid",
 }
 
+# Product-family metadata exposed as attributes on the brush-head type
+# sensor: the official family letter (the A in "A3" — the type value only
+# identifies the family, not the series) and a short display name.
+# TongueCare+ and non-RFID heads have no official letter; T and N are ours.
+BRUSHHEAD_TYPE_FAMILY = {
+    "adaptive_clean": ("C", "Clean"),
+    "adaptive_white": ("W", "White"),
+    "adaptive_gums": ("G", "Gums"),
+    "tongue_clean": ("T", "Tongue"),
+    "premium_all_in_one": ("A", "All-in-One"),
+    "sensitive": ("S", "Sensitive"),
+    "non_rfid": ("N", "Non-RFID"),
+}
+
 # Sensor enable bitmask values (written to CHAR_SENSOR_ENABLE 0x4120)
 SENSOR_ENABLE_PRESSURE = 0x01
 SENSOR_ENABLE_TEMPERATURE = 0x02
@@ -548,7 +562,5 @@ DEFAULT_SENSOR_GYROSCOPE = False
 
 CONF_WARN_COUNTERFEIT = "warn_counterfeit_brushhead"
 DEFAULT_WARN_COUNTERFEIT = True
-# All-zero serial reported when no valid NFC chip is detected on the brush head
-COUNTERFEIT_SERIAL = "00:00:00:00:00:00:00"
 # Seconds of active brushing before a missing/invalid serial raises an alert
 COUNTERFEIT_DETECTION_DELAY = 30

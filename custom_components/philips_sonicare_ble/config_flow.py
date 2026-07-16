@@ -70,11 +70,21 @@ from .const import (
     SVC_BYTESTREAM,
     SVC_CONDOR,
 )
-from .helpers import esphome_service_id
-from .transport import EspBridgeTransport, describe_connection_path
+from .helpers import esphome_service_id, is_bond_gated_profile
+from .transport import (
+    EspBridgeTransport,
+    describe_connection_path,
+    is_local_bluez_connection,
+)
 from .exceptions import DeviceAsleepException, NotPairedException, TransportError
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _is_hassio(hass) -> bool:
+    """Check if Home Assistant is running on HAOS / Supervised."""
+    return "hassio" in hass.config.components
+
 
 # Sentinel option in the Direct-BLE picker that switches to free-text entry.
 # Picked when the user wants to type a MAC manually (e.g. an RPA-rotating
@@ -193,6 +203,7 @@ class PhilipsSonicareConfigFlow(ConfigFlow, domain=DOMAIN):
         self._address: str | None = None
         self._name: str | None = None
         self._fetched_data: dict[str, Any] | None = None
+        self._pair_error: str | None = None
         self._transport_type: str = TRANSPORT_BLEAK
         self._esp_device_name: str | None = None
         self._esp_bridge_id: str = ""
@@ -445,9 +456,31 @@ class PhilipsSonicareConfigFlow(ConfigFlow, domain=DOMAIN):
                     # transient stack issue) must NOT trigger the destructive
                     # legacy auto-pair path, which would RemoveDevice() on
                     # what may be a perfectly good bond.
+                    # The auth_error flag (stale-bond evidence, issue #25)
+                    # is only trustworthy when the probe rode the local
+                    # BlueZ adapter — bond state is per-controller, so an
+                    # auth error via a remote (proxy) scanner says nothing
+                    # about the BlueZ bond and must not get it wiped.
                     if auth_error and not just_paired_in_place:
-                        raise NotPairedException from err
+                        raise NotPairedException(
+                            auth_error=is_local_bluez_connection(client)
+                        ) from err
                     _LOGGER.debug("Failed to read %s: %s", key, err)
+
+            # Bond-gated profile (see helpers.is_bond_gated_profile): none
+            # of the probe reads produced data and Device Information is
+            # absent — hand this to the pairing path instead of letting it
+            # surface as "no characteristics found".
+            if not just_paired_in_place and is_bond_gated_profile(
+                result, gatt_services, adv_services
+            ):
+                _LOGGER.info(
+                    "%s: connected but the Device Information service is "
+                    "missing from the GATT table — bond-gated profile, "
+                    "requesting pairing",
+                    address,
+                )
+                raise NotPairedException
 
         except NotPairedException:
             raise
@@ -486,6 +519,9 @@ class PhilipsSonicareConfigFlow(ConfigFlow, domain=DOMAIN):
             return True
         except PairingError as err:
             _LOGGER.warning("Auto-pairing failed for %s: %s", address, err)
+            # Remember the reason so the not_paired step can show the user
+            # why pairing failed instead of a generic instruction wall.
+            self._pair_error = str(err)
             return False
 
     async def _fetch_with_pair_retry(self, address: str) -> dict[str, Any]:
@@ -502,13 +538,14 @@ class PhilipsSonicareConfigFlow(ConfigFlow, domain=DOMAIN):
         """
         from .dbus_pairing import async_is_device_paired
 
+        auth_error = False
         try:
             result = await self._async_fetch_capabilities(address)
             paired = await async_is_device_paired(address)
             result["pairing"] = "bonded" if paired else "open_gatt"
             return result
-        except NotPairedException:
-            pass
+        except NotPairedException as err:
+            auth_error = err.auth_error
 
         # If a bond already exists, the destructive RemoveDevice in
         # async_pair_and_trust would wipe it and leave the device
@@ -516,15 +553,26 @@ class PhilipsSonicareConfigFlow(ConfigFlow, domain=DOMAIN):
         # re-advertise on rotating RPAs, so the public identity is gone
         # for ~30 s after the wipe). The probe failed for some other
         # reason — surface that to the user instead of nuking the bond.
+        # Exception: an explicit auth error *despite* the bond means the
+        # device no longer accepts our key — the bond is stale and
+        # already worthless, so remove+re-pair is the only recovery
+        # (issue #25: otherwise the user is stuck until a manual
+        # ``bluetoothctl remove``).
         if await async_is_device_paired(address):
+            if not auth_error:
+                _LOGGER.warning(
+                    "%s: capability read failed but a bond exists — "
+                    "refusing to wipe it via legacy auto-pair",
+                    address,
+                )
+                raise NotPairedException
             _LOGGER.warning(
-                "%s: capability read failed but a bond exists — "
-                "refusing to wipe it via legacy auto-pair",
+                "%s: authentication failed although a bond exists — "
+                "the bond is stale, removing it and re-pairing",
                 address,
             )
-            raise NotPairedException
 
-        # No bond yet — auto-pair is safe
+        # No bond, or a stale one — auto-pair (RemoveDevice + fresh pair)
         if await self._try_auto_pair(address):
             try:
                 result = await self._async_fetch_capabilities(address)
@@ -1950,6 +1998,38 @@ class PhilipsSonicareConfigFlow(ConfigFlow, domain=DOMAIN):
     # ------------------------------------------------------------------
     # Pairing fallback (manual instructions)
     # ------------------------------------------------------------------
+    def _not_paired_placeholders(self) -> dict[str, str]:
+        """Description placeholders for the not_paired step.
+
+        The pairing script ships inside the integration, so its /config
+        path is stable; passing the brush address makes it pair that
+        exact device without the interactive picker.
+        """
+        pair_cmd = (
+            "bash /config/custom_components/philips_sonicare_ble/"
+            f"scripts/pair.sh {self._address or ''}"
+        ).strip()
+        if _is_hassio(self.hass):
+            pairing_help = (
+                "Open the **Terminal & SSH** addon "
+                "([install it first](/hassio/addon/core_ssh/info) if needed) "
+                "and run the pairing script:"
+            )
+        else:
+            pairing_help = (
+                "Open a terminal on the machine running Home Assistant "
+                "and run the pairing script:"
+            )
+        pair_error = (
+            f"**Last attempt:** {self._pair_error}\n\n" if self._pair_error else ""
+        )
+        return {
+            "address": self._address or "",
+            "pairing_help": pairing_help,
+            "pair_cmd": pair_cmd,
+            "pair_error": pair_error,
+        }
+
     async def async_step_not_paired(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
@@ -1981,17 +2061,13 @@ class PhilipsSonicareConfigFlow(ConfigFlow, domain=DOMAIN):
 
             return self.async_show_form(
                 step_id="not_paired",
-                description_placeholders={
-                    "address": self._address or "",
-                },
+                description_placeholders=self._not_paired_placeholders(),
                 errors=errors,
             )
 
         return self.async_show_form(
             step_id="not_paired",
-            description_placeholders={
-                "address": self._address or "",
-            },
+            description_placeholders=self._not_paired_placeholders(),
         )
 
     # ------------------------------------------------------------------

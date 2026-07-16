@@ -27,6 +27,7 @@ from .const import (
     INTENSITIES,
     PRESSURE_ALARM_STATES,
     BRUSHHEAD_TYPES,
+    BRUSHHEAD_TYPE_FAMILY,
     CONF_TRANSPORT_TYPE,
     CONF_SERVICES,
     TRANSPORT_ESP_BRIDGE,
@@ -145,6 +146,7 @@ async def async_setup_entry(
     if SVC_BRUSHHEAD.lower() in services:
         entities.extend([
             SonicareBrushHeadWearSensor(coordinator, entry),
+            SonicareBrushHeadSessionsSensor(coordinator, entry),
             SonicareBrushHeadUsageSensor(coordinator, entry),
             SonicareBrushHeadLimitSensor(coordinator, entry),
             SonicareBrushHeadSerialSensor(coordinator, entry),
@@ -157,6 +159,7 @@ async def async_setup_entry(
     elif SVC_CONDOR.lower() in services:
         entities.extend([
             SonicareBrushHeadWearSensor(coordinator, entry),
+            SonicareBrushHeadSessionsSensor(coordinator, entry),
             SonicareBrushHeadUsageSensor(coordinator, entry),
             SonicareBrushHeadLimitSensor(coordinator, entry),
             SonicareBrushHeadSerialSensor(coordinator, entry),
@@ -725,6 +728,28 @@ class SonicareBrushHeadNfcVersionSensor(PhilipsBrushHeadEntity, SensorEntity):
 
 
 # ---------------------------------------------------------------------------
+# Brush Head Sessions Left
+# ---------------------------------------------------------------------------
+class SonicareBrushHeadSessionsSensor(PhilipsBrushHeadEntity, SensorEntity):
+    """Estimated brushing sessions left on the head."""
+
+    _attr_translation_key = "brushhead_sessions_left"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_icon = "mdi:counter"
+    _data_key = "brushhead_sessions_left"
+
+    def __init__(self, coordinator: PhilipsSonicareCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry)
+        self._attr_unique_id = f"{self._device_id}_brushhead_sessions_left"
+
+    @property
+    def native_value(self) -> int | None:
+        if not self.coordinator.data:
+            return None
+        return self.coordinator.data.get("brushhead_sessions_left")
+
+
+# ---------------------------------------------------------------------------
 # Brush Head Type
 # ---------------------------------------------------------------------------
 class SonicareBrushHeadTypeSensor(PhilipsBrushHeadEntity, SensorEntity):
@@ -745,6 +770,14 @@ class SonicareBrushHeadTypeSensor(PhilipsBrushHeadEntity, SensorEntity):
         if not self.coordinator.data:
             return None
         return self.coordinator.data.get("brushhead_type")
+
+    @property
+    def extra_state_attributes(self) -> dict[str, str] | None:
+        family = BRUSHHEAD_TYPE_FAMILY.get(self.native_value)
+        if not family:
+            return None
+        letter, name = family
+        return {"family_letter": letter, "family_name": name}
 
 
 # ---------------------------------------------------------------------------
