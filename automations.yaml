@@ -540,8 +540,8 @@
       data:
         tag: trockner_timer
         live_update: true
-        progress: '{{ states(''sensor.trockner_fortschritt'') | float(0) | round
-          | int }}'
+        progress: '{{ states(''sensor.trockner_fortschritt'') | float(0) | round |
+          int }}'
         progress_max: 100
         progress_bar_color: '#FF9800'
         chronometer: true
@@ -686,8 +686,8 @@
   mode: single
 - id: '1783786435300'
   alias: 'Ladesäule Parkplatz: Timer starten'
-  description: Startet die 3h-Parkuhr, sobald das Auto an der Ladesäule eingesteckt
-    wird.
+  description: Startet die 3h-Parkuhr und die Live Activity, sobald das Auto an der
+    Ladesäule eingesteckt wird.
   triggers:
   - entity_id: binary_sensor.byd_seal_u_dm_i_stecker
     from: 'off'
@@ -701,11 +701,25 @@
   - action: timer.start
     target:
       entity_id: timer.ladesaeule_parkplatz
+    data:
+      duration: 03:00:00
+  - action: notify.mobile_app_eierphone_simon
+    data:
+      title: Ladesäule
+      message: Parkzeit läuft (max. 3 Stunden)
+      data:
+        tag: ladesaeule_timer
+        live_update: true
+        chronometer: true
+        when_relative: true
+        when: '{{ (now() + timedelta(hours=3)).timestamp() | int }}'
+        notification_icon: mdi:ev-station
+        notification_icon_color: '#FF9800'
   mode: single
 - id: '1783786435301'
   alias: 'Ladesäule Parkplatz: Timer abbrechen'
-  description: Bricht die Parkuhr ab, sobald das Auto ausgesteckt wird oder den Parkplatz
-    verlässt - dann ist die 3h-Grenze hinfällig.
+  description: Bricht die Parkuhr ab und beendet die Live Activity, sobald das Auto
+    ausgesteckt wird oder den Parkplatz verlässt.
   triggers:
   - entity_id: binary_sensor.byd_seal_u_dm_i_stecker
     from: 'on'
@@ -715,24 +729,29 @@
     entity_id: device_tracker.byd_seal_u_dm_i_standort
     zone: zone.ladesaule_parkplatz
     event: leave
-  conditions:
-  - condition: state
-    entity_id: timer.ladesaeule_parkplatz
-    state: active
+  conditions: []
   actions:
   - action: timer.cancel
     target:
       entity_id: timer.ladesaeule_parkplatz
+  - action: notify.mobile_app_eierphone_simon
+    data:
+      message: clear_notification
+      data:
+        tag: ladesaeule_timer
   mode: single
 - id: '1783786435302'
   alias: 'Ladesäule Parkplatz: 10-Minuten-Warnung'
   description: Benachrichtigt Simon, wenn an der Ladesäule nur noch 10 Minuten von
-    den 3h Parkzeit übrig sind.
+    den 3h Parkzeit übrig sind, und aktualisiert die Live Activity.
   triggers:
-  - trigger: event
-    event_type: timer.finished
-    event_data:
-      entity_id: timer.ladesaeule_parkplatz
+  - trigger: state
+    entity_id: timer.ladesaeule_parkplatz
+    to: active
+    for:
+      hours: 2
+      minutes: 50
+      seconds: 0
   conditions: []
   actions:
   - action: notify.mobile_app_eierphone_simon
@@ -740,8 +759,10 @@
       title: Parkzeit läuft ab
       message: Noch 10 Minuten, dann läuft die 3h-Parkzeit an der Ladesäule ab.
       data:
+        tag: ladesaeule_timer
+        live_update: true
         notification_icon: mdi:ev-station
-        notification_icon_color: '#FF9800'
+        notification_icon_color: '#F44336'
   mode: single
 - id: '1783786435303'
   alias: 'Wohnwand: Ein mit Apple TV (abends)'
@@ -786,8 +807,8 @@
   - action: notify.mobile_app_eierphone_simon
     data:
       title: Zahnbürste
-      message: Der Bürstenkopf ist zu {{ states('sensor.sonicare_simon_brush_head_wear') }}%
-        verschlissen - Zeit für einen neuen.
+      message: Der Bürstenkopf ist zu {{ states('sensor.sonicare_simon_brush_head_wear')
+        }}% verschlissen - Zeit für einen neuen.
       data:
         notification_icon: mdi:toothbrush-electric
         notification_icon_color: '#FF9800'
