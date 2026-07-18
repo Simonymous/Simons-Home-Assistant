@@ -67,7 +67,7 @@
   triggers:
   - trigger: numeric_state
     entity_id:
-    - weather.forecast_home
+    - weather.quierschied
     attribute: temperature
     above: 24
   conditions: []
@@ -75,12 +75,22 @@
   - choose:
     - conditions:
       - condition: numeric_state
-        entity_id: weather.forecast_home
+        entity_id: weather.quierschied
         attribute: temperature
         above: 24
       - condition: sun
         after: sunrise
         before: sunset
+      - condition: state
+        entity_id: weather.quierschied
+        state:
+        - sunny
+        - partlycloudy
+      - condition: template
+        value_template: >-
+          {{ (state_attr('weather.quierschied', 'temperature') | float(0)) - 2
+             > ((states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_temperature') | float(0)
+                 + states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_temperature') | float(0)) / 2) }}
       sequence:
       - choose:
         - conditions:
@@ -158,10 +168,10 @@
   - entity_id: binary_sensor.eve_door_20ebn9901_tur
     to: 'on'
     trigger: state
-  - entity_id: weather.forecast_home
+  - entity_id: weather.quierschied
     to: rainy
     trigger: state
-  - entity_id: weather.forecast_home
+  - entity_id: weather.quierschied
     to: pouring
     trigger: state
   conditions:
@@ -171,10 +181,10 @@
   - condition: or
     conditions:
     - condition: state
-      entity_id: weather.forecast_home
+      entity_id: weather.quierschied
       state: rainy
     - condition: state
-      entity_id: weather.forecast_home
+      entity_id: weather.quierschied
       state: pouring
   actions:
   - action: notify.notify
