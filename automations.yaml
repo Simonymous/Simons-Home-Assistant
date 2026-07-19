@@ -411,19 +411,26 @@
         progress_max: 100
         notification_icon: mdi:washing-machine
         notification_icon_color: '#2196F3'
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.waschmaschine_timer_signatur
+    data:
+      value: ''
   mode: single
 - id: '1783786435290'
   alias: 'Waschmaschine: Live-Timer aktualisieren'
   description: Sobald Programm und Restzeit erkannt wurden, wird die Live Activity
     um Programmname, Restzeit-Countdown und die voraussichtliche Fertig-Uhrzeit ergänzt.
-    Läuft alle 5 Minuten (statt bei jeder Sensor-Änderung), damit die Live Activity
-    nicht ständig das Display aufweckt - der Countdown selbst tickt auf dem iPhone
-    lokal weiter.
+    Reagiert auf Sensor-Änderungen, sendet aber nur, wenn sich der gerundete
+    Fortschritt oder die Restzeit gegenüber der letzten gesendeten Push tatsächlich
+    unterscheiden - so weckt es das Display nicht bei jeder Mini-Abweichung.
   triggers:
   - entity_id: sensor.waschmaschine_programm
     trigger: state
-  - trigger: time_pattern
-    minutes: /5
+  - entity_id: sensor.waschmaschine_fortschritt
+    trigger: state
+  - entity_id: sensor.waschmaschine_verbleibende_zeit
+    trigger: state
   conditions:
   - condition: state
     entity_id: binary_sensor.waschmaschine_lauft
@@ -434,6 +441,11 @@
   - condition: template
     value_template: '{{ states(''sensor.waschmaschine_verbleibende_zeit'') not in
       [''unknown'', ''unavailable'', ''''] }}'
+  - condition: template
+    value_template: >-
+      {{ (states('sensor.waschmaschine_fortschritt') | float(0) | round | string)
+         ~ '|' ~ (states('sensor.waschmaschine_verbleibende_zeit') | float(0) | round | string)
+         != states('input_text.waschmaschine_timer_signatur') }}
   actions:
   - action: notify.mobile_app_eierphone_simon
     data:
@@ -455,6 +467,13 @@
           60) | int }}'
         notification_icon: mdi:washing-machine
         notification_icon_color: '#2196F3'
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.waschmaschine_timer_signatur
+    data:
+      value: >-
+        {{ (states('sensor.waschmaschine_fortschritt') | float(0) | round | string)
+           ~ '|' ~ (states('sensor.waschmaschine_verbleibende_zeit') | float(0) | round | string) }}
   mode: single
 - id: '1783786435291'
   alias: 'Waschmaschine: Live-Timer beenden'
@@ -495,19 +514,26 @@
         progress_max: 100
         notification_icon: mdi:tumble-dryer
         notification_icon_color: '#FF9800'
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.trockner_timer_signatur
+    data:
+      value: ''
   mode: single
 - id: '1783786435293'
   alias: 'Trockner: Live-Timer aktualisieren'
   description: Sobald Programm und Restzeit erkannt wurden, wird die Live Activity
     um Programmname, Restzeit-Countdown und die voraussichtliche Fertig-Uhrzeit ergänzt.
-    Läuft alle 5 Minuten (statt bei jeder Sensor-Änderung), damit die Live Activity
-    nicht ständig das Display aufweckt - der Countdown selbst tickt auf dem iPhone
-    lokal weiter.
+    Reagiert auf Sensor-Änderungen, sendet aber nur, wenn sich der gerundete
+    Fortschritt oder die Restzeit gegenüber der letzten gesendeten Push tatsächlich
+    unterscheiden - so weckt es das Display nicht bei jeder Mini-Abweichung.
   triggers:
   - entity_id: sensor.trockner_programm
     trigger: state
-  - trigger: time_pattern
-    minutes: /5
+  - entity_id: sensor.trockner_fortschritt
+    trigger: state
+  - entity_id: sensor.trockner_verbleibende_zeit
+    trigger: state
   conditions:
   - condition: state
     entity_id: binary_sensor.trockner_lauft
@@ -518,6 +544,11 @@
   - condition: template
     value_template: '{{ states(''sensor.trockner_verbleibende_zeit'') not in [''unknown'',
       ''unavailable'', ''''] }}'
+  - condition: template
+    value_template: >-
+      {{ (states('sensor.trockner_fortschritt') | float(0) | round | string)
+         ~ '|' ~ (states('sensor.trockner_verbleibende_zeit') | float(0) | round | string)
+         != states('input_text.trockner_timer_signatur') }}
   actions:
   - action: notify.mobile_app_eierphone_simon
     data:
@@ -539,6 +570,13 @@
           | int }}'
         notification_icon: mdi:tumble-dryer
         notification_icon_color: '#FF9800'
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.trockner_timer_signatur
+    data:
+      value: >-
+        {{ (states('sensor.trockner_fortschritt') | float(0) | round | string)
+           ~ '|' ~ (states('sensor.trockner_verbleibende_zeit') | float(0) | round | string) }}
   mode: single
 - id: '1783786435294'
   alias: 'Trockner: Live-Timer beenden'
@@ -579,19 +617,26 @@
         progress_max: 100
         notification_icon: mdi:dishwasher
         notification_icon_color: '#009688'
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.spuelmaschine_timer_signatur
+    data:
+      value: ''
   mode: single
 - id: '1783786435296'
   alias: 'Spülmaschine: Live-Timer aktualisieren'
   description: Sobald Programm und Restzeit erkannt wurden, wird die Live Activity
     um Programmname, Restzeit-Countdown und die voraussichtliche Fertig-Uhrzeit ergänzt.
-    Läuft alle 5 Minuten (statt bei jeder Sensor-Änderung), damit die Live Activity
-    nicht ständig das Display aufweckt - der Countdown selbst tickt auf dem iPhone
-    lokal weiter.
+    Reagiert auf Sensor-Änderungen, sendet aber nur, wenn sich der gerundete
+    Fortschritt oder die Restzeit gegenüber der letzten gesendeten Push tatsächlich
+    unterscheiden - so weckt es das Display nicht bei jeder Mini-Abweichung.
   triggers:
   - entity_id: sensor.spulmaschine_programm
     trigger: state
-  - trigger: time_pattern
-    minutes: /5
+  - entity_id: sensor.spulmaschine_fortschritt
+    trigger: state
+  - entity_id: sensor.spulmaschine_verbleibende_zeit
+    trigger: state
   conditions:
   - condition: state
     entity_id: binary_sensor.spulmaschine_lauft
@@ -602,6 +647,11 @@
   - condition: template
     value_template: '{{ states(''sensor.spulmaschine_verbleibende_zeit'') not in [''unknown'',
       ''unavailable'', ''''] }}'
+  - condition: template
+    value_template: >-
+      {{ (states('sensor.spulmaschine_fortschritt') | float(0) | round | string)
+         ~ '|' ~ (states('sensor.spulmaschine_verbleibende_zeit') | float(0) | round | string)
+         != states('input_text.spuelmaschine_timer_signatur') }}
   actions:
   - action: notify.mobile_app_eierphone_simon
     data:
@@ -623,6 +673,13 @@
           60) | int }}'
         notification_icon: mdi:dishwasher
         notification_icon_color: '#009688'
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.spuelmaschine_timer_signatur
+    data:
+      value: >-
+        {{ (states('sensor.spulmaschine_fortschritt') | float(0) | round | string)
+           ~ '|' ~ (states('sensor.spulmaschine_verbleibende_zeit') | float(0) | round | string) }}
   mode: single
 - id: '1783786435297'
   alias: 'Spülmaschine: Live-Timer beenden'
