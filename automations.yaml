@@ -896,14 +896,15 @@
     data:
       title: "🗑️ Müllabfuhr morgen"
       message: >-
-        {% set bins = [] %}
-        {% if states('sensor.restabfall_tage_bis_abholung') | int(99) == 1 %}{% set bins = bins + ['Schwarze Tonne'] %}{% endif %}
-        {% if states('sensor.gelbe_tonne_tage_bis_abholung') | int(99) == 1 %}{% set bins = bins + ['Gelbe Tonne'] %}{% endif %}
-        {% if states('sensor.blaue_tonne_tage_bis_abholung') | int(99) == 1 %}{% set bins = bins + ['Blaue Tonne'] %}{% endif %}
-        {{ bins | join(' und ') }} wird morgen abgeholt - bitte heute Abend rausstellen!
+        {% set colors = [] %}
+        {% if states('sensor.restabfall_tage_bis_abholung') | int(99) == 1 %}{% set colors = colors + ['Schwarze'] %}{% endif %}
+        {% if states('sensor.gelbe_tonne_tage_bis_abholung') | int(99) == 1 %}{% set colors = colors + ['Gelbe'] %}{% endif %}
+        {% if states('sensor.blaue_tonne_tage_bis_abholung') | int(99) == 1 %}{% set colors = colors + ['Blaue'] %}{% endif %}
+        {{ colors | join(' und ') }} Tonne{{ 'n' if colors | length > 1 else '' }}
+        {{ 'werden' if colors | length > 1 else 'wird' }} morgen abgeholt - bitte heute Abend rausstellen!
   mode: single
 - id: '1784476659260'
-  alias: 'Müllabfuhr: Morgen-Erinnerung'
+  alias: 'Müllabfuhr: Heute-Erinnerung'
   description: Benachrichtigt morgens alle Geräte, wenn am selben Tag die Schwarze,
     Gelbe und/oder Blaue Tonne abgeholt wird. Biotonne ist bewusst ausgeschlossen.
   triggers:
@@ -920,9 +921,10 @@
     data:
       title: "🗑️ Müllabfuhr heute"
       message: >-
-        {% set bins = [] %}
-        {% if states('sensor.restabfall_tage_bis_abholung') | int(99) == 0 %}{% set bins = bins + ['Schwarze Tonne'] %}{% endif %}
-        {% if states('sensor.gelbe_tonne_tage_bis_abholung') | int(99) == 0 %}{% set bins = bins + ['Gelbe Tonne'] %}{% endif %}
-        {% if states('sensor.blaue_tonne_tage_bis_abholung') | int(99) == 0 %}{% set bins = bins + ['Blaue Tonne'] %}{% endif %}
-        {{ bins | join(' und ') }} wird heute abgeholt!
+        {% set colors = [] %}
+        {% if states('sensor.restabfall_tage_bis_abholung') | int(99) == 0 %}{% set colors = colors + ['Schwarze'] %}{% endif %}
+        {% if states('sensor.gelbe_tonne_tage_bis_abholung') | int(99) == 0 %}{% set colors = colors + ['Gelbe'] %}{% endif %}
+        {% if states('sensor.blaue_tonne_tage_bis_abholung') | int(99) == 0 %}{% set colors = colors + ['Blaue'] %}{% endif %}
+        {{ colors | join(' und ') }} Tonne{{ 'n' if colors | length > 1 else '' }}
+        {{ 'werden' if colors | length > 1 else 'wird' }} heute abgeholt!
   mode: single
