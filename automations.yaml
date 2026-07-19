@@ -878,3 +878,47 @@
         notification_icon: mdi:printer
         notification_icon_color: '#F44336'
   mode: single
+- id: '1784476659259'
+  alias: 'Müllabfuhr: Vorabend-Erinnerung'
+  description: Benachrichtigt abends alle Geräte, wenn am nächsten Tag die Schwarze
+    und/oder Gelbe Tonne abgeholt wird. Biotonne ist bewusst ausgeschlossen.
+  triggers:
+  - trigger: time
+    at: '18:00:00'
+  conditions:
+  - condition: template
+    value_template: >-
+      {{ states('sensor.restabfall_tage_bis_abholung') | int(99) == 1
+         or states('sensor.gelbe_tonne_tage_bis_abholung') | int(99) == 1 }}
+  actions:
+  - action: notify.notify
+    data:
+      title: "🗑️ Müllabfuhr morgen"
+      message: >-
+        {% set bins = [] %}
+        {% if states('sensor.restabfall_tage_bis_abholung') | int(99) == 1 %}{% set bins = bins + ['Schwarze Tonne'] %}{% endif %}
+        {% if states('sensor.gelbe_tonne_tage_bis_abholung') | int(99) == 1 %}{% set bins = bins + ['Gelbe Tonne'] %}{% endif %}
+        {{ bins | join(' und ') }} wird morgen abgeholt - bitte heute Abend rausstellen!
+  mode: single
+- id: '1784476659260'
+  alias: 'Müllabfuhr: Morgen-Erinnerung'
+  description: Benachrichtigt morgens alle Geräte, wenn am selben Tag die Schwarze
+    und/oder Gelbe Tonne abgeholt wird. Biotonne ist bewusst ausgeschlossen.
+  triggers:
+  - trigger: time
+    at: '07:00:00'
+  conditions:
+  - condition: template
+    value_template: >-
+      {{ states('sensor.restabfall_tage_bis_abholung') | int(99) == 0
+         or states('sensor.gelbe_tonne_tage_bis_abholung') | int(99) == 0 }}
+  actions:
+  - action: notify.notify
+    data:
+      title: "🗑️ Müllabfuhr heute"
+      message: >-
+        {% set bins = [] %}
+        {% if states('sensor.restabfall_tage_bis_abholung') | int(99) == 0 %}{% set bins = bins + ['Schwarze Tonne'] %}{% endif %}
+        {% if states('sensor.gelbe_tonne_tage_bis_abholung') | int(99) == 0 %}{% set bins = bins + ['Gelbe Tonne'] %}{% endif %}
+        {{ bins | join(' und ') }} wird heute abgeholt!
+  mode: single
