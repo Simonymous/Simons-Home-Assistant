@@ -400,7 +400,7 @@
     trigger: state
   conditions: []
   actions:
-  - action: notify.notify
+  - action: notify.mobile_app_eierphone_simon
     data:
       title: Waschmaschine
       message: Läuft – Restzeit noch nicht bekannt
@@ -435,7 +435,7 @@
     value_template: '{{ states(''sensor.waschmaschine_verbleibende_zeit'') not in
       [''unknown'', ''unavailable'', ''''] }}'
   actions:
-  - action: notify.notify
+  - action: notify.mobile_app_eierphone_simon
     data:
       title: Waschmaschine
       message: '{% set mins = states(''sensor.waschmaschine_verbleibende_zeit'') |
@@ -466,7 +466,7 @@
     trigger: state
   conditions: []
   actions:
-  - action: notify.notify
+  - action: notify.mobile_app_eierphone_simon
     data:
       message: clear_notification
       data:
@@ -484,7 +484,7 @@
     trigger: state
   conditions: []
   actions:
-  - action: notify.notify
+  - action: notify.mobile_app_eierphone_simon
     data:
       title: Trockner
       message: Läuft – Restzeit noch nicht bekannt
@@ -519,7 +519,7 @@
     value_template: '{{ states(''sensor.trockner_verbleibende_zeit'') not in [''unknown'',
       ''unavailable'', ''''] }}'
   actions:
-  - action: notify.notify
+  - action: notify.mobile_app_eierphone_simon
     data:
       title: Trockner
       message: '{% set mins = states(''sensor.trockner_verbleibende_zeit'') | float(0)
@@ -550,7 +550,7 @@
     trigger: state
   conditions: []
   actions:
-  - action: notify.notify
+  - action: notify.mobile_app_eierphone_simon
     data:
       message: clear_notification
       data:
@@ -568,7 +568,7 @@
     trigger: state
   conditions: []
   actions:
-  - action: notify.notify
+  - action: notify.mobile_app_eierphone_simon
     data:
       title: Spülmaschine
       message: Läuft – Restzeit noch nicht bekannt
@@ -603,7 +603,7 @@
     value_template: '{{ states(''sensor.spulmaschine_verbleibende_zeit'') not in [''unknown'',
       ''unavailable'', ''''] }}'
   actions:
-  - action: notify.notify
+  - action: notify.mobile_app_eierphone_simon
     data:
       title: Spülmaschine
       message: '{% set mins = states(''sensor.spulmaschine_verbleibende_zeit'') |
@@ -634,7 +634,7 @@
     trigger: state
   conditions: []
   actions:
-  - action: notify.notify
+  - action: notify.mobile_app_eierphone_simon
     data:
       message: clear_notification
       data:
