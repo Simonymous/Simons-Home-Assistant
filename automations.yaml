@@ -422,10 +422,6 @@
     trigger: state
   - entity_id: sensor.waschmaschine_verbleibende_zeit
     trigger: state
-    from:
-    - unknown
-    - unavailable
-    - ''
   conditions:
   - condition: state
     entity_id: binary_sensor.waschmaschine_lauft
@@ -508,10 +504,6 @@
     trigger: state
   - entity_id: sensor.trockner_verbleibende_zeit
     trigger: state
-    from:
-    - unknown
-    - unavailable
-    - ''
   conditions:
   - condition: state
     entity_id: binary_sensor.trockner_lauft
@@ -594,10 +586,6 @@
     trigger: state
   - entity_id: sensor.spulmaschine_verbleibende_zeit
     trigger: state
-    from:
-    - unknown
-    - unavailable
-    - ''
   conditions:
   - condition: state
     entity_id: binary_sensor.spulmaschine_lauft
