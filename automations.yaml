@@ -421,16 +421,15 @@
   alias: 'Waschmaschine: Live-Timer aktualisieren'
   description: Sobald Programm und Restzeit erkannt wurden, wird die Live Activity
     um Programmname, Restzeit-Countdown und die voraussichtliche Fertig-Uhrzeit ergänzt.
-    Reagiert auf Sensor-Änderungen, sendet aber nur, wenn sich der gerundete
-    Fortschritt oder die Restzeit gegenüber der letzten gesendeten Push tatsächlich
-    unterscheiden - so weckt es das Display nicht bei jeder Mini-Abweichung.
+    Prüft alle 5 Minuten (plus sofort bei Programmwechsel), sendet aber nur, wenn
+    sich der gerundete Fortschritt oder die Restzeit gegenüber der letzten
+    gesendeten Push tatsächlich unterscheiden - Obergrenze UND Abweichungsfilter
+    kombiniert.
   triggers:
   - entity_id: sensor.waschmaschine_programm
     trigger: state
-  - entity_id: sensor.waschmaschine_fortschritt
-    trigger: state
-  - entity_id: sensor.waschmaschine_verbleibende_zeit
-    trigger: state
+  - trigger: time_pattern
+    minutes: /5
   conditions:
   - condition: state
     entity_id: binary_sensor.waschmaschine_lauft
@@ -524,16 +523,15 @@
   alias: 'Trockner: Live-Timer aktualisieren'
   description: Sobald Programm und Restzeit erkannt wurden, wird die Live Activity
     um Programmname, Restzeit-Countdown und die voraussichtliche Fertig-Uhrzeit ergänzt.
-    Reagiert auf Sensor-Änderungen, sendet aber nur, wenn sich der gerundete
-    Fortschritt oder die Restzeit gegenüber der letzten gesendeten Push tatsächlich
-    unterscheiden - so weckt es das Display nicht bei jeder Mini-Abweichung.
+    Prüft alle 5 Minuten (plus sofort bei Programmwechsel), sendet aber nur, wenn
+    sich der gerundete Fortschritt oder die Restzeit gegenüber der letzten
+    gesendeten Push tatsächlich unterscheiden - Obergrenze UND Abweichungsfilter
+    kombiniert.
   triggers:
   - entity_id: sensor.trockner_programm
     trigger: state
-  - entity_id: sensor.trockner_fortschritt
-    trigger: state
-  - entity_id: sensor.trockner_verbleibende_zeit
-    trigger: state
+  - trigger: time_pattern
+    minutes: /5
   conditions:
   - condition: state
     entity_id: binary_sensor.trockner_lauft
@@ -627,16 +625,15 @@
   alias: 'Spülmaschine: Live-Timer aktualisieren'
   description: Sobald Programm und Restzeit erkannt wurden, wird die Live Activity
     um Programmname, Restzeit-Countdown und die voraussichtliche Fertig-Uhrzeit ergänzt.
-    Reagiert auf Sensor-Änderungen, sendet aber nur, wenn sich der gerundete
-    Fortschritt oder die Restzeit gegenüber der letzten gesendeten Push tatsächlich
-    unterscheiden - so weckt es das Display nicht bei jeder Mini-Abweichung.
+    Prüft alle 5 Minuten (plus sofort bei Programmwechsel), sendet aber nur, wenn
+    sich der gerundete Fortschritt oder die Restzeit gegenüber der letzten
+    gesendeten Push tatsächlich unterscheiden - Obergrenze UND Abweichungsfilter
+    kombiniert.
   triggers:
   - entity_id: sensor.spulmaschine_programm
     trigger: state
-  - entity_id: sensor.spulmaschine_fortschritt
-    trigger: state
-  - entity_id: sensor.spulmaschine_verbleibende_zeit
-    trigger: state
+  - trigger: time_pattern
+    minutes: /5
   conditions:
   - condition: state
     entity_id: binary_sensor.spulmaschine_lauft
