@@ -917,6 +917,11 @@
   triggers:
   - entity_id: media_player.wohnzimmer_appletv_wohnzimmer_appletv
     from: 'off'
+    to:
+    - idle
+    - playing
+    - paused
+    - 'on'
     trigger: state
   conditions: []
   actions:
@@ -928,6 +933,8 @@
   triggers:
   - entity_id: media_player.wohnzimmer_appletv_wohnzimmer_appletv
     to: 'off'
+    for:
+      seconds: 30
     trigger: state
   conditions: []
   actions:
