@@ -371,23 +371,6 @@
     data:
       timestamp: '{{ now().timestamp() }}'
   mode: single
-- id: '1783786435288'
-  alias: 'Heißluftfritteuse: Letzten Lauf protokollieren'
-  description: Speichert den Zeitpunkt, an dem die Heißluftfritteuse zuletzt gelaufen
-    ist.
-  triggers:
-  - entity_id: binary_sensor.ninja_heissluftfritteuse_lauft
-    from: 'on'
-    to: 'off'
-    trigger: state
-  conditions: []
-  actions:
-  - action: input_datetime.set_datetime
-    target:
-      entity_id: input_datetime.letzter_lauf_heissluftfritteuse
-    data:
-      timestamp: '{{ now().timestamp() }}'
-  mode: single
 - id: '1783786435289'
   alias: 'Waschmaschine: Live-Timer starten'
   description: Startet beim Einschalten eine persistente Live Activity auf Simons

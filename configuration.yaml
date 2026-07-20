@@ -47,10 +47,6 @@ input_datetime:
     name: Letzter Lauf Trockner
     has_date: true
     has_time: true
-  letzter_lauf_heissluftfritteuse:
-    name: Letzter Lauf Heißluftfritteuse
-    has_date: true
-    has_time: true
   letzte_bewegung_flur:
     name: Letzte Bewegung Flur
     has_date: true
@@ -141,6 +137,12 @@ template:
         delay_off:
           minutes: 2
         state: "{{ states('sensor.simon_synology_download_durchsatz') | float(0) > 50 }}"
+
+      - name: "Receiver an"
+        unique_id: receiver_an
+        icon: mdi:audio-video
+        device_class: running
+        state: "{{ states('sensor.tz3210_2putqrmw_ts011f_leistung') | float(0) > 5 }}"
 
   - trigger:
       - trigger: state
