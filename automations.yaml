@@ -940,3 +940,30 @@
   actions:
   - action: script.lautsprecher_ausschalten
   mode: single
+- id: '1784579939515'
+  alias: 'Wohnzimmer: Alles aus (Hue Dimmer)'
+  description: Schaltet Lichter, Wohnwand-Steckdose, Apple TV, LG TV und den Receiver
+    aus, wenn die Aus-Taste der Hue-Fernbedienung im Wohnzimmer gedrueckt wird.
+  triggers:
+  - trigger: state
+    entity_id: event.wohnzimmer_hue_dimmer_switch_wz_taste_4
+  conditions: []
+  actions:
+  - action: light.turn_off
+    target:
+      entity_id:
+      - light.wohnzimmer_wohnzimmer
+      - light.wohnzimmer_hue_centris_ceiling_1
+      - light.wohnzimmer_hue_centris_spot_1
+      - light.wohnzimmer_hue_centris_spot_2
+      - light.wohnzimmer_hue_centris_spot_3
+  - action: switch.turn_off
+    target:
+      entity_id: switch.wohnzimmer_wohnwand_outlet
+  - action: media_player.turn_off
+    target:
+      entity_id:
+      - media_player.wohnzimmer_appletv_wohnzimmer_appletv
+      - media_player.lg_webos_tv_65nano759pa
+      - media_player.lautsprecher_wohnzimmer
+  mode: single
