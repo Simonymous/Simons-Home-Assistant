@@ -1,1 +1,28 @@
-{}
+lautsprecher_einschalten:
+  alias: 'Lautsprecher: Einschalten'
+  sequence:
+  - condition: state
+    entity_id: binary_sensor.receiver_an
+    state: 'off'
+  - action: remote.send_command
+    target:
+      entity_id: remote.fernbedienung_wohnzimmer
+    data:
+      device: lautsprecher
+      command: an
+  mode: single
+
+lautsprecher_ausschalten:
+  alias: 'Lautsprecher: Ausschalten'
+  sequence:
+  - condition: state
+    entity_id: binary_sensor.receiver_an
+    state: 'on'
+  - action: remote.send_command
+    target:
+      entity_id: remote.fernbedienung_wohnzimmer
+    data:
+      device: lautsprecher
+      command: an
+  mode: single
+

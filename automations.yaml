@@ -911,3 +911,25 @@
         {{ colors | join(' und ') }} Tonne{{ 'n' if colors | length > 1 else '' }}
         {{ 'werden' if colors | length > 1 else 'wird' }} heute abgeholt!
   mode: single
+- id: '1784566148344'
+  alias: 'Lautsprecher: Ein mit Apple TV'
+  description: Schaltet den Lautsprecher/Receiver ein, wenn der Wohnzimmer-AppleTV aktiviert wird.
+  triggers:
+  - entity_id: media_player.wohnzimmer_appletv_wohnzimmer_appletv
+    from: 'off'
+    trigger: state
+  conditions: []
+  actions:
+  - action: script.lautsprecher_einschalten
+  mode: single
+- id: '1784566148345'
+  alias: 'Lautsprecher: Aus mit Apple TV'
+  description: Schaltet den Lautsprecher/Receiver aus, wenn der Wohnzimmer-AppleTV ausgeht.
+  triggers:
+  - entity_id: media_player.wohnzimmer_appletv_wohnzimmer_appletv
+    to: 'off'
+    trigger: state
+  conditions: []
+  actions:
+  - action: script.lautsprecher_ausschalten
+  mode: single
