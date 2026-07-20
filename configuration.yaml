@@ -18,7 +18,7 @@ media_player:
   - platform: universal
     name: "Lautsprecher Wohnzimmer"
     unique_id: lautsprecher_wohnzimmer_media_player
-    device_class: speaker
+    device_class: receiver
     attributes:
       state: binary_sensor.receiver_an
       is_volume_muted: input_boolean.lautsprecher_stumm_angenommen
