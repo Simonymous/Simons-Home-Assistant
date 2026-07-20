@@ -34,3 +34,31 @@ lautsprecher_ausschalten:
       command: an
   mode: single
 
+lautsprecher_stumm_umschalten:
+  alias: 'Lautsprecher: Stumm umschalten'
+  sequence:
+  - action: remote.send_command
+    target:
+      entity_id: remote.fernbedienung_wohnzimmer
+    data:
+      device: lautsprecher
+      command: stumm
+  mode: single
+
+lautsprecher_stumm_aus:
+  alias: 'Lautsprecher: Garantiert nicht stumm'
+  sequence:
+  - action: remote.send_command
+    target:
+      entity_id: remote.fernbedienung_wohnzimmer
+    data:
+      device: lautsprecher
+      command: leiser
+  - action: remote.send_command
+    target:
+      entity_id: remote.fernbedienung_wohnzimmer
+    data:
+      device: lautsprecher
+      command: lauter
+  mode: single
+
