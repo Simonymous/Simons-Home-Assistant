@@ -60,5 +60,61 @@ lautsprecher_stumm_aus:
     data:
       device: lautsprecher
       command: lauter
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.lautsprecher_stumm_angenommen
+  mode: single
+
+lautsprecher_lauter:
+  alias: 'Lautsprecher: Lauter'
+  sequence:
+  - action: remote.send_command
+    target:
+      entity_id: remote.fernbedienung_wohnzimmer
+    data:
+      device: lautsprecher
+      command: lauter
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.lautsprecher_stumm_angenommen
+  mode: single
+
+lautsprecher_leiser:
+  alias: 'Lautsprecher: Leiser'
+  sequence:
+  - action: remote.send_command
+    target:
+      entity_id: remote.fernbedienung_wohnzimmer
+    data:
+      device: lautsprecher
+      command: leiser
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.lautsprecher_stumm_angenommen
+  mode: single
+
+lautsprecher_stumm_setzen:
+  alias: 'Lautsprecher: Stumm setzen'
+  fields:
+    is_volume_muted:
+      description: Zielzustand fuer Stumm (true = stummschalten, false = entstummen)
+      example: true
+  sequence:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ is_volume_muted | bool }}"
+      sequence:
+      - action: remote.send_command
+        target:
+          entity_id: remote.fernbedienung_wohnzimmer
+        data:
+          device: lautsprecher
+          command: stumm
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.lautsprecher_stumm_angenommen
+    default:
+    - action: script.lautsprecher_stumm_aus
   mode: single
 

@@ -14,6 +14,27 @@ timer:
     name: Ladesäule Parkplatz
     duration: "02:50:00"
 paket_tracking:
+media_player:
+  - platform: universal
+    name: "Lautsprecher Wohnzimmer"
+    unique_id: lautsprecher_wohnzimmer_media_player
+    device_class: speaker
+    attributes:
+      state: binary_sensor.receiver_an
+      is_volume_muted: input_boolean.lautsprecher_stumm_angenommen
+    commands:
+      turn_on:
+        action: script.lautsprecher_einschalten
+      turn_off:
+        action: script.lautsprecher_ausschalten
+      volume_up:
+        action: script.lautsprecher_lauter
+      volume_down:
+        action: script.lautsprecher_leiser
+      volume_mute:
+        action: script.lautsprecher_stumm_setzen
+        data:
+          is_volume_muted: "{{ is_volume_muted }}"
 logger:
   logs:
     custom_components.paket_tracking: debug
