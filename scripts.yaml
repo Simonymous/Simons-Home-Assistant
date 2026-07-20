@@ -10,6 +10,14 @@ lautsprecher_einschalten:
     data:
       device: lautsprecher
       command: an
+  - delay:
+      seconds: 3
+  - action: remote.send_command
+    target:
+      entity_id: remote.fernbedienung_wohnzimmer
+    data:
+      device: lautsprecher
+      command: tv_eingang
   mode: single
 
 lautsprecher_ausschalten:
