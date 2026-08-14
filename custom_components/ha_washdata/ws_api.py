@@ -63,7 +63,6 @@ from .const import (
     CONF_PROFILE_UNMATCH_THRESHOLD,
     CONF_PUMP_STUCK_DURATION,
     CONF_POWER_OFF_THRESHOLD_W,
-    CONF_RUNNING_DEAD_ZONE,
     CONF_SAMPLING_INTERVAL,
     CONF_SMOOTHING_WINDOW,
     CONF_START_DURATION_THRESHOLD,
@@ -73,6 +72,7 @@ from .const import (
     CONF_WATCHDOG_INTERVAL,
     DEFAULT_DEVICE_TYPE,
     DEFAULT_MAINTENANCE_REMINDER_CYCLES,
+    DEFAULT_MIN_POWER,
     DEFAULT_OFF_DELAY,
     DEFAULT_OFF_DELAY_BY_DEVICE,
     DEVICE_TYPE_PUMP,
@@ -91,6 +91,17 @@ from .setup_advisor import compute_setup_phase
 from .ws_schema import WS_OPEN_RESPONSES, WS_RESPONSE_TYPES
 
 _LOGGER = logging.getLogger(__name__)
+
+# Read once at import time (manifest.json is static) so ws_get_constants never does
+# blocking I/O on the event loop. Falls back to "" if the file is absent.
+try:
+    from pathlib import Path as _Path
+    _INTEGRATION_VERSION: str = json.loads(
+        (_Path(__file__).parent / "manifest.json").read_text(encoding="utf-8")
+    ).get("version", "")
+    del _Path
+except Exception:  # pragma: no cover  # pylint: disable=broad-exception-caught
+    _INTEGRATION_VERSION = ""
 
 # ─── WS response contract (Group H1) ────────────────────────────────────────────
 # Debug-only validation of every send_result payload against the TypedDict
@@ -173,7 +184,6 @@ _SUGGESTION_KEYS: tuple[str, ...] = (
     CONF_START_THRESHOLD_W,
     CONF_STOP_THRESHOLD_W,
     CONF_END_ENERGY_THRESHOLD,
-    CONF_RUNNING_DEAD_ZONE,
     # Stage 1 detection suggestions
     CONF_SMOOTHING_WINDOW,
     CONF_START_DURATION_THRESHOLD,
@@ -196,7 +206,6 @@ _SUGGESTION_INT_KEYS: frozenset[str] = frozenset({
     CONF_NO_UPDATE_ACTIVE_TIMEOUT,
     CONF_PROFILE_MATCH_INTERVAL,
     CONF_MIN_OFF_GAP,
-    CONF_RUNNING_DEAD_ZONE,
     CONF_SMOOTHING_WINDOW,
     CONF_COMPLETION_MIN_SECONDS,
     CONF_END_REPEAT_COUNT,
@@ -227,7 +236,6 @@ _ML_COMPARE_SETTINGS: tuple[tuple[str, str, str], ...] = (
     (CONF_STOP_THRESHOLD_W, "Stop Threshold", "W"),
     (CONF_START_THRESHOLD_W, "Start Threshold", "W"),
     (CONF_END_ENERGY_THRESHOLD, "End Energy Threshold", "Wh"),
-    (CONF_RUNNING_DEAD_ZONE, "Running Dead Zone", "s"),
     (CONF_MIN_POWER, "Min Power", "W"),
     (CONF_MIN_OFF_GAP, "Min Off Gap", "s"),
     (CONF_DURATION_TOLERANCE, "Duration Tolerance", ""),
@@ -434,6 +442,8 @@ _PREF_LANG_TAG_RE = re.compile(r"^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$")
 _FULL_COMMANDS = frozenset({
     "wipe_history", "import_config", "export_config", "clear_debug_data", "reprocess_history",
     "trigger_ml_training",
+    # Selective export/import wizard (same full-data reach as the wholesale variants).
+    "get_export_inventory", "analyze_import", "export_config_selective", "import_config_selective",
     # Reverting on-device models / matcher tuning discards learned state -> full access.
     "revert_matching_config", "revert_ml_models",
 })
@@ -452,6 +462,10 @@ _ADMIN_COMMANDS = frozenset({
     "wipe_history",
     "import_config",
     "export_config",
+    "get_export_inventory",
+    "analyze_import",
+    "export_config_selective",
+    "import_config_selective",
     "reprocess_history",
     "clear_debug_data",
     # Global community-store mutations: these change the ONE integration-wide GitHub
@@ -1070,6 +1084,9 @@ def async_register_commands(hass: HomeAssistant) -> None:
         # Diagnostics
         ws_get_diagnostics, ws_reprocess_history, ws_clear_debug_data,
         ws_wipe_history, ws_export_config, ws_import_config,
+        # Selective export/import wizard (inventory + analyze + selective export/import)
+        ws_get_export_inventory, ws_analyze_import,
+        ws_export_config_selective, ws_import_config_selective,
         # Shared constants
         ws_get_constants,
         # Suggestions
@@ -1838,7 +1855,9 @@ def ws_rebuild_envelopes(
         entry_id, "rebuild", "Rebuilding envelopes",
         label_key="task.rebuild.envelopes", label_params={},
     )
-    hass.async_create_task(_rebuild_envelopes_task(hass, task, entry_id))
+    _raw = hass.async_create_task(_rebuild_envelopes_task(hass, task, entry_id))
+    if _raw is not None:
+        reg.link_asyncio_task(task.id, _raw)
     _send_result(connection, msg["id"], "rebuild_envelopes", {"task_id": task.id})
 
 
@@ -1852,8 +1871,10 @@ async def _rebuild_envelopes_task(hass: HomeAssistant, task: Any, entry_id: str)
         return
     store = manager.profile_store
     lock = _entry_write_lock(hass, entry_id)
-    await lock.acquire()
+    acquired = False
     try:
+        await lock.acquire()
+        acquired = True
         names = list(store.get_profiles().keys())
         reg.update(task, total=len(names), done=0)
         rebuilt = 0
@@ -1873,11 +1894,15 @@ async def _rebuild_envelopes_task(hass: HomeAssistant, task: Any, entry_id: str)
             state=task_registry.STATE_CANCELLED if task.cancel_requested else task_registry.STATE_DONE,
             result={"success": True, "rebuilt": rebuilt},
         )
+    except asyncio.CancelledError:
+        reg.finish(task, state=task_registry.STATE_CANCELLED)
+        raise
     except Exception as exc:  # pylint: disable=broad-exception-caught
         _LOGGER.warning("Rebuild-envelopes task failed for %s: %s", entry_id, exc)
         reg.finish(task, state=task_registry.STATE_ERROR, error=str(exc))
     finally:
-        lock.release()
+        if acquired:
+            lock.release()
 
 
 @websocket_api.websocket_command(
@@ -2066,9 +2091,17 @@ async def ws_label_cycle(
             if not new_profile_name or not new_profile_name.strip():
                 connection.send_error(msg["id"], "invalid_format", "New profile name required")
                 return
-            await manager.profile_store.create_profile(new_profile_name.strip(), cycle_id)
+            applied_profile: str | None = new_profile_name.strip()
+            await manager.profile_store.create_profile(applied_profile, cycle_id)
         else:
+            applied_profile = profile_name
             await manager.profile_store.assign_profile_to_cycle(cycle_id, profile_name)
+        # Manually (re)labelling a cycle awaiting verification IS the user's answer,
+        # so resolve any pending feedback and drop it from the review queue (#331).
+        if hasattr(manager, "learning_manager"):
+            await manager.learning_manager.async_resolve_pending_from_label(
+                cycle_id, applied_profile
+            )
         manager.notify_update()
         _send_result(connection, msg["id"], "label_cycle", {"success": True})
     except ValueError as exc:
@@ -2703,11 +2736,21 @@ async def _reprocess_task(hass: HomeAssistant, task: Any, entry_id: str) -> None
     # retrains and rewrites the store, and must not interleave with a concurrent
     # import / recording persist for the same entry.
     lock = _entry_write_lock(hass, entry_id)
-    await lock.acquire()
+    acquired = False
     try:
+        await lock.acquire()
+        acquired = True
+        if task.cancel_requested:
+            reg.finish(task, state=task_registry.STATE_CANCELLED)
+            return
+
         reg.update(task, total=5, done=0, label="Reprocessing: matching cycles",
                    label_key="task.reprocess.matching")
         summary["count"] = await store.async_reprocess_all_data()
+
+        if task.cancel_requested:
+            reg.finish(task, state=task_registry.STATE_CANCELLED, result=summary)
+            return
 
         reg.update(task, done=1, label="Reprocessing: backfilling golden",
                    label_key="task.reprocess.golden")
@@ -2715,6 +2758,10 @@ async def _reprocess_task(hass: HomeAssistant, task: Any, entry_id: str) -> None
             summary["golden_backfilled"] = await store.async_backfill_recorded_golden()
         except Exception as exc:  # pylint: disable=broad-exception-caught
             _LOGGER.debug("golden backfill failed for %s: %s", entry_id, exc)
+
+        if task.cancel_requested:
+            reg.finish(task, state=task_registry.STATE_CANCELLED, result=summary)
+            return
 
         reg.update(task, done=2, label="Reprocessing: suggestions",
                    label_key="task.reprocess.suggestions")
@@ -2739,6 +2786,10 @@ async def _reprocess_task(hass: HomeAssistant, task: Any, entry_id: str) -> None
             except Exception as exc:  # pylint: disable=broad-exception-caught
                 _LOGGER.debug("ML training failed for %s: %s", entry_id, exc)
 
+        if task.cancel_requested:
+            reg.finish(task, state=task_registry.STATE_CANCELLED, result=summary)
+            return
+
         reg.update(task, done=4, label="Reprocessing: cycle health",
                    label_key="task.reprocess.health")
         # Recompute per-cycle health against the (possibly retrained) model.
@@ -2755,13 +2806,17 @@ async def _reprocess_task(hass: HomeAssistant, task: Any, entry_id: str) -> None
         if _get_manager(hass, entry_id) is manager:
             manager.notify_update()
         reg.finish(task, state=task_registry.STATE_DONE, result=summary)
+    except asyncio.CancelledError:
+        reg.finish(task, state=task_registry.STATE_CANCELLED)
+        raise
     except Exception as exc:  # pylint: disable=broad-exception-caught
         # Task-level failure: log at WARNING so it is visible in the default HA log
         # and the panel Logs view (sub-step failures above stay at debug on purpose).
         _LOGGER.warning("Reprocess task failed for %s: %s", entry_id, exc)
         reg.finish(task, state=task_registry.STATE_ERROR, error=str(exc))
     finally:
-        lock.release()
+        if acquired:
+            lock.release()
 
 
 @websocket_api.websocket_command(
@@ -2783,7 +2838,9 @@ def ws_reprocess_history(
         return
     reg = task_registry.get_registry(hass)
     task = reg.create(entry_id, "reprocess", "Reprocessing")
-    hass.async_create_task(_reprocess_task(hass, task, entry_id))
+    _raw = hass.async_create_task(_reprocess_task(hass, task, entry_id))
+    if _raw is not None:
+        reg.link_asyncio_task(task.id, _raw)
     _send_result(connection, msg["id"], "reprocess_history", {"task_id": task.id})
 
 
@@ -2932,6 +2989,234 @@ async def ws_import_config(
             connection.send_error(msg["id"], "unknown_error", str(exc))
 
 
+# Soft cap on a pasted/uploaded import blob so a huge string can't wedge the
+# executor / event loop. Whole-store exports with full traces are a few MB; 64 MB
+# is comfortably above any legitimate payload.
+_MAX_IMPORT_JSON_BYTES = 64 * 1024 * 1024
+
+
+@websocket_api.websocket_command(
+    {vol.Required("type"): "ha_washdata/get_export_inventory", vol.Required("entry_id"): str}
+)
+@websocket_api.async_response
+async def ws_get_export_inventory(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Return this device's per-category data inventory for the export wizard tree."""
+    entry_id: str = msg["entry_id"]
+    manager = _get_manager(hass, entry_id)
+    if manager is None:
+        _err_not_found(connection, msg["id"], entry_id)
+        return
+    entry = _get_entry(hass, entry_id)
+    try:
+        opts = dict(entry.options) if entry else {}
+        manifest = await hass.async_add_executor_job(
+            manager.profile_store.get_export_inventory, opts
+        )
+        _send_result(connection, msg["id"], "get_export_inventory", {"manifest": manifest})
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        connection.send_error(msg["id"], "unknown_error", str(exc))
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "ha_washdata/analyze_import",
+        vol.Required("entry_id"): str,
+        vol.Required("json_data"): str,
+    }
+)
+@websocket_api.async_response
+async def ws_analyze_import(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Parse a pasted/uploaded export and describe what it contains (no mutation).
+
+    Synchronous (not a detached task): parsing + walking a few-MB file is tens of ms.
+    Returns ``{"manifest": {...}}``; a structural problem is reported inside the
+    manifest as ``manifest.error`` so the panel can render it inline.
+    """
+    from .const import CONF_DEVICE_TYPE, DEFAULT_DEVICE_TYPE
+
+    entry_id: str = msg["entry_id"]
+    manager = _get_manager(hass, entry_id)
+    if manager is None:
+        _err_not_found(connection, msg["id"], entry_id)
+        return
+    json_data: str = msg["json_data"]
+    if len(json_data.encode("utf-8", "ignore")) > _MAX_IMPORT_JSON_BYTES:
+        connection.send_error(msg["id"], "invalid_json", "Import payload is too large")
+        return
+    entry = _get_entry(hass, entry_id)
+    device_type = ""
+    if entry is not None:
+        device_type = entry.options.get(
+            CONF_DEVICE_TYPE, entry.data.get(CONF_DEVICE_TYPE, DEFAULT_DEVICE_TYPE)
+        )
+    try:
+        from .profile_store import build_import_manifest
+
+        local_names = list(manager.profile_store.get_profiles().keys())
+
+        def _analyze() -> dict[str, Any]:
+            payload = json.loads(json_data)
+            return build_import_manifest(
+                payload, local_device_type=device_type, local_profile_names=local_names
+            )
+
+        manifest = await hass.async_add_executor_job(_analyze)
+        _send_result(connection, msg["id"], "analyze_import", {"manifest": manifest})
+    except json.JSONDecodeError as exc:
+        connection.send_error(msg["id"], "invalid_json", str(exc))
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        connection.send_error(msg["id"], "unknown_error", str(exc))
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "ha_washdata/export_config_selective",
+        vol.Required("entry_id"): str,
+        vol.Required("selection"): dict,
+    }
+)
+@websocket_api.async_response
+async def ws_export_config_selective(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Export only the selected categories/items as a JSON string."""
+    entry_id: str = msg["entry_id"]
+    manager = _get_manager(hass, entry_id)
+    if manager is None:
+        _err_not_found(connection, msg["id"], entry_id)
+        return
+    entry = _get_entry(hass, entry_id)
+    selection = msg["selection"]
+    try:
+        payload = manager.profile_store.export_data(
+            entry_data=dict(entry.data) if entry else {},
+            entry_options=dict(entry.options) if entry else {},
+            selection=selection,
+        )
+        json_str = await hass.async_add_executor_job(
+            lambda: json.dumps(payload, indent=2)
+        )
+        _send_result(
+            connection, msg["id"], "export_config_selective", {"json_data": json_str}
+        )
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        connection.send_error(msg["id"], "unknown_error", str(exc))
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "ha_washdata/import_config_selective",
+        vol.Required("entry_id"): str,
+        vol.Required("json_data"): str,
+        vol.Required("selection"): dict,
+        vol.Optional("mode", default="merge"): vol.In(["merge", "replace"]),
+        vol.Optional("conflict_resolutions", default=dict): dict,
+        vol.Optional("cycle_destination", default="reference"): vol.In(
+            ["reference", "real_history"]
+        ),
+        vol.Optional("apply_settings", default=True): bool,
+    }
+)
+@websocket_api.async_response
+async def ws_import_config_selective(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Selectively import chosen categories/items, merging into existing data."""
+    from .const import CONF_DEVICE_TYPE, DEFAULT_DEVICE_TYPE, SHAREABLE_SETTING_KEYS
+
+    entry_id: str = msg["entry_id"]
+    manager = _get_manager(hass, entry_id)
+    if manager is None:
+        _err_not_found(connection, msg["id"], entry_id)
+        return
+    json_data: str = msg["json_data"]
+    if len(json_data.encode("utf-8", "ignore")) > _MAX_IMPORT_JSON_BYTES:
+        connection.send_error(msg["id"], "invalid_json", "Import payload is too large")
+        return
+
+    # Serialize under the per-entry write lock so the import can't interleave with a
+    # concurrent reprocess / recording persist (which would corrupt the store).
+    async with _entry_write_lock(hass, entry_id):
+        try:
+            entry = _get_entry(hass, entry_id)
+            device_type = ""
+            if entry is not None:
+                device_type = entry.options.get(
+                    CONF_DEVICE_TYPE, entry.data.get(CONF_DEVICE_TYPE, DEFAULT_DEVICE_TYPE)
+                )
+            payload = await hass.async_add_executor_job(json.loads, json_data)
+            summary = await manager.profile_store.async_import_data_selective(
+                payload,
+                selection=msg["selection"],
+                mode=msg["mode"],
+                conflict_resolutions=msg["conflict_resolutions"],
+                cycle_destination=msg["cycle_destination"],
+                apply_settings=msg["apply_settings"],
+                local_device_type=device_type,
+            )
+
+            # Re-validate after the awaits — the entry may have been reloaded (a new
+            # manager + store) during the import. Persisting through the detached
+            # manager/entry would clobber the live one, so bail out.
+            current_manager = _get_manager(hass, entry_id)
+            if current_manager is not manager:
+                _LOGGER.warning(
+                    "Manager replaced during selective import for %s; aborting notify",
+                    entry_id,
+                )
+                _send_result(
+                    connection, msg["id"], "import_config_selective",
+                    {"success": True, "summary": summary},
+                )
+                return
+
+            # Apply the imported settings subset onto this device's options. Only the
+            # SHAREABLE numeric allow-list ever reaches here (the store already filters),
+            # and identity keys are stripped for defense-in-depth. entry.data is never
+            # written (no power_sensor/device_type hijack).
+            entry = _get_entry(hass, entry_id)
+            settings = summary.get("settings") if isinstance(summary.get("settings"), dict) else {}
+            settings_applied = 0
+            if entry is not None and settings:
+                filtered = {
+                    k: v for k, v in settings.items()
+                    if k in SHAREABLE_SETTING_KEYS
+                    and isinstance(v, (int, float)) and not isinstance(v, bool)
+                }
+                for key in _OPTIONS_IDENTITY_KEYS:
+                    filtered.pop(key, None)
+                if filtered:
+                    hass.config_entries.async_update_entry(
+                        entry, options={**entry.options, **filtered}
+                    )
+                    settings_applied = len(filtered)
+            summary = {**summary, "settings_applied": settings_applied}
+
+            manager.notify_update()
+            _send_result(
+                connection, msg["id"], "import_config_selective",
+                {"success": True, "summary": summary},
+            )
+        except json.JSONDecodeError as exc:
+            connection.send_error(msg["id"], "invalid_json", str(exc))
+        except ValueError as exc:
+            connection.send_error(msg["id"], "invalid_format", str(exc))
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            connection.send_error(msg["id"], "unknown_error", str(exc))
+
+
 # ─── Shared constants ─────────────────────────────────────────────────────────
 
 @websocket_api.websocket_command({vol.Required("type"): "ha_washdata/get_constants"})
@@ -2951,6 +3236,7 @@ def ws_get_constants(
         {"id": key, "label": label}
         for key, label in DEVICE_TYPES.items()
     ]
+    from .frontend import BRAND_ICON_URL as _BRAND_ICON_URL, BRAND_ICON_REGISTERED_KEY as _BRAND_ICON_KEY  # pylint: disable=import-outside-toplevel
     from .const import STORE_WEB_ORIGIN
     from . import store_account
     from .const import (  # pylint: disable=import-outside-toplevel
@@ -2969,6 +3255,8 @@ def ws_get_constants(
         MATCH_ENERGY_SCALE,
     )
     _send_result(connection, msg["id"], "get_constants", {
+            "version": _INTEGRATION_VERSION,
+            "icon_url": _BRAND_ICON_URL if hass.data.get(_BRAND_ICON_KEY) else None,
             "device_types": device_types,
             "state_colors": dict(STATE_COLORS),
             "ml_lab_enabled": SHOW_ML_LAB,
@@ -3274,9 +3562,11 @@ def ws_trim_cycle(
     task = reg.create(
         entry_id, "trim", "Trimming cycle", label_key="task.trim.apply", label_params={},
     )
-    hass.async_create_task(_trim_task(
+    _raw = hass.async_create_task(_trim_task(
         hass, task, entry_id, msg["cycle_id"], float(msg["start_s"]), float(msg["end_s"]),
     ))
+    if _raw is not None:
+        reg.link_asyncio_task(task.id, _raw)
     _send_result(connection, msg["id"], "trim_cycle", {"task_id": task.id})
 
 
@@ -3293,8 +3583,13 @@ async def _trim_task(
         return
     store = manager.profile_store
     lock = _entry_write_lock(hass, entry_id)
-    await lock.acquire()
+    acquired = False
     try:
+        await lock.acquire()
+        acquired = True
+        if task.cancel_requested:
+            reg.finish(task, state=task_registry.STATE_CANCELLED)
+            return
         reg.update(task, total=1, done=0)
         ok = await store.trim_cycle_power_data(cycle_id, start_s, end_s)
         reg.update(task, done=1)
@@ -3304,11 +3599,15 @@ async def _trim_task(
         if _get_manager(hass, entry_id) is manager:
             manager.notify_update()
         reg.finish(task, state=task_registry.STATE_DONE, result={"success": True})
+    except asyncio.CancelledError:
+        reg.finish(task, state=task_registry.STATE_CANCELLED)
+        raise
     except Exception as exc:  # pylint: disable=broad-exception-caught
         _LOGGER.warning("Trim task failed for %s: %s", entry_id, exc)
         reg.finish(task, state=task_registry.STATE_ERROR, error=str(exc))
     finally:
-        lock.release()
+        if acquired:
+            lock.release()
 
 
 @websocket_api.websocket_command(
@@ -3426,7 +3725,9 @@ def ws_apply_split(
     task = reg.create(
         entry_id, "split", "Splitting cycle", label_key="task.split.apply", label_params={},
     )
-    hass.async_create_task(_apply_split_task(hass, task, entry_id, cycle_id, segments))
+    _raw = hass.async_create_task(_apply_split_task(hass, task, entry_id, cycle_id, segments))
+    if _raw is not None:
+        reg.link_asyncio_task(task.id, _raw)
     _send_result(connection, msg["id"], "apply_split", {"task_id": task.id})
 
 
@@ -3444,8 +3745,13 @@ async def _apply_split_task(
         return
     store = manager.profile_store
     lock = _entry_write_lock(hass, entry_id)
-    await lock.acquire()
+    acquired = False
     try:
+        await lock.acquire()
+        acquired = True
+        if task.cancel_requested:
+            reg.finish(task, state=task_registry.STATE_CANCELLED)
+            return
         reg.update(task, total=1, done=0)
         new_ids = await store.apply_split_interactive(cycle_id, segments)
         reg.update(task, done=1)
@@ -3455,9 +3761,15 @@ async def _apply_split_task(
             task, state=task_registry.STATE_DONE,
             result={"success": True, "new_ids": new_ids},
         )
+    except asyncio.CancelledError:
+        reg.finish(task, state=task_registry.STATE_CANCELLED)
+        raise
     except Exception as exc:  # pylint: disable=broad-exception-caught
         _LOGGER.warning("Apply-split task failed for %s: %s", entry_id, exc)
         reg.finish(task, state=task_registry.STATE_ERROR, error=str(exc))
+    finally:
+        if acquired:
+            lock.release()
 
 
 @websocket_api.websocket_command(
@@ -3508,7 +3820,9 @@ def ws_apply_merge(
     task = reg.create(
         entry_id, "merge", "Merging cycles", label_key="task.merge.apply", label_params={},
     )
-    hass.async_create_task(_apply_merge_task(hass, task, entry_id, ids, target, new_name))
+    _raw = hass.async_create_task(_apply_merge_task(hass, task, entry_id, ids, target, new_name))
+    if _raw is not None:
+        reg.link_asyncio_task(task.id, _raw)
     _send_result(connection, msg["id"], "apply_merge", {"task_id": task.id})
 
 
@@ -3526,8 +3840,13 @@ async def _apply_merge_task(
         return
     store = manager.profile_store
     lock = _entry_write_lock(hass, entry_id)
-    await lock.acquire()
+    acquired = False
     try:
+        await lock.acquire()
+        acquired = True
+        if task.cancel_requested:
+            reg.finish(task, state=task_registry.STATE_CANCELLED)
+            return
         reg.update(task, total=1, done=0)
         created_new = False
         if new_name:
@@ -3553,11 +3872,15 @@ async def _apply_merge_task(
             task, state=task_registry.STATE_DONE,
             result={"success": True, "new_id": new_id},
         )
+    except asyncio.CancelledError:
+        reg.finish(task, state=task_registry.STATE_CANCELLED)
+        raise
     except Exception as exc:  # pylint: disable=broad-exception-caught
         _LOGGER.warning("Apply-merge task failed for %s: %s", entry_id, exc)
         reg.finish(task, state=task_registry.STATE_ERROR, error=str(exc))
     finally:
-        lock.release()
+        if acquired:
+            lock.release()
 
 
 # ─── Profile envelope / member cycles ──────────────────────────────────────────
@@ -3893,7 +4216,19 @@ async def ws_get_power_history(
         cycle_start = getattr(detector, "current_cycle_start", None) if detector else None
         if cycle_start and trace:
             start_dt = trace[0][0]
+            start_ts = start_dt.timestamp()
             live = [[round((t - start_dt).total_seconds(), 1), round(float(p), 1)] for t, p in trace]
+            # Overlay any diag_buffer readings strictly newer than the last trace
+            # point. During STATE_ENDING the detector trace can lag the raw sensor
+            # by up to one sampling interval (readings are throttled; the diag_buffer
+            # records every reading before the throttle), so the chart would appear
+            # frozen at the last active reading until the next throttle-pass.
+            if diag is not None and live:
+                last_trace_ts = trace[-1][0].timestamp()
+                for raw_ts, raw_w in diag.power_samples(last_trace_ts + 0.1):
+                    offset_s = round(raw_ts - start_ts, 1)
+                    if offset_s > live[-1][0]:
+                        live.append([offset_s, round(float(raw_w), 1)])
             out["cycle_active"] = True
             out["live"] = _downsample(live)
             out["cycle_elapsed_s"] = live[-1][0] if live else 0.0
@@ -4620,17 +4955,23 @@ async def _ml_training_task(hass: HomeAssistant, task: Any, entry_id: str) -> No
     # reprocess itself runs ML training): training rewrites the store, so two runs
     # for the same entry must not interleave.
     lock = _entry_write_lock(hass, entry_id)
-    await lock.acquire()
+    acquired = False
     try:
+        await lock.acquire()
+        acquired = True
         summary = await manager.async_run_ml_training(force=True)
         reg.finish(task, state=task_registry.STATE_DONE, result=summary)
+    except asyncio.CancelledError:
+        reg.finish(task, state=task_registry.STATE_CANCELLED)
+        raise
     except Exception as exc:  # pylint: disable=broad-exception-caught
         # Task-level failure: log at WARNING so it surfaces in the default HA log and
         # the panel Logs view (not swallowed at debug like a routine sub-step miss).
         _LOGGER.warning("ML training task failed for %s: %s", entry_id, exc)
         reg.finish(task, state=task_registry.STATE_ERROR, error=str(exc))
     finally:
-        lock.release()
+        if acquired:
+            lock.release()
 
 
 @websocket_api.websocket_command(
@@ -4656,7 +4997,9 @@ def ws_trigger_ml_training(
         return
     reg = task_registry.get_registry(hass)
     task = reg.create(entry_id, "ml_training", "Learning")
-    hass.async_create_task(_ml_training_task(hass, task, entry_id))
+    _raw = hass.async_create_task(_ml_training_task(hass, task, entry_id))
+    if _raw is not None:
+        reg.link_asyncio_task(task.id, _raw)
     _send_result(connection, msg["id"], "trigger_ml_training", {"task_id": task.id})
 
 
@@ -4838,7 +5181,7 @@ def _playground_base_config(manager: Any, entry: Any) -> CycleDetectorConfig:
     opts: dict[str, Any] = {}
     if entry is not None:
         opts = {**getattr(entry, "data", {}), **getattr(entry, "options", {})}
-    min_power = float(opts.get(CONF_MIN_POWER, 5.0) or 5.0)
+    min_power = float(opts.get(CONF_MIN_POWER, DEFAULT_MIN_POWER) or DEFAULT_MIN_POWER)
     return CycleDetectorConfig(
         min_power=min_power,
         off_delay=int(opts.get(CONF_OFF_DELAY, DEFAULT_OFF_DELAY)),
@@ -4846,7 +5189,6 @@ def _playground_base_config(manager: Any, entry: Any) -> CycleDetectorConfig:
         completion_min_seconds=int(opts.get(CONF_COMPLETION_MIN_SECONDS, 600)),
         end_repeat_count=int(opts.get(CONF_END_REPEAT_COUNT, 1)),
         min_off_gap=int(opts.get(CONF_MIN_OFF_GAP, 60)),
-        running_dead_zone=int(opts.get(CONF_RUNNING_DEAD_ZONE, 0)),
         start_threshold_w=float(opts.get(CONF_START_THRESHOLD_W, min_power)),
         stop_threshold_w=float(
             opts.get(CONF_STOP_THRESHOLD_W, min_power * 0.6 if min_power else 2.0)
@@ -5186,6 +5528,9 @@ async def _pg_history_task(
         else:
             ids = [c.get("id") for c in past[-playground.DEFAULT_RECENT_CYCLES:]]
         ids = [i for i in ids[:playground.MAX_BATCH_CYCLES] if i]
+        # Build match snapshots once — they are store-derived and identical for
+        # every chunk; rebuilding per chunk is O(n_profiles) wasted work.
+        prebuilt = await hass.async_add_executor_job(playground._build_match_snapshots, store)
         reg.update(task, total=len(ids))
         rows: list[dict[str, Any]] = []
         base_rows: list[dict[str, Any]] = []
@@ -5195,7 +5540,7 @@ async def _pg_history_task(
             chunk = ids[i:i + _PG_HISTORY_CHUNK]
             r = await hass.async_add_executor_job(
                 playground.run_playground_history,
-                store, chunk, base_config, override, options, price, len(chunk),
+                store, chunk, base_config, override, options, price, len(chunk), prebuilt,
             )
             rows.extend(r.get("rows") or [])
             base_rows.extend(r.get("baseline_rows") or [])
@@ -5207,6 +5552,9 @@ async def _pg_history_task(
             state=task_registry.STATE_CANCELLED if task.cancel_requested else task_registry.STATE_DONE,
             result=payload,
         )
+    except asyncio.CancelledError:
+        reg.finish(task, state=task_registry.STATE_CANCELLED)
+        raise
     except Exception as exc:  # pylint: disable=broad-exception-caught
         _LOGGER.debug("Playground history task failed for %s: %s", entry_id, exc)
         reg.finish(task, state=task_registry.STATE_ERROR, error=str(exc))
@@ -5228,6 +5576,8 @@ async def _pg_sweep_task(
         ids = [c.get("id") for c in past[-playground.DEFAULT_RECENT_CYCLES:] if isinstance(c, dict)]
         ids = [i for i in ids[:playground.MAX_BATCH_CYCLES] if i]
         n = max(1, len(ids))
+        # Build match snapshots once — identical for every sweep value/cell.
+        prebuilt = await hass.async_add_executor_job(playground._build_match_snapshots, store)
         if param_y and values_y:
             reg.update(task, total=len(values) * len(values_y))
             grid: list[list[float | None]] = [[None] * len(values) for _ in values_y]
@@ -5242,7 +5592,7 @@ async def _pg_sweep_task(
                     r = await hass.async_add_executor_job(
                         playground.run_playground_sweep,
                         store, ids, base_config, param, [vx], objective,
-                        options, price, n, param_y, [vy],
+                        options, price, n, param_y, [vy], prebuilt,
                     )
                     cell = (r.get("grid") or [[None]])[0]
                     grid[j][i] = cell[0] if cell else None
@@ -5263,6 +5613,7 @@ async def _pg_sweep_task(
                 r = await hass.async_add_executor_job(
                     playground.run_playground_sweep,
                     store, ids, base_config, param, [vx], objective, options, price, n,
+                    None, None, prebuilt,
                 )
                 points.extend(r.get("points") or [])
                 if r.get("current_value") is not None:
@@ -5275,6 +5626,9 @@ async def _pg_sweep_task(
             state=task_registry.STATE_CANCELLED if task.cancel_requested else task_registry.STATE_DONE,
             result=payload,
         )
+    except asyncio.CancelledError:
+        reg.finish(task, state=task_registry.STATE_CANCELLED)
+        raise
     except Exception as exc:  # pylint: disable=broad-exception-caught
         _LOGGER.debug("Playground sweep task failed for %s: %s", entry_id, exc)
         reg.finish(task, state=task_registry.STATE_ERROR, error=str(exc))
@@ -5304,7 +5658,9 @@ def ws_start_playground_history(
     task = reg.create(entry_id, "pg_history", "Test on history")
     override = dict(msg.get("settings_override") or {}) or None
     cycle_ids = list(msg.get("cycle_ids") or [])
-    hass.async_create_task(_pg_history_task(hass, task, entry_id, cycle_ids, override))
+    _raw = hass.async_create_task(_pg_history_task(hass, task, entry_id, cycle_ids, override))
+    if _raw is not None:
+        reg.link_asyncio_task(task.id, _raw)
     _send_result(connection, msg["id"], "start_playground_history", {"task_id": task.id})
 
 
@@ -5340,10 +5696,12 @@ def ws_start_playground_sweep(
         entry_id, "pg_sweep", f"Optimize: {msg['param']}",
         label_key="task.pg_sweep.optimize", label_params={"param": msg["param"]},
     )
-    hass.async_create_task(_pg_sweep_task(
+    _raw = hass.async_create_task(_pg_sweep_task(
         hass, task, entry_id, msg["param"], list(msg.get("values") or []),
         msg["objective"], param_y, list(values_y) if values_y else None,
     ))
+    if _raw is not None:
+        reg.link_asyncio_task(task.id, _raw)
     _send_result(connection, msg["id"], "start_playground_sweep", {"task_id": task.id})
 
 
@@ -5356,6 +5714,8 @@ _PG_DETAIL_CHUNK = 250
 async def _pg_detail_task(
     hass: HomeAssistant, task: Any, entry_id: str,
     cycle_id: str, override: dict[str, Any] | None,
+    stress_tail: bool = False,
+    stress_idle_w: float | None = None,
 ) -> None:
     reg = task_registry.get_registry(hass)
     ctx = _playground_context(hass, entry_id)
@@ -5367,6 +5727,7 @@ async def _pg_detail_task(
         sim = await hass.async_add_executor_job(
             playground.build_cycle_detail_sim_by_id,
             store, cycle_id, base_config, override, options, price,
+            stress_tail, stress_idle_w,
         )
         if isinstance(sim, dict):  # {"error": ...} marker (not_found / build failure)
             if sim.get("error") == "not_found":
@@ -5385,7 +5746,10 @@ async def _pg_detail_task(
             await hass.async_add_executor_job(sim.step, i, i + _PG_DETAIL_CHUNK)
             reg.update(task, done=min(total, i + _PG_DETAIL_CHUNK))
         if not task.cancel_requested:
-            await hass.async_add_executor_job(sim.run_tail)
+            if sim.stress_tail:
+                await hass.async_add_executor_job(sim.run_stress_tail)
+            else:
+                await hass.async_add_executor_job(sim.run_tail)
         payload = await hass.async_add_executor_job(sim.finalize)
         payload["partial"] = task.cancel_requested
         reg.finish(
@@ -5393,6 +5757,9 @@ async def _pg_detail_task(
             state=task_registry.STATE_CANCELLED if task.cancel_requested else task_registry.STATE_DONE,
             result=payload,
         )
+    except asyncio.CancelledError:
+        reg.finish(task, state=task_registry.STATE_CANCELLED)
+        raise
     except Exception as exc:  # pylint: disable=broad-exception-caught
         _LOGGER.debug("Playground detail task failed for %s: %s", entry_id, exc)
         reg.finish(task, state=task_registry.STATE_ERROR, error=str(exc))
@@ -5404,6 +5771,8 @@ async def _pg_detail_task(
         vol.Required("entry_id"): str,
         vol.Required("cycle_id"): str,
         vol.Optional("settings_override", default=dict): dict,
+        vol.Optional("stress_tail", default=False): bool,
+        vol.Optional("stress_idle_w", default=None): vol.Any(vol.Coerce(float), None),
     }
 )
 @callback
@@ -5426,7 +5795,11 @@ def ws_start_playground_cycle_detail(
         label_key="task.pg_detail.simulate", label_params={},
     )
     override = dict(msg.get("settings_override") or {})
-    hass.async_create_task(
-        _pg_detail_task(hass, task, entry_id, msg["cycle_id"], override)
+    stress_tail = bool(msg.get("stress_tail", False))
+    stress_idle_w = msg.get("stress_idle_w")
+    _raw = hass.async_create_task(
+        _pg_detail_task(hass, task, entry_id, msg["cycle_id"], override, stress_tail, stress_idle_w)
     )
+    if _raw is not None:
+        reg.link_asyncio_task(task.id, _raw)
     _send_result(connection, msg["id"], "start_playground_cycle_detail", {"task_id": task.id})

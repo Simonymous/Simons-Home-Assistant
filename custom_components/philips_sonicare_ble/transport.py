@@ -158,6 +158,14 @@ def describe_available_paths(
     paths: list[dict[str, object]] = []
     try:
         for sd in async_scanner_devices_by_address(hass, address, connectable=True):
+            rssi = getattr(sd.advertisement, "rssi", None)
+            # A BlueZ RSSI-invalidation event leaves a stale -127 entry in
+            # the history without a packet on the air — that scanner does
+            # NOT currently see the device, so listing it would present a
+            # dead path as the likely carrier (same sentinel the sleep
+            # gate keys on).
+            if rssi is not None and rssi <= -127:
+                continue
             scanner = sd.scanner
             name = (
                 getattr(scanner, "name", None)
@@ -166,7 +174,7 @@ def describe_available_paths(
             )
             paths.append({
                 "name": name,
-                "rssi": getattr(sd.advertisement, "rssi", None),
+                "rssi": rssi,
                 "is_local": isinstance(scanner, HaScanner),
             })
     except Exception:  # noqa: BLE001 — preview only, never break the flow
@@ -207,6 +215,34 @@ UNPAIR_OK = "unpaired"
 UNPAIR_UNCONFIRMED = "unconfirmed"
 UNPAIR_UNAVAILABLE = "unavailable"
 UNPAIR_FAILED = "failed"
+
+
+# Slots whose bond state we changed ourselves, keyed by (esp, bridge_id)
+# with the time of the change. A config flow can outlive the state its
+# probe was taken from — a discovery banner sits unopened while the user
+# pairs or removes a brush elsewhere — and the flow objects holding those
+# probes are not reachable from here. This is the hand-off point instead:
+# whoever changes a slot records it, and the picker re-probes exactly the
+# slots that went stale rather than everything.
+DATA_CHANGED_SLOTS = "philips_sonicare_ble_changed_slots"
+
+
+@callback
+def note_slot_changed(
+    hass: HomeAssistant, esp_device_name: str, bridge_id: str
+) -> None:
+    """Record that this slot's bond state just changed."""
+    changed = hass.data.setdefault(DATA_CHANGED_SLOTS, {})
+    changed[(esp_device_name.lower(), bridge_id.lower())] = time.monotonic()
+
+
+@callback
+def slot_changed_at(
+    hass: HomeAssistant, esp_device_name: str, bridge_id: str
+) -> float:
+    """When this slot last changed, or 0.0 if we never touched it."""
+    changed = hass.data.get(DATA_CHANGED_SLOTS) or {}
+    return changed.get((esp_device_name.lower(), bridge_id.lower()), 0.0)
 
 
 async def async_unpair_bridge_slot(
@@ -258,6 +294,7 @@ async def async_unpair_bridge_slot(
 
         try:
             await asyncio.wait_for(unpair_done.wait(), timeout=timeout)
+            note_slot_changed(hass, esp_device_name, bridge_id)
             return UNPAIR_OK
         except asyncio.TimeoutError:
             _LOGGER.warning(
@@ -549,6 +586,11 @@ class EspBridgeTransport(SonicareTransport):
         self._notify_callbacks: dict[str, Callable[[str, bytes], None]] = {}
         self._detected_mac: str | None = address if ":" in address else None
         self._bridge_version: str | None = None
+        # Build environment reported by the bridge (info events, firmware
+        # >= 1.10.0): which ESPHome/ESP-IDF the running firmware was built
+        # with. Purely diagnostic — surfaced by the ESP Build sensor.
+        self._esphome_version: str | None = None
+        self._idf_version: str | None = None
         self._pending_info: asyncio.Future[dict[str, str]] | None = None
         self._ble_paired: str | None = None
         self._needs_resubscribe = False
@@ -626,6 +668,14 @@ class EspBridgeTransport(SonicareTransport):
     @property
     def bridge_version(self) -> str | None:
         return self._bridge_version
+
+    @property
+    def esphome_version(self) -> str | None:
+        return self._esphome_version
+
+    @property
+    def idf_version(self) -> str | None:
+        return self._idf_version
 
     @property
     def auto_tx_ack(self) -> bool:
@@ -765,6 +815,16 @@ class EspBridgeTransport(SonicareTransport):
                         )
                     except Exception:  # noqa: BLE001 — unparseable (dev build)
                         self._pipelined_reads = False
+
+            # Build-environment fields ride on info events only (not on
+            # heartbeats), so keep the last seen value.
+            for key, attr in (
+                ("esphome_version", "_esphome_version"),
+                ("idf_version", "_idf_version"),
+            ):
+                value = event.data.get(key)
+                if value:
+                    setattr(self, attr, str(value).strip().strip("\"'").strip())
 
             self._last_heartbeat = time.monotonic()
             was_alive = self._esp_alive
