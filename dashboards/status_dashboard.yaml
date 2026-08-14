@@ -2145,3 +2145,58 @@ views:
       - operator: default
         color: rgb(76, 175, 80)
       extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+- title: Energie
+  path: energie
+  icon: mdi:lightning-bolt
+  background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%) fixed'
+  cards:
+  - type: energy-date-selection
+  - type: energy-devices-graph
+    title: Verbrauch nach Gerät
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
+      heading: Gesamtverbrauch
+      heading_style: title
+      icon: mdi:counter
+      card_mod: *heading_card_mod
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: custom:mushroom-template-card
+        entity: sensor.waschmaschine_summe_verbraucht
+        primary: Waschmaschine
+        secondary: '{{ states("sensor.waschmaschine_summe_verbraucht") }} kWh'
+        icon: mdi:washing-machine
+        icon_color: '#2196F3'
+        layout: vertical
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: sensor.keller_steckdose_trockner_summe_verbraucht
+        primary: Trockner
+        secondary: '{{ states("sensor.keller_steckdose_trockner_summe_verbraucht") }} kWh'
+        icon: mdi:tumble-dryer
+        icon_color: '#FF9800'
+        layout: vertical
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: sensor.steckdose_geschirrspuler_summe_verbraucht
+        primary: Spülmaschine
+        secondary: '{{ states("sensor.steckdose_geschirrspuler_summe_verbraucht") }} kWh'
+        icon: mdi:dishwasher
+        icon_color: '#009688'
+        layout: vertical
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: sensor.tz3210_2putqrmw_ts011f_summe_verbraucht
+        primary: Receiver
+        secondary: '{{ states("sensor.tz3210_2putqrmw_ts011f_summe_verbraucht") }} kWh'
+        icon: mdi:audio-video
+        icon_color: '#9C27B0'
+        layout: vertical
+        tap_action:
+          action: more-info
