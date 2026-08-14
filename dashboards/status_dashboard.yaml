@@ -1863,12 +1863,21 @@ views:
       button_type: action
       tap_action:
         action: more-info
+    - name: Daten aktualisieren
+      entity: button.byd_seal_u_dm_i_abfrage_erzwingen
+      icon: mdi:refresh
+      button_type: action
+      tap_action:
+        action: perform-action
+        perform_action: button.press
+        target:
+          entity_id: button.byd_seal_u_dm_i_abfrage_erzwingen
     mini_map:
       device_tracker: device_tracker.byd_seal_u_dm_i_standort
       map_zoom: 14
     layout_config:
       button_grid:
-        rows: 2
+        rows: 3
         columns: 2
       range_info_config:
         layout: row
