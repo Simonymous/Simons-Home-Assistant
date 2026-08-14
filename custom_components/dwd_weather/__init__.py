@@ -32,7 +32,12 @@ from .const import (
     CONF_MAP_HOMEMARKER_SHAPE_CIRCLE,
     CONF_MAP_HOMEMARKER_SIZE,
     CONF_MAP_LOOP_COUNT,
+    CONF_MAP_LOOP_COUNT_FUTURE,
+    CONF_MAP_LOOP_HOURS_FUTURE,
     CONF_MAP_LOOP_SPEED,
+    CONF_MAP_LOOP_SPEED_FUTURE,
+    CONF_MAP_SHOW_TIMELINE,
+    CONF_MAP_TIMESTAMP_FONT_SIZE,
     CONF_MAP_CENTERMARKER,
     CONF_MAP_HOMEMARKER,
     CONF_MAP_TIMESTAMP,
@@ -73,6 +78,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     random_delay = random.randint(1, 59)
     if entry.data[CONF_ENTITY_TYPE] == CONF_ENTITY_TYPE_STATION:
         dwd_weather_data = DWDWeatherData(hass, entry)
+        await dwd_weather_data.async_initialize()
 
         # Coordinator checks for new updates
         dwdweather_coordinator = DataUpdateCoordinator(
@@ -119,6 +125,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             DWDWEATHER_DATA: dwd_weather_data,
             DWDWEATHER_COORDINATOR: dwdweather_coordinator,
         }
+
+        # Fetch initial map data/images on startup
+        await dwdweather_coordinator.async_refresh()
 
         await hass.config_entries.async_forward_entry_setups(entry, ["camera"])
 
@@ -215,6 +224,15 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         new = {**config_entry.data}
         new[CONF_DOWNLOAD_PRECIPITATION_SENSORS] = False
         hass.config_entries.async_update_entry(config_entry, data=new, version=14)
+    elif config_entry.version == 14:
+        new = {**config_entry.data}
+        if new.get(CONF_ENTITY_TYPE) == CONF_ENTITY_TYPE_MAP:
+            new.setdefault(CONF_MAP_LOOP_COUNT_FUTURE, 0)
+            new.setdefault(CONF_MAP_LOOP_HOURS_FUTURE, 0)
+            new.setdefault(CONF_MAP_LOOP_SPEED_FUTURE, 2.0)
+            new.setdefault(CONF_MAP_SHOW_TIMELINE, True)
+            new.setdefault(CONF_MAP_TIMESTAMP_FONT_SIZE, 28)
+        hass.config_entries.async_update_entry(config_entry, data=new, version=15)
 
     _LOGGER.info("Migration to version %s successful", config_entry.version)
     return True

@@ -1167,6 +1167,16 @@ views:
   - type: custom:stack-in-card
     cards:
     - type: heading
+      heading: Regenradar
+      heading_style: title
+      icon: mdi:radar
+      card_mod: *heading_card_mod
+    - type: iframe
+      url: https://embed.windy.com/embed2.html?lat=49.3088&lon=7.0293&detailLat=49.3088&detailLon=7.0293&width=650&height=450&zoom=8&level=surface&overlay=radar&product=radar&menu=&message=true&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1
+      aspect_ratio: 75%
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
       heading: Müllabfuhr
       heading_style: title
       icon: mdi:trash-can
@@ -1873,6 +1883,15 @@ views:
   icon: mdi:nas
   background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%) fixed'
   cards:
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
+      heading: DS223j
+      heading_style: title
+      icon: mdi:nas
+      card_mod: *heading_card_mod
+    - type: picture
+      image: /local/synology_ds223j.png
   - type: custom:stack-in-card
     cards:
     - type: heading

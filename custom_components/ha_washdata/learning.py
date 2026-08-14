@@ -140,6 +140,7 @@ class LearningManager:
         self._sample_interval_model = StatisticalModel(max_samples=200)
         self._last_suggestion_update: datetime | None = None
         self._last_batch_simulation_count: int = 0  # track when to re-run batch
+        self._last_suggestions_labeled_count: int = 0  # gate model/detection passes
 
     def _apply_suggestions_and_notify(self, suggestions: dict[str, Any]) -> None:
         """Apply suggestions that pass quality gates."""
@@ -232,9 +233,17 @@ class LearningManager:
             predicted_duration: Expected duration in seconds
             match_result: MatchResult from profile_store.async_match_profile() (optional)
         """
-        # 1. Trigger background simulation to find optimal parameters for this cycle
-        if cycle_data.get("power_data"):
-            # Offload to executor since simulation can be heavy
+        # 1. Trigger single-cycle simulation — only for cleanly-completed, labeled,
+        # non-noise cycles. Skipping force_stopped/unlabeled/noise avoids deriving
+        # start/stop thresholds from mis-detected or truncated cycles.
+        _profile = detected_profile or cycle_data.get("profile_name")
+        _is_clean = (
+            cycle_data.get("power_data")
+            and _profile
+            and _profile != "noise"
+            and cycle_data.get("status") == "completed"
+        )
+        if _is_clean:
             self.hass.async_create_task(self._async_run_simulation(cycle_data))
 
         # 2. Check if we should request feedback
@@ -242,11 +251,20 @@ class LearningManager:
             cycle_data, detected_profile, confidence, predicted_duration, match_result
         )
 
-        # 3. Update model-based suggestions (durations etc)
-        self._update_model_suggestions()
-
-        # 3b. Update statistical detection suggestions (thresholds, gates, etc.)
-        self._update_detection_suggestions()
+        # 3+3b. Heavy per-profile suggestion passes — only run when the labeled
+        # cycle count has grown since the last update (skips passes for unlabeled /
+        # noise / duplicate ends with no new data).
+        labeled_count = sum(
+            1 for c in self.profile_store.get_past_cycles()
+            if isinstance(c, dict)
+            and c.get("profile_name")
+            and c.get("profile_name") != "noise"
+            and c.get("status") in ("completed", "force_stopped")
+        )
+        if labeled_count > self._last_suggestions_labeled_count:
+            self._last_suggestions_labeled_count = labeled_count
+            self._update_model_suggestions()
+            self._update_detection_suggestions()
 
         # 4. Run multi-cycle batch simulation when enough new labeled cycles have accumulated
         self._maybe_run_batch_simulation()
@@ -517,18 +535,27 @@ class LearningManager:
         # even if the matcher was confident.  Downgrade to a feedback request so
         # the user can verify the match; this catches confident but wrong labels.
         ml_quality = cycle_data.get("ml_quality_score")
-        ml_suspicious = (
-            isinstance(ml_quality, float)
-            and ml_quality >= ML_QUALITY_SUSPICIOUS_THRESHOLD
-        )
+        # Use float() so numpy scalars (float32/float64) returned by resolve_scorer
+        # are accepted — isinstance(numpy_float, float) is False in NumPy ≥ 2.0.
+        # Wrap in try/except so non-numeric sentinel values are silently ignored.
+        try:
+            ml_suspicious = (
+                ml_quality is not None
+                and float(ml_quality) >= ML_QUALITY_SUSPICIOUS_THRESHOLD
+            )
+        except (TypeError, ValueError):
+            ml_suspicious = False
         # Also downgrade when the cycle's power trace is mostly outside the
         # profile envelope band (low conformance = the shape matched but the
         # actual power levels are inconsistent with the profile).
         _conformance = cycle_data.get("envelope_conformance")
-        envelope_suspicious = (
-            isinstance(_conformance, float)
-            and _conformance < 0.40
-        )
+        try:
+            envelope_suspicious = (
+                _conformance is not None
+                and float(_conformance) < 0.40
+            )
+        except (TypeError, ValueError):
+            envelope_suspicious = False
         if route_conf >= auto_label_conf:
             if ml_suspicious or envelope_suspicious:
                 if ml_suspicious:
@@ -695,16 +722,14 @@ class LearningManager:
                     cycle_id,
                 )
 
-        feedback_record: dict[str, Any] = {
-            "cycle_id": cycle_id,
-            "original_detected_profile": pending["detected_profile"],
-            "original_confidence": pending["confidence"],
-            "user_confirmed": user_confirmed,
-            "corrected_profile": corrected_profile,
-            "corrected_duration": duration_sec,
-            "notes": notes,
-            "submitted_at": dt_util.now().isoformat(),
-        }
+        feedback_record = self._build_feedback_record(
+            cycle_id,
+            pending,
+            user_confirmed=user_confirmed,
+            corrected_profile=corrected_profile,
+            corrected_duration=duration_sec,
+            notes=notes,
+        )
 
         self.profile_store.get_feedback_history()[cycle_id] = feedback_record
 
@@ -776,6 +801,85 @@ class LearningManager:
         # Trigger UI and sensor refresh (Issue #155)
         async_dispatcher_send(self.hass, f"ha_washdata_update_{self.entry_id}")
 
+        return True
+
+    def _build_feedback_record(
+        self,
+        cycle_id: str,
+        pending: dict[str, Any],
+        *,
+        user_confirmed: bool,
+        corrected_profile: Optional[str] = None,
+        corrected_duration: Optional[float] = None,
+        notes: str = "",
+    ) -> dict[str, Any]:
+        """Build a feedback_history record from a pending request + the response.
+
+        Shared by ``async_submit_cycle_feedback`` (explicit confirm/correct/ignore)
+        and ``async_resolve_pending_from_label`` (manual relabel), so both write
+        an identically-shaped record.
+        """
+        return {
+            "cycle_id": cycle_id,
+            "original_detected_profile": pending.get("detected_profile"),
+            "original_confidence": pending.get("confidence"),
+            "user_confirmed": user_confirmed,
+            "corrected_profile": corrected_profile,
+            "corrected_duration": corrected_duration,
+            "notes": notes,
+            "submitted_at": dt_util.now().isoformat(),
+        }
+
+    async def async_resolve_pending_from_label(
+        self, cycle_id: str, applied_profile: Optional[str]
+    ) -> bool:
+        """Resolve a pending feedback when the user manually (re)labels a cycle.
+
+        Manually labelling a cycle that is awaiting verification IS the user's
+        answer to "did WashData detect the right program?", so it must clear the
+        pending feedback and drop the cycle from the review queue (issue #331).
+
+        The label itself has already been applied by ``assign_profile_to_cycle`` /
+        ``create_profile`` (which preserve ``label_source="manual"`` and rebuild the
+        affected envelopes), so this only records the feedback response and removes
+        the pending entry - it deliberately does NOT re-label or rebuild again.
+
+        Returns True when a pending entry existed and was resolved.
+        """
+        pending = self.profile_store.get_pending_feedback().get(cycle_id)
+        if not pending:
+            return False
+
+        detected = pending.get("detected_profile")
+        if applied_profile and applied_profile == detected:
+            # User picked the same program WashData detected -> confirmation.
+            user_confirmed, corrected_profile = True, None
+        elif applied_profile:
+            # User picked a different program -> correction.
+            user_confirmed, corrected_profile = False, applied_profile
+        else:
+            # Label removed: the detection was rejected without naming a program.
+            user_confirmed, corrected_profile = False, None
+
+        self.profile_store.get_feedback_history()[cycle_id] = self._build_feedback_record(
+            cycle_id,
+            pending,
+            user_confirmed=user_confirmed,
+            corrected_profile=corrected_profile,
+        )
+
+        del self.profile_store.get_pending_feedback()[cycle_id]
+
+        await self.profile_store.async_save()
+        async_dispatcher_send(self.hass, f"ha_washdata_update_{self.entry_id}")
+        self._logger.info(
+            "Resolved pending feedback for cycle %s from manual label "
+            "(detected='%s', applied='%s', confirmed=%s)",
+            cycle_id,
+            detected,
+            applied_profile,
+            user_confirmed,
+        )
         return True
 
     def _auto_label_cycle(self, cycle_id: str, profile_name: str, manual_duration: float | None = None) -> None:

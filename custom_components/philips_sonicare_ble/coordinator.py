@@ -109,7 +109,28 @@ UNPERSISTED_KEYS = {
     "pressure_alarm",
     "pressure_state",
     "temperature",
+    # Never restore a stale counterfeit verdict across a restart — re-derive it
+    # from a live serial read instead.
+    "brushhead_counterfeit",
 }
+
+
+def _has_reported_value(value: str | None) -> bool:
+    """True when a Device Information string carries actual content.
+
+    Handles answer characteristics they don't populate in several ways:
+    an empty string, a run of ASCII zeros, or a block of NUL bytes that
+    arrives as "\\x00\\x00…" once decoded. All of them mean "not
+    reported" rather than a value worth putting on the device page —
+    written through, they leave a row with a blank value that reads as
+    broken data.
+    """
+    if not value:
+        return False
+    # Drop anything unprintable (NUL padding, stray control bytes) before
+    # deciding; a field made only of those carries nothing.
+    cleaned = "".join(c for c in value if c.isprintable()).strip()
+    return bool(cleaned) and any(c not in "0:" for c in cleaned)
 
 
 def _storage_key(entry_id: str) -> str:
@@ -610,24 +631,42 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         else:
             new_data["last_seen"] = last
 
-        # Device registry: only update when model or firmware actually changed
+        # Device registry: only update when identity data actually changed
         model = new_data.get("model_number")
         firmware = new_data.get("firmware")
+        serial = new_data.get("serial_number")
+        hardware = new_data.get("hardware_revision")
         # Keep the protocol's mode-decode table in sync if we learn the model
         # from a live read (covers fresh pairs whose entry had no model yet).
         if model and not self._use_condor and self._protocol.model != model:
             self._protocol.model = model
-        if changed and (model or firmware):
+        if changed and (model or firmware or serial or hardware):
             dev_reg = dr.async_get(self.hass)
             device = dev_reg.async_get_device(
                 identifiers={(DOMAIN, self.address)}
             )
-            if device and (device.model != model or device.sw_version != firmware):
-                dev_reg.async_update_device(
-                    device.id,
-                    model=model or "Philips Sonicare",
-                    sw_version=firmware,
-                )
+            if device:
+                resolved_model = model or "Philips Sonicare"
+                updates: dict[str, str] = {}
+                if device.model != resolved_model:
+                    updates["model"] = resolved_model
+                # Only ever fill a field we actually read — a partial read
+                # must not wipe what an earlier one established.
+                if firmware and device.sw_version != firmware:
+                    updates["sw_version"] = firmware
+                if _has_reported_value(serial):
+                    if device.serial_number != serial:
+                        updates["serial_number"] = serial
+                elif device.serial_number and not _has_reported_value(
+                    device.serial_number
+                ):
+                    # An earlier version wrote a padding-only answer through;
+                    # clear it so the page stops showing a blank value.
+                    updates["serial_number"] = None
+                if _has_reported_value(hardware) and device.hw_version != hardware:
+                    updates["hw_version"] = hardware
+                if updates:
+                    dev_reg.async_update_device(device.id, **updates)
 
         return new_data
 
@@ -655,6 +694,18 @@ class PhilipsSonicareCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def _update_counterfeit(self, old: dict, new_data: dict) -> None:
         """Manage the counterfeit detection timer and issue state."""
+        # Honour the user's "warn about counterfeit brush head" preference as a
+        # real off switch: when disabled, turn the whole feature off (sensor
+        # stays False, timer cancelled, any issue cleared) — not just the repair.
+        if not self.entry.options.get(CONF_WARN_COUNTERFEIT, DEFAULT_WARN_COUNTERFEIT):
+            self._cancel_counterfeit_timer()
+            if self._counterfeit_detected or not self._counterfeit_cleanup_done:
+                self._clear_counterfeit_issue()
+            self._counterfeit_detected = False
+            self._counterfeit_cleanup_done = True
+            new_data["brushhead_counterfeit"] = False
+            return
+
         # Devices without a brush-head NFC service (e.g. HX63xx Kids) never
         # report a serial — skip detection entirely so we don't flag every
         # session. Drop any issue an earlier build may have raised, once.
