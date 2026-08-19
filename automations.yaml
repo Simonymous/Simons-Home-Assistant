@@ -783,11 +783,11 @@
         notification_icon_color: '#F44336'
   mode: single
 - id: '1783786435303'
-  alias: 'Wohnwand: Ein mit Apple TV (abends)'
-  description: Schaltet die Wohnwand-Steckdose mit ein, wenn der Wohnzimmer-AppleTV
+  alias: 'Wohnwand: Ein mit LG TV (abends)'
+  description: Schaltet die Wohnwand-Steckdose mit ein, wenn der Wohnzimmer-LG-TV
     abends nach Sonnenuntergang aktiviert wird.
   triggers:
-  - entity_id: media_player.wohnzimmer_appletv_wohnzimmer_appletv
+  - entity_id: media_player.lg_webos_tv_65nano759pa
     from: 'off'
     trigger: state
   conditions:
@@ -799,11 +799,11 @@
       entity_id: switch.wohnzimmer_wohnwand_outlet
   mode: single
 - id: '1783786435304'
-  alias: 'Wohnwand: Aus mit Apple TV (immer)'
-  description: Schaltet immer die Wohnwand-Steckdose mit aus, wenn der Wohnzimmer-AppleTV
+  alias: 'Wohnwand: Aus mit LG TV (immer)'
+  description: Schaltet immer die Wohnwand-Steckdose mit aus, wenn der Wohnzimmer-LG-TV
     ausgeht.
   triggers:
-  - entity_id: media_player.wohnzimmer_appletv_wohnzimmer_appletv
+  - entity_id: media_player.lg_webos_tv_65nano759pa
     to: 'off'
     for:
       seconds: 30
