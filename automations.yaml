@@ -87,10 +87,10 @@
         - sunny
         - partlycloudy
       - condition: template
-        value_template: >-
-          {{ (state_attr('weather.quierschied', 'temperature') | float(0)) - 2
-             > ((states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_temperature') | float(0)
-                 + states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_temperature') | float(0)) / 2) }}
+        value_template: "{{ (state_attr('weather.quierschied', 'temperature') | float(0))
+          - 2\n   > ((states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_temperature')
+          | float(0)\n       + states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_temperature')
+          | float(0)) / 2) }}"
       sequence:
       - choose:
         - conditions:
@@ -405,9 +405,8 @@
   description: Sobald Programm und Restzeit erkannt wurden, wird die Live Activity
     um Programmname, Restzeit-Countdown und die voraussichtliche Fertig-Uhrzeit ergänzt.
     Prüft alle 5 Minuten (plus sofort bei Programmwechsel), sendet aber nur, wenn
-    sich der gerundete Fortschritt oder die Restzeit gegenüber der letzten
-    gesendeten Push tatsächlich unterscheiden - Obergrenze UND Abweichungsfilter
-    kombiniert.
+    sich der gerundete Fortschritt oder die Restzeit gegenüber der letzten gesendeten
+    Push tatsächlich unterscheiden - Obergrenze UND Abweichungsfilter kombiniert.
   triggers:
   - entity_id: sensor.waschmaschine_programm
     trigger: state
@@ -424,10 +423,9 @@
     value_template: '{{ states(''sensor.waschmaschine_verbleibende_zeit'') not in
       [''unknown'', ''unavailable'', ''''] }}'
   - condition: template
-    value_template: >-
-      {{ (states('sensor.waschmaschine_fortschritt') | float(0) | round | string)
-         ~ '|' ~ (states('sensor.waschmaschine_verbleibende_zeit') | float(0) | round | string)
-         != states('input_text.waschmaschine_timer_signatur') }}
+    value_template: "{{ (states('sensor.waschmaschine_fortschritt') | float(0) | round
+      | string)\n   ~ '|' ~ (states('sensor.waschmaschine_verbleibende_zeit') | float(0)
+      | round | string)\n   != states('input_text.waschmaschine_timer_signatur') }}"
   actions:
   - action: notify.mobile_app_eierphone_simon
     data:
@@ -453,9 +451,9 @@
     target:
       entity_id: input_text.waschmaschine_timer_signatur
     data:
-      value: >-
-        {{ (states('sensor.waschmaschine_fortschritt') | float(0) | round | string)
-           ~ '|' ~ (states('sensor.waschmaschine_verbleibende_zeit') | float(0) | round | string) }}
+      value: "{{ (states('sensor.waschmaschine_fortschritt') | float(0) | round |
+        string)\n   ~ '|' ~ (states('sensor.waschmaschine_verbleibende_zeit') | float(0)
+        | round | string) }}"
   mode: single
 - id: '1783786435291'
   alias: 'Waschmaschine: Live-Timer beenden'
@@ -507,9 +505,8 @@
   description: Sobald Programm und Restzeit erkannt wurden, wird die Live Activity
     um Programmname, Restzeit-Countdown und die voraussichtliche Fertig-Uhrzeit ergänzt.
     Prüft alle 5 Minuten (plus sofort bei Programmwechsel), sendet aber nur, wenn
-    sich der gerundete Fortschritt oder die Restzeit gegenüber der letzten
-    gesendeten Push tatsächlich unterscheiden - Obergrenze UND Abweichungsfilter
-    kombiniert.
+    sich der gerundete Fortschritt oder die Restzeit gegenüber der letzten gesendeten
+    Push tatsächlich unterscheiden - Obergrenze UND Abweichungsfilter kombiniert.
   triggers:
   - entity_id: sensor.trockner_programm
     trigger: state
@@ -526,10 +523,9 @@
     value_template: '{{ states(''sensor.trockner_verbleibende_zeit'') not in [''unknown'',
       ''unavailable'', ''''] }}'
   - condition: template
-    value_template: >-
-      {{ (states('sensor.trockner_fortschritt') | float(0) | round | string)
-         ~ '|' ~ (states('sensor.trockner_verbleibende_zeit') | float(0) | round | string)
-         != states('input_text.trockner_timer_signatur') }}
+    value_template: "{{ (states('sensor.trockner_fortschritt') | float(0) | round
+      | string)\n   ~ '|' ~ (states('sensor.trockner_verbleibende_zeit') | float(0)
+      | round | string)\n   != states('input_text.trockner_timer_signatur') }}"
   actions:
   - action: notify.mobile_app_eierphone_simon
     data:
@@ -555,9 +551,9 @@
     target:
       entity_id: input_text.trockner_timer_signatur
     data:
-      value: >-
-        {{ (states('sensor.trockner_fortschritt') | float(0) | round | string)
-           ~ '|' ~ (states('sensor.trockner_verbleibende_zeit') | float(0) | round | string) }}
+      value: "{{ (states('sensor.trockner_fortschritt') | float(0) | round | string)\n
+        \  ~ '|' ~ (states('sensor.trockner_verbleibende_zeit') | float(0) | round
+        | string) }}"
   mode: single
 - id: '1783786435294'
   alias: 'Trockner: Live-Timer beenden'
@@ -609,9 +605,8 @@
   description: Sobald Programm und Restzeit erkannt wurden, wird die Live Activity
     um Programmname, Restzeit-Countdown und die voraussichtliche Fertig-Uhrzeit ergänzt.
     Prüft alle 5 Minuten (plus sofort bei Programmwechsel), sendet aber nur, wenn
-    sich der gerundete Fortschritt oder die Restzeit gegenüber der letzten
-    gesendeten Push tatsächlich unterscheiden - Obergrenze UND Abweichungsfilter
-    kombiniert.
+    sich der gerundete Fortschritt oder die Restzeit gegenüber der letzten gesendeten
+    Push tatsächlich unterscheiden - Obergrenze UND Abweichungsfilter kombiniert.
   triggers:
   - entity_id: sensor.spulmaschine_programm
     trigger: state
@@ -628,10 +623,9 @@
     value_template: '{{ states(''sensor.spulmaschine_verbleibende_zeit'') not in [''unknown'',
       ''unavailable'', ''''] }}'
   - condition: template
-    value_template: >-
-      {{ (states('sensor.spulmaschine_fortschritt') | float(0) | round | string)
-         ~ '|' ~ (states('sensor.spulmaschine_verbleibende_zeit') | float(0) | round | string)
-         != states('input_text.spuelmaschine_timer_signatur') }}
+    value_template: "{{ (states('sensor.spulmaschine_fortschritt') | float(0) | round
+      | string)\n   ~ '|' ~ (states('sensor.spulmaschine_verbleibende_zeit') | float(0)
+      | round | string)\n   != states('input_text.spuelmaschine_timer_signatur') }}"
   actions:
   - action: notify.mobile_app_eierphone_simon
     data:
@@ -657,9 +651,9 @@
     target:
       entity_id: input_text.spuelmaschine_timer_signatur
     data:
-      value: >-
-        {{ (states('sensor.spulmaschine_fortschritt') | float(0) | round | string)
-           ~ '|' ~ (states('sensor.spulmaschine_verbleibende_zeit') | float(0) | round | string) }}
+      value: "{{ (states('sensor.spulmaschine_fortschritt') | float(0) | round | string)\n
+        \  ~ '|' ~ (states('sensor.spulmaschine_verbleibende_zeit') | float(0) | round
+        | string) }}"
   mode: single
 - id: '1783786435297'
   alias: 'Spülmaschine: Live-Timer beenden'
@@ -811,6 +805,8 @@
   triggers:
   - entity_id: media_player.wohnzimmer_appletv_wohnzimmer_appletv
     to: 'off'
+    for:
+      seconds: 30
     trigger: state
   conditions: []
   actions:
@@ -839,7 +835,8 @@
   mode: single
 - id: '1784227346716'
   alias: 'Drucker: Tinte fast leer'
-  description: Benachrichtigt Simon, wenn eine Patrone des HP Envy 6400 fast leer ist.
+  description: Benachrichtigt Simon, wenn eine Patrone des HP Envy 6400 fast leer
+    ist.
   triggers:
   - trigger: numeric_state
     entity_id: sensor.hp_envy_6400_series_black_cartridge
@@ -854,9 +851,8 @@
   - action: notify.mobile_app_eierphone_simon
     data:
       title: Drucker
-      message: >-
-        {{ 'Die schwarze Patrone' if trigger.id == 'schwarz' else 'Die Farbpatrone' }}
-        ist nur noch bei {{ trigger.to_state.state }}% - bald nachbestellen.
+      message: '{{ ''Die schwarze Patrone'' if trigger.id == ''schwarz'' else ''Die
+        Farbpatrone'' }} ist nur noch bei {{ trigger.to_state.state }}% - bald nachbestellen.'
       data:
         notification_icon: mdi:printer
         notification_icon_color: '#F44336'
@@ -870,21 +866,21 @@
     at: '18:00:00'
   conditions:
   - condition: template
-    value_template: >-
-      {{ states('sensor.restabfall_tage_bis_abholung') | int(99) == 1
-         or states('sensor.gelbe_tonne_tage_bis_abholung') | int(99) == 1
-         or states('sensor.blaue_tonne_tage_bis_abholung') | int(99) == 1 }}
+    value_template: "{{ states('sensor.restabfall_tage_bis_abholung') | int(99) ==
+      1\n   or states('sensor.gelbe_tonne_tage_bis_abholung') | int(99) == 1\n   or
+      states('sensor.blaue_tonne_tage_bis_abholung') | int(99) == 1 }}"
   actions:
   - action: notify.notify
     data:
-      title: "🗑️ Müllabfuhr morgen"
-      message: >-
-        {% set colors = [] %}
-        {% if states('sensor.restabfall_tage_bis_abholung') | int(99) == 1 %}{% set colors = colors + ['Schwarze'] %}{% endif %}
-        {% if states('sensor.gelbe_tonne_tage_bis_abholung') | int(99) == 1 %}{% set colors = colors + ['Gelbe'] %}{% endif %}
-        {% if states('sensor.blaue_tonne_tage_bis_abholung') | int(99) == 1 %}{% set colors = colors + ['Blaue'] %}{% endif %}
-        {{ colors | join(' und ') }} Tonne{{ 'n' if colors | length > 1 else '' }}
-        {{ 'werden' if colors | length > 1 else 'wird' }} morgen abgeholt - bitte heute Abend rausstellen!
+      title: "\U0001F5D1️ Müllabfuhr morgen"
+      message: '{% set colors = [] %} {% if states(''sensor.restabfall_tage_bis_abholung'')
+        | int(99) == 1 %}{% set colors = colors + [''Schwarze''] %}{% endif %} {%
+        if states(''sensor.gelbe_tonne_tage_bis_abholung'') | int(99) == 1 %}{% set
+        colors = colors + [''Gelbe''] %}{% endif %} {% if states(''sensor.blaue_tonne_tage_bis_abholung'')
+        | int(99) == 1 %}{% set colors = colors + [''Blaue''] %}{% endif %} {{ colors
+        | join('' und '') }} Tonne{{ ''n'' if colors | length > 1 else '''' }} {{
+        ''werden'' if colors | length > 1 else ''wird'' }} morgen abgeholt - bitte
+        heute Abend rausstellen!'
   mode: single
 - id: '1784476659260'
   alias: 'Müllabfuhr: Heute-Erinnerung'
@@ -892,28 +888,28 @@
     Gelbe und/oder Blaue Tonne abgeholt wird. Biotonne ist bewusst ausgeschlossen.
   triggers:
   - trigger: time
-    at: '07:00:00'
+    at: 07:00:00
   conditions:
   - condition: template
-    value_template: >-
-      {{ states('sensor.restabfall_tage_bis_abholung') | int(99) == 0
-         or states('sensor.gelbe_tonne_tage_bis_abholung') | int(99) == 0
-         or states('sensor.blaue_tonne_tage_bis_abholung') | int(99) == 0 }}
+    value_template: "{{ states('sensor.restabfall_tage_bis_abholung') | int(99) ==
+      0\n   or states('sensor.gelbe_tonne_tage_bis_abholung') | int(99) == 0\n   or
+      states('sensor.blaue_tonne_tage_bis_abholung') | int(99) == 0 }}"
   actions:
   - action: notify.notify
     data:
-      title: "🗑️ Müllabfuhr heute"
-      message: >-
-        {% set colors = [] %}
-        {% if states('sensor.restabfall_tage_bis_abholung') | int(99) == 0 %}{% set colors = colors + ['Schwarze'] %}{% endif %}
-        {% if states('sensor.gelbe_tonne_tage_bis_abholung') | int(99) == 0 %}{% set colors = colors + ['Gelbe'] %}{% endif %}
-        {% if states('sensor.blaue_tonne_tage_bis_abholung') | int(99) == 0 %}{% set colors = colors + ['Blaue'] %}{% endif %}
-        {{ colors | join(' und ') }} Tonne{{ 'n' if colors | length > 1 else '' }}
-        {{ 'werden' if colors | length > 1 else 'wird' }} heute abgeholt!
+      title: "\U0001F5D1️ Müllabfuhr heute"
+      message: '{% set colors = [] %} {% if states(''sensor.restabfall_tage_bis_abholung'')
+        | int(99) == 0 %}{% set colors = colors + [''Schwarze''] %}{% endif %} {%
+        if states(''sensor.gelbe_tonne_tage_bis_abholung'') | int(99) == 0 %}{% set
+        colors = colors + [''Gelbe''] %}{% endif %} {% if states(''sensor.blaue_tonne_tage_bis_abholung'')
+        | int(99) == 0 %}{% set colors = colors + [''Blaue''] %}{% endif %} {{ colors
+        | join('' und '') }} Tonne{{ ''n'' if colors | length > 1 else '''' }} {{
+        ''werden'' if colors | length > 1 else ''wird'' }} heute abgeholt!'
   mode: single
 - id: '1784566148344'
   alias: 'Lautsprecher: Ein mit Apple TV'
-  description: Schaltet den Lautsprecher/Receiver ein, wenn der Wohnzimmer-AppleTV aktiviert wird.
+  description: Schaltet den Lautsprecher/Receiver ein, wenn der Wohnzimmer-AppleTV
+    aktiviert wird.
   triggers:
   - entity_id: media_player.wohnzimmer_appletv_wohnzimmer_appletv
     from: 'off'
@@ -929,7 +925,8 @@
   mode: single
 - id: '1784566148345'
   alias: 'Lautsprecher: Aus mit Apple TV'
-  description: Schaltet den Lautsprecher/Receiver aus, wenn der Wohnzimmer-AppleTV ausgeht.
+  description: Schaltet den Lautsprecher/Receiver aus, wenn der Wohnzimmer-AppleTV
+    ausgeht.
   triggers:
   - entity_id: media_player.wohnzimmer_appletv_wohnzimmer_appletv
     to: 'off'
@@ -966,4 +963,18 @@
       - media_player.wohnzimmer_appletv_wohnzimmer_appletv
       - media_player.lg_webos_tv_65nano759pa
       - media_player.lautsprecher_wohnzimmer
+  mode: single
+- id: '1786991165528'
+  alias: Tag Haustür wird gescannt
+  description: ''
+  triggers:
+  - trigger: tag
+    tag_id: 5ee495b8-b98c-480d-b8cd-b3103d60dafd
+  conditions: []
+  actions:
+  - action: button.press
+    metadata: {}
+    target:
+      entity_id: button.vordereingang_tur_offnen
+    data: {}
   mode: single
