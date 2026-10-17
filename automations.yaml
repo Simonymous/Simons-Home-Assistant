@@ -250,12 +250,14 @@
   description: Schaltet das Flurlicht aus, wenn 30 Sekunden lang keine Bewegung erkannt
     wurde.
   triggers:
-  - entity_id: binary_sensor.flur_bewegungsmelder_flur_bewegung
-    to: 'off'
+  - entity_id:
+    - binary_sensor.flur_bewegungsmelder_flur_bewegung
+    to:
+    - 'off'
     for:
       hours: 0
       minutes: 0
-      seconds: 30
+      seconds: 50
     trigger: state
   conditions: []
   actions:

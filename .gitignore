@@ -43,3 +43,9 @@ backups/
 .vscode/
 .claude/
 .DS_Store
+
+# --- Fremd-Integrationen (HACS / Add-on-verwaltet) ---
+# Reproduzierbar ueber HACS, enthalten teils oeffentliche API-Keys der Anbieter
+# (GitHub Push Protection blockt diese). Nur eigene Komponenten versionieren.
+custom_components/*
+!custom_components/paket_tracking/

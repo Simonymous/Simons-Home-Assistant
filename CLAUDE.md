@@ -38,7 +38,11 @@ nicht deployten lokalen Änderungen laufen lassen** (vorher deployen oder `git s
   gestartet wird.
 - Automationen in `automations.yaml` brauchen eine eindeutige `id` (wie die UI sie vergibt),
   sonst sind sie in der UI nicht editierbar.
-- `custom_components/ha_mcp_tools` und HACS-Komponenten nicht von Hand ändern (werden vom
-  Add-on bzw. HACS verwaltet). Eigene Komponente: `paket_tracking`.
+- Im Repo liegt nur die eigene Komponente `custom_components/paket_tracking`. HACS- und
+  Add-on-Komponenten (z. B. `ha_mcp_tools`) sind per `.gitignore` und Sync-Ausschluss
+  draußen und werden nicht von Hand geändert; neue eigene Komponenten in beiden Ausnahmen
+  (`.gitignore`, `sync-and-push.sh`) freischalten.
+- Skripte, die mit `rsync --delete` oder ähnlich arbeiten, nie aus einer Kopie an anderem
+  Ort starten: sie wechseln per `dirname "$0"` in ihr eigenes Verzeichnis.
 - Spürbare neue Funktionen (Dashboard-Bereiche, Automationsgruppen, Komponenten) gehören in
   denselben Commit wie ein Update der `README.md`, inkl. Automationen-Zahl.

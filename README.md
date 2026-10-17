@@ -9,11 +9,11 @@ Nebenbei ist das hier auch ein Experimentierfeld: über [ha-mcp](https://github.
 - **Ein durchgestyltes Status-Dashboard** (`dashboards/status_dashboard.yaml`) im [Liquid-Glass-Theme](themes/liquid_glass.yaml) — Räume mit Klima/Licht/Rollo-Steuerung, Anwesenheit, Haushaltsgeräte-Live-Timer (inkl. iOS Live Activities), Auto-Status, Synology, Saugroboter, Müllabfuhr, Batteriestatus, Einkaufsliste, Wettervorhersage.
 - **Bemerkenswerte Custom Components:**
   - [`paket_tracking`](custom_components/paket_tracking) *(selbstgeschrieben)* — wertet Bestell-/Versand-/Zustellmails (DHL, UPS, Hermes, Amazon) per IMAP aus und pflegt drei Zähler (offen/unterwegs/heute) inkl. automatischem Ablauf hängengebliebener Einträge.
-  - [`philips_sonicare_ble`](custom_components/philips_sonicare_ble) *(reguläre HACS-Integration)* — BLE-Anbindung einer Sonicare-Zahnbürste; ein hartnäckiger Pairing-Bug (BlueZ verweigerte die Just-Works-Bestätigung mangels registriertem D-Bus-Agent) wurde gemeinsam mit dem Maintainer diagnostiziert, Integration läuft jetzt sauber (Akkustand, Bürstenkopf-Verschleiß, Putz-Historie).
+  - [`philips_sonicare_ble`](https://github.com/mtheli/philips_sonicare_ble) *(reguläre HACS-Integration)* — BLE-Anbindung einer Sonicare-Zahnbürste; ein hartnäckiger Pairing-Bug (BlueZ verweigerte die Just-Works-Bestätigung mangels registriertem D-Bus-Agent) wurde gemeinsam mit dem Maintainer diagnostiziert, Integration läuft jetzt sauber (Akkustand, Bürstenkopf-Verschleiß, Putz-Historie).
   - `ha_mcp_tools` — vom [ha-mcp](https://github.com/homeassistant-ai/ha-mcp)-Add-on selbst verwaltet, gibt einem LLM-Client (z. B. Claude) kontrollierten Zugriff auf die Instanz.
 - **37 Automationen** für Haushaltsgeräte-Benachrichtigungen, Rollo-Bewegungserkennung, Tür-/Schloss-Protokollierung, Ladesäulen-Parkzeit-Warnung, Bürstenkopf-Verschleiß, Müllabfuhr-Erinnerungen (Vorabend + selber Tag) und mehr.
 - **Broadlink-Fernbedienung Wohnzimmer** — per IR angelernte Befehle (Power-Toggle, TV-Eingang, Lauter/Leiser, Stumm) für den Receiver, gebündelt in einem virtuellen `media_player` (Toggle-Skripte erkennen den echten An/Aus-Zustand über den Stromverbrauch der Steckdose), gekoppelt an Apple TV und via HomeKit-Accessory für Siri-Sprachsteuerung freigegeben.
-- **HACS-Integrationen** für BYD-Fahrzeug, Meross, Xiaomi/Mi Home, DWD-Wetter und Müllabfuhr-Kalender.
+- **HACS-Integrationen** für [BYD-Fahrzeug](https://github.com/jkaberg/hass-byd-vehicle), [Meross](https://github.com/krahabb/meross_lan), [Xiaomi/Mi Home](https://github.com/XiaoMi/ha_xiaomi_home), [DWD-Wetter](https://github.com/FL550/dwd_weather), [Müllabfuhr-Kalender](https://github.com/mampfes/hacs_waste_collection_schedule), [WashData](https://github.com/3dg1luk43/ha_washdata) und [NeonPlan 3D](https://mastershort.de/en/neonplan3d/manual/) (installiert, noch nicht im Dashboard). Ihr Code liegt nicht in diesem Repo, sondern kommt über HACS.
 
 ## Struktur
 
@@ -22,7 +22,7 @@ configuration.yaml       Haupteinstiegspunkt, Helper (input_datetime, timer, tem
 automations.yaml         Alle Automationen
 scripts.yaml / scenes.yaml
 dashboards/               Lovelace-Dashboard(s), YAML-Modus
-custom_components/        Eigene + Drittanbieter-Integrationen
+custom_components/        Nur eigene Integrationen (paket_tracking)
 themes/                   Liquid-Glass-Theme
 blueprints/               Automation-/Script-Blueprints
 ```
@@ -43,7 +43,7 @@ Der Rückweg für lokal (z. B. von Claude) bearbeitete Dateien ist [`deploy.sh`]
 ./sync-and-push.sh "Commit-Message"
 ```
 
-Bewusst ausgeschlossen: `.storage/` (enthält Secrets wie IMAP-App-Passwort, Lock-Zugangsdaten), `secrets.yaml`, Recorder-DB, Logs, `www/community/` (HACS-Assets, reproduzierbar).
+Bewusst ausgeschlossen: `.storage/` (enthält Secrets wie IMAP-App-Passwort, Lock-Zugangsdaten), `secrets.yaml`, Recorder-DB, Logs, `www/community/` (HACS-Assets, reproduzierbar) und alle Fremd-Integrationen unter `custom_components/` (über HACS reproduzierbar; sie enthalten teils öffentliche API-Keys der Anbieter, die GitHubs Push Protection blockiert).
 
 **Öffentliches Repo:** Es liegen bewusst keine Zugangsdaten, Tokens oder exakten Standortdaten in diesem Repo — die liegen ausschließlich in `.storage/`, das nie synchronisiert wird.
 
