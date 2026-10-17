@@ -1,10 +1,9 @@
 title: Mein Zuhause
-theme: Liquid Glass
 views:
 - title: Zuhause
   path: zuhause
   icon: mdi:home
-  background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%) fixed'
+  theme: Liquid Glass
   cards:
   - type: custom:stack-in-card
     cards:
@@ -19,8 +18,6 @@ views:
             align-items: center;
             gap: 10px;
             padding: 12px 20px !important;
-            background: rgba(255, 255, 255, 0.05) !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
             margin-bottom: 4px;
           }
           ha-card ha-state-icon, ha-card ha-icon {
@@ -113,7 +110,7 @@ views:
         - white-space: normal
       state:
       - value: 'on'
-        color: amber
+        color: var(--amber-color)
         styles:
           icon:
           - animation: machine-blink 1.2s ease-in-out infinite
@@ -188,28 +185,28 @@ views:
       state:
       - value: locked
         icon: mdi:lock
-        color: green
+        color: var(--green-color)
       - value: unlocked
         icon: mdi:lock-open-variant
-        color: orange
+        color: var(--orange-color)
         styles:
           icon:
           - animation: machine-blink 1.2s ease-in-out infinite
       - value: locking
         icon: mdi:lock-clock
-        color: blue
+        color: var(--blue-color)
       - value: unlocking
         icon: mdi:lock-clock
-        color: blue
+        color: var(--blue-color)
       - value: jammed
         icon: mdi:lock-alert
-        color: red
+        color: var(--red-color)
         styles:
           icon:
           - animation: machine-blink 0.8s ease-in-out infinite
       - operator: default
         icon: mdi:lock-question
-        color: grey
+        color: var(--grey-color)
       extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
   - type: custom:stack-in-card
     cards:
@@ -472,7 +469,7 @@ views:
           states['cover.schlafzimmer_rechts'].state === 'closed'; ]]]
         label: Öffnen
         icon: mdi:arrow-expand-vertical
-        color: blue
+        color: var(--blue-color)
         tap_action:
           action: perform-action
           perform_action: cover.open_cover
@@ -483,7 +480,7 @@ views:
       - operator: default
         label: Schließen
         icon: mdi:arrow-collapse-vertical
-        color: blue
+        color: var(--blue-color)
         tap_action:
           action: perform-action
           perform_action: cover.close_cover
@@ -529,26 +526,26 @@ views:
         - operator: template
           value: '[[[ return states[''sensor.rollo_links_bewegung''] && states[''sensor.rollo_links_bewegung''].state === ''oeffnet''; ]]]'
           icon: mdi:window-shutter-open
-          color: blue
+          color: var(--blue-color)
           styles:
             icon:
             - animation: machine-blink 1.2s ease-in-out infinite
         - operator: template
           value: '[[[ return states[''sensor.rollo_links_bewegung''] && states[''sensor.rollo_links_bewegung''].state === ''schliesst''; ]]]'
           icon: mdi:window-shutter
-          color: blue
+          color: var(--blue-color)
           styles:
             icon:
             - animation: machine-blink 1.2s ease-in-out infinite
         - value: open
           icon: mdi:window-shutter-open
-          color: blue
+          color: var(--blue-color)
         - value: closed
           icon: mdi:window-shutter
           color: var(--disabled-text-color)
         - operator: default
           icon: mdi:window-shutter-alert
-          color: grey
+          color: var(--grey-color)
         extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
       - type: custom:button-card
         entity: cover.schlafzimmer_rechts
@@ -584,26 +581,26 @@ views:
         - operator: template
           value: '[[[ return states[''sensor.rollo_rechts_bewegung''] && states[''sensor.rollo_rechts_bewegung''].state === ''oeffnet''; ]]]'
           icon: mdi:window-shutter-open
-          color: blue
+          color: var(--blue-color)
           styles:
             icon:
             - animation: machine-blink 1.2s ease-in-out infinite
         - operator: template
           value: '[[[ return states[''sensor.rollo_rechts_bewegung''] && states[''sensor.rollo_rechts_bewegung''].state === ''schliesst''; ]]]'
           icon: mdi:window-shutter
-          color: blue
+          color: var(--blue-color)
           styles:
             icon:
             - animation: machine-blink 1.2s ease-in-out infinite
         - value: open
           icon: mdi:window-shutter-open
-          color: blue
+          color: var(--blue-color)
         - value: closed
           icon: mdi:window-shutter
           color: var(--disabled-text-color)
         - operator: default
           icon: mdi:window-shutter-alert
-          color: grey
+          color: var(--grey-color)
         extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
     - type: conditional
       conditions:
@@ -880,7 +877,7 @@ views:
       - operator: template
         value: "[[[\n  const black = states['sensor.hp_envy_6400_series_black_cartridge'];\n  const color = states['sensor.hp_envy_6400_series_tri_color_cartridge'];\n  const low = (s) => s && !isNaN(parseFloat(s.state)) && parseFloat(s.state) <= 10;\n  return low(black) || low(color);\n]]]"
         icon: mdi:printer-alert
-        color: red
+        color: var(--red-color)
         styles:
           icon:
           - animation: machine-blink 1.6s ease-in-out infinite
@@ -1146,7 +1143,7 @@ views:
 - title: Erledigungen
   path: erledigungen
   icon: mdi:clipboard-check-outline
-  background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%) fixed'
+  theme: Liquid Glass
   cards:
   - type: conditional
     conditions:
@@ -1217,12 +1214,12 @@ views:
         state:
         - operator: <=
           value: '1'
-          color: grey
+          color: var(--grey-color)
           styles:
             icon:
             - animation: machine-blink 1.6s ease-in-out infinite
         - operator: default
-          color: grey
+          color: var(--grey-color)
         extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
       - type: custom:button-card
         entity: sensor.biotonne_tage_bis_abholung
@@ -1256,12 +1253,12 @@ views:
         state:
         - operator: <=
           value: '1'
-          color: green
+          color: var(--green-color)
           styles:
             icon:
             - animation: machine-blink 1.6s ease-in-out infinite
         - operator: default
-          color: green
+          color: var(--green-color)
         extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
       - type: custom:button-card
         entity: sensor.gelbe_tonne_tage_bis_abholung
@@ -1295,12 +1292,12 @@ views:
         state:
         - operator: <=
           value: '1'
-          color: yellow
+          color: var(--yellow-color)
           styles:
             icon:
             - animation: machine-blink 1.6s ease-in-out infinite
         - operator: default
-          color: yellow
+          color: var(--yellow-color)
         extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
       - type: custom:button-card
         entity: sensor.blaue_tonne_tage_bis_abholung
@@ -1334,12 +1331,12 @@ views:
         state:
         - operator: <=
           value: '1'
-          color: blue
+          color: var(--blue-color)
           styles:
             icon:
             - animation: machine-blink 1.6s ease-in-out infinite
         - operator: default
-          color: blue
+          color: var(--blue-color)
         extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
   - type: custom:stack-in-card
     cards:
@@ -1383,7 +1380,7 @@ views:
       state:
       - operator: template
         value: "[[[ return Object.keys(states).filter((id) => id.startsWith('update.') && states[id].state === 'on').length > 0; ]]]"
-        color: amber
+        color: var(--amber-color)
         styles:
           icon:
           - animation: machine-blink 1.6s ease-in-out infinite
@@ -1440,7 +1437,7 @@ views:
         state:
         - operator: template
           value: '[[[ return parseInt(states[''sensor.pakete_offen''] ? states[''sensor.pakete_offen''].state : ''0'') > 0; ]]]'
-          color: amber
+          color: var(--amber-color)
         - operator: default
           color: var(--disabled-text-color)
       - type: custom:button-card
@@ -1482,7 +1479,7 @@ views:
         state:
         - operator: template
           value: '[[[ return parseInt(states[''sensor.pakete_unterwegs''] ? states[''sensor.pakete_unterwegs''].state : ''0'') > 0; ]]]'
-          color: blue
+          color: var(--blue-color)
         - operator: default
           color: var(--disabled-text-color)
       - type: custom:button-card
@@ -1577,13 +1574,13 @@ views:
         - operator: template
           value: "[[[\n  const ids = ['sensor.vordereingang_batterie','sensor.smart_lock_pro_batterie','sensor.schlafzimmer_links_batterie','sensor.schlafzimmer_rechts_batterie'];\n  return ids.some((id) => {\n    const s = states[id];\n    if (!s) return false;\n    const v = parseFloat(s.state);\n    return !isNaN(v) && v <= 15;\n  });\n]]]"
           icon: mdi:battery-alert-variant-outline
-          color: red
+          color: var(--red-color)
           styles:
             icon:
             - animation: machine-blink 1.6s ease-in-out infinite
         - operator: default
           icon: mdi:battery-check-outline
-          color: green
+          color: var(--green-color)
         extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
       - type: custom:button-card
         name: Weitere Geräte
@@ -1620,13 +1617,13 @@ views:
         - operator: template
           value: "[[[\n  const ids = ['sensor.buro_hue_smart_button_4_batterie','sensor.esszimmer_hue_dimmer_switch_1_batterie','sensor.esszimmer_hue_smart_button_3_batterie','sensor.eve_door_20ebn9901_batterie','sensor.flur_bewegungsmelder_flur_batterie','sensor.flur_hue_smart_button_2_batterie','sensor.hue_dimmer_switch_sz_batterie','sensor.schlafzimmer_hue_smart_button_1_batterie','sensor.tradfri_open_close_remote_batterie','sensor.wohnzimmer_hue_dimmer_switch_wz_batterie'];\n  return ids.some((id) => {\n    const s = states[id];\n    if (!s) return false;\n    const v = parseFloat(s.state);\n    return !isNaN(v) && v <= 15;\n  });\n]]]"
           icon: mdi:battery-alert-variant-outline
-          color: orange
+          color: var(--orange-color)
           styles:
             icon:
             - animation: machine-blink 1.6s ease-in-out infinite
         - operator: default
           icon: mdi:battery-check-outline
-          color: green
+          color: var(--green-color)
         extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
     - type: custom:bubble-card
       card_type: pop-up
@@ -1716,7 +1713,7 @@ views:
       state:
       - operator: template
         value: "[[[ return states['todo.couple'] && parseInt(states['todo.couple'].state, 10) > 0; ]]]"
-        color: amber
+        color: var(--amber-color)
       - operator: default
         color: var(--disabled-text-color)
   - type: custom:bubble-card
@@ -1784,7 +1781,7 @@ views:
 - title: Auto
   path: auto
   icon: mdi:car-electric
-  background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%) fixed'
+  theme: Liquid Glass
   cards:
   - type: custom:vehicle-status-card
     name: BYD Seal U DM-i
@@ -1890,7 +1887,7 @@ views:
 - title: Synology
   path: synology
   icon: mdi:nas
-  background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%) fixed'
+  theme: Liquid Glass
   cards:
   - type: custom:stack-in-card
     cards:
@@ -2043,7 +2040,7 @@ views:
 - title: Roborock
   path: roborock
   icon: mdi:robot-vacuum
-  background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%) fixed'
+  theme: Liquid Glass
   cards:
   - type: custom:stack-in-card
     cards:
@@ -2138,7 +2135,7 @@ views:
         - white-space: normal
       state:
       - value: 'on'
-        color: red
+        color: var(--red-color)
         styles:
           icon:
           - animation: machine-blink 1.2s ease-in-out infinite
@@ -2148,7 +2145,7 @@ views:
 - title: Energie
   path: energie
   icon: mdi:lightning-bolt
-  background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%) fixed'
+  theme: Liquid Glass
   cards:
   - type: energy-date-selection
   - type: energy-devices-graph

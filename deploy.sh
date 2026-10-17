@@ -11,8 +11,10 @@
 #   4. ./sync-and-push.sh "…" -> Live-Stand wird committet und gepusht
 #
 # Bevor etwas ueberschrieben wird, prueft das Skript, ob die Live-Datei
-# noch dem HEAD-Stand entspricht. Wurde sie zwischenzeitlich in der HA-UI
-# oder per MCP geaendert, bricht es ab, statt diese Aenderung zu verlieren.
+# noch dem HEAD-Stand oder dem zuletzt von hier deployten Stand entspricht
+# (gemerkt in .git/ha-deploy/, so geht mehrfaches Deployen beim Nachjustieren).
+# Wurde sie zwischenzeitlich in der HA-UI oder per MCP geaendert, bricht es ab,
+# statt diese Aenderung zu verlieren.
 #
 # Bei Dashboard-Dateien laufen vorher die Dashboard-Tests (statisch + gegen
 # die Live-Instanz) und nach dem Kopieren der Rendertest, siehe tests/dashboard/.
@@ -24,6 +26,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 TARGET="${HA_CONFIG_DIR:-/Volumes/config}"
+STATE_DIR="$(git rev-parse --git-dir)/ha-deploy"
 DRY_RUN=0
 TESTS=1
 while [ "${1:-}" = "--dry-run" ] || [ "${1:-}" = "--no-tests" ]; do
@@ -68,7 +71,8 @@ for f in ${CANDIDATES[@]+"${CANDIDATES[@]}"}; do
   fi
   if git cat-file -e "HEAD:$f" 2>/dev/null; then
     # Datei existiert im letzten Sync: live muss noch diesem Stand entsprechen.
-    if [ -f "$live" ] && ! git show "HEAD:$f" | cmp -s - "$live"; then
+    if [ -f "$live" ] && ! git show "HEAD:$f" | cmp -s - "$live" \
+       && [ "$(git hash-object "$live")" != "$(cat "$STATE_DIR/$f.sha" 2>/dev/null)" ]; then
       CONFLICTS+=("$f")
       continue
     fi
@@ -94,8 +98,12 @@ if [ "${#DEPLOY[@]}" -eq 0 ]; then
 fi
 
 DASHBOARD=0
+THEMES=0
 for f in "${DEPLOY[@]}"; do
-  case "$f" in dashboards/*) DASHBOARD=1 ;; esac
+  case "$f" in
+    dashboards/*) DASHBOARD=1 ;;
+    themes/*) DASHBOARD=1; THEMES=1 ;;
+  esac
 done
 
 if [ "$DASHBOARD" -eq 1 ] && [ "$TESTS" -eq 1 ]; then
@@ -115,11 +123,24 @@ for f in "${DEPLOY[@]}"; do
   else
     mkdir -p "$TARGET/$(dirname "$f")"
     cp "$f" "$TARGET/$f"
+    mkdir -p "$STATE_DIR/$(dirname "$f")"
+    git hash-object "$f" > "$STATE_DIR/$f.sha"
     echo "deployed: $f"
   fi
 done
 
 [ "$DRY_RUN" -eq 1 ] && exit 0
+
+if [ "$THEMES" -eq 1 ]; then
+  HA_URL="${HA_URL:-http://homeassistant.local:8123}"
+  TOKEN="${HA_TOKEN:-$(security find-generic-password -s ha-dashboard-tests -w 2>/dev/null || true)}"
+  if [ -n "$TOKEN" ] && curl -sf -o /dev/null -X POST -H "Authorization: Bearer $TOKEN" \
+       "$HA_URL/api/services/frontend/reload_themes"; then
+    echo "Themes neu geladen."
+  else
+    echo "Themes bitte neu laden (Dienst frontend.reload_themes)."
+  fi
+fi
 
 if [ "$DASHBOARD" -eq 1 ] && [ "$TESTS" -eq 1 ]; then
   set +e
@@ -130,7 +151,7 @@ if [ "$DASHBOARD" -eq 1 ] && [ "$TESTS" -eq 1 ]; then
     echo
     echo "Rendertest fehlgeschlagen. Zuruecksetzen auf den letzten Sync-Stand:"
     for f in "${DEPLOY[@]}"; do
-      case "$f" in dashboards/*) echo "  git show HEAD:$f > \"$TARGET/$f\"" ;; esac
+      case "$f" in dashboards/*|themes/*) echo "  git show HEAD:$f > \"$TARGET/$f\"" ;; esac
     done
   fi
 fi
@@ -142,5 +163,6 @@ Jetzt in HA neu laden (oder per MCP):
   scripts.yaml       -> script.reload
   configuration.yaml -> Konfiguration pruefen, dann passenden Reload oder Neustart
   dashboards/*.yaml  -> Dashboard-Menue > Aktualisieren
+  themes/*.yaml      -> frontend.reload_themes (macht deploy.sh mit Token selbst)
 Danach: ./sync-and-push.sh "Commit-Message"
 EOF

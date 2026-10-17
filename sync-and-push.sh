@@ -61,4 +61,6 @@ if git diff --cached --quiet; then
 fi
 
 git commit -m "$1"
+# Deploy-Merker sind nach dem Commit ueberholt: HEAD ist wieder der Live-Stand.
+rm -rf "$(git rev-parse --git-dir)/ha-deploy"
 git push

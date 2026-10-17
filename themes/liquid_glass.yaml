@@ -1,44 +1,262 @@
+# Liquid Glass - angelehnt an das iOS-26-Design.
+#
+# Aufbau: Karten auf oberster Ebene sind Glas (Unschaerfe + Saettigung, helle
+# Lichtkante oben, weicher Schatten). Karten innerhalb eines stack-in-card sind
+# keine zweite Glasschicht, sondern ruhige "Kacheln" mit kleinerem, konzentrischem
+# Radius. Gesteuert wird das ueber --lg-surface-*: stack-in-card setzt sie fuer
+# alles in sich auf die Kachel-Werte um (CSS-Variablen vererben durch Shadow-DOMs).
+# card-mod legt diesen Stil in das Shadow-DOM jeder Karte, daher waehlt
+# :host(<element>) den Kartentyp aus (Typ-Klassen setzt card-mod nicht verlaesslich).
+#
+# Wird pro View im Dashboard gesetzt (theme: Liquid Glass), damit es auf jedem
+# Geraet gilt und nicht nur dort, wo es im Profil ausgewaehlt wurde.
 Liquid Glass:
   card-mod-theme: "Liquid Glass"
+
   card-mod-card: |
     ha-card {
-      border-radius: 28px !important;
-      border: 1px solid var(--lg-border-color) !important;
-      background:
-        linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 50%),
-        var(--lg-card-background) !important;
-      backdrop-filter: blur(30px) saturate(180%) !important;
-      -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
-      box-shadow: var(--lg-card-shadow) !important;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      border-radius: var(--lg-surface-radius) !important;
+      background: var(--lg-surface) !important;
+      border: var(--lg-surface-border) !important;
+      box-shadow: var(--lg-surface-shadow) !important;
+      backdrop-filter: var(--lg-surface-filter) !important;
+      -webkit-backdrop-filter: var(--lg-surface-filter) !important;
+    }
+    :host(stack-in-card) ha-card {
+      border-radius: var(--lg-glass-radius) !important;
+      background: var(--lg-glass) !important;
+      border: 1px solid var(--lg-glass-border) !important;
+      box-shadow: var(--lg-glass-shadow) !important;
+      backdrop-filter: var(--lg-glass-filter) !important;
+      -webkit-backdrop-filter: var(--lg-glass-filter) !important;
+      padding: 8px !important;
+      --lg-surface: var(--lg-tile);
+      --lg-surface-border: none;
+      --lg-surface-shadow: var(--lg-tile-shadow);
+      --lg-surface-filter: none;
+      --lg-surface-radius: var(--lg-tile-radius);
+      --vertical-stack-card-gap: 8px;
+      --horizontal-stack-card-gap: 8px;
+      --grid-card-gap: 8px;
+      --stack-card-margin: 0;
+    }
+    :host(hui-heading-card) ha-card {
+      background: none !important;
+      box-shadow: none !important;
+      border: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
     }
 
-  primary-color: "#0A84FF"
-  accent-color: "#0A84FF"
-  ha-card-border-radius: "28px"
-  ha-card-border-width: "0px"
-  ha-card-background: "var(--lg-card-background)"
+  # Kopfleiste: durchscheinend wie die iOS-Navigationsleiste
+  card-mod-root: |
+    .header, .toolbar {
+      background: var(--lg-bar) !important;
+      backdrop-filter: blur(24px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+      box-shadow: 0 0.5px 0 var(--lg-hairline) !important;
+    }
 
+  # Grundwerte fuer Karten auf oberster Ebene (= Glas)
+  lg-surface: "var(--lg-glass)"
+  lg-surface-border: "1px solid var(--lg-glass-border)"
+  lg-surface-shadow: "var(--lg-glass-shadow)"
+  lg-surface-filter: "var(--lg-glass-filter)"
+  lg-surface-radius: "var(--lg-glass-radius)"
+  lg-glass-radius: "28px"
+  lg-tile-radius: "20px"  # 28px Karte - 8px Innenabstand = konzentrisch
+  lg-glass-filter: "blur(28px) saturate(180%)"
+
+  # Schrift wie auf dem iPhone
+  ha-font-family-body: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif'
+  primary-font-family: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif'
+  paper-font-common-base_-_font-family: "var(--primary-font-family)"
+
+  ha-card-border-radius: "var(--lg-surface-radius)"
+  ha-card-border-width: "0px"
+  ha-card-background: "var(--lg-surface)"
+  ha-card-box-shadow: "none"
+  card-background-color: "transparent"
+
+  # Mushroom: runde Icons, iOS-artige Regler
+  mush-icon-border-radius: "50%"
+  mush-control-border-radius: "14px"
+  mush-card-primary-font-weight: "600"
+  mush-chip-border-radius: "999px"
+  mush-chip-background: "var(--lg-tile)"
   mush-rgb-white: "255, 255, 255"
+
+  # Bubble Card (Pop-ups wie iOS-Sheets)
+  bubble-pop-up-border-radius: "34px"
+  bubble-pop-up-background-color: "var(--lg-sheet)"
+  bubble-main-background-color: "var(--lg-tile)"
+  bubble-border-radius: "20px"
+
+  ha-dialog-border-radius: "28px"
+  feature-border-radius: "14px"
 
   modes:
     light:
-      lg-card-background: "rgba(255, 255, 255, 0.55)"
-      lg-border-color: "rgba(255, 255, 255, 0.65)"
-      lg-card-shadow: "0 8px 32px rgba(31, 38, 135, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.5)"
-      primary-background-color: "#dCe8ff"
-      secondary-background-color: "rgba(255, 255, 255, 0.35)"
-      card-background-color: "rgba(255, 255, 255, 0.001)"
+      lovelace-background: >-
+        radial-gradient(ellipse at 12% 8%, #9cc3ff 0%, transparent 55%),
+        radial-gradient(ellipse at 88% 18%, #ffc4dc 0%, transparent 50%),
+        radial-gradient(ellipse at 30% 62%, #c9b8ff 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 95%, #aeeed3 0%, transparent 55%),
+        #eef1f8 fixed
+      lg-glass: "linear-gradient(160deg, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0.38) 100%)"
+      lg-glass-border: "rgba(255, 255, 255, 0.75)"
+      lg-glass-shadow: >-
+        0 12px 32px rgba(30, 40, 90, 0.10), 0 2px 6px rgba(30, 40, 90, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(255, 255, 255, 0.35)
+      lg-tile: "rgba(255, 255, 255, 0.55)"
+      lg-tile-shadow: "inset 0 0.5px 0 rgba(255, 255, 255, 0.9), 0 1px 2px rgba(30, 40, 90, 0.05)"
+      lg-sheet: "rgba(246, 247, 252, 0.82)"
+      lg-bar: "rgba(248, 249, 253, 0.62)"
+      lg-hairline: "rgba(60, 60, 67, 0.18)"
+      primary-color: "#007AFF"
+      accent-color: "#007AFF"
+      primary-background-color: "#eef1f8"
+      secondary-background-color: "rgba(255, 255, 255, 0.5)"
       primary-text-color: "#1c1c1e"
-      secondary-text-color: "#48484a"
-      disabled-text-color: "#8e8e93"
+      secondary-text-color: "rgba(60, 60, 67, 0.72)"
+      disabled-text-color: "rgba(60, 60, 67, 0.35)"
+      divider-color: "rgba(60, 60, 67, 0.12)"
+      app-header-background-color: "rgba(248, 249, 253, 0.62)"
+      app-header-text-color: "#1c1c1e"
+      # iOS-Systemfarben (fuer HA- und Mushroom-Farbnamen)
+      blue-color: "rgb(0, 122, 255)"
+      rgb-blue-color: "0, 122, 255"
+      rgb-blue: "0, 122, 255"
+      green-color: "rgb(52, 199, 89)"
+      rgb-green-color: "52, 199, 89"
+      rgb-green: "52, 199, 89"
+      orange-color: "rgb(255, 149, 0)"
+      rgb-orange-color: "255, 149, 0"
+      rgb-orange: "255, 149, 0"
+      red-color: "rgb(255, 59, 48)"
+      rgb-red-color: "255, 59, 48"
+      rgb-red: "255, 59, 48"
+      yellow-color: "rgb(255, 204, 0)"
+      rgb-yellow-color: "255, 204, 0"
+      rgb-yellow: "255, 204, 0"
+      purple-color: "rgb(175, 82, 222)"
+      rgb-purple-color: "175, 82, 222"
+      rgb-purple: "175, 82, 222"
+      pink-color: "rgb(255, 45, 85)"
+      rgb-pink-color: "255, 45, 85"
+      rgb-pink: "255, 45, 85"
+      teal-color: "rgb(48, 176, 199)"
+      rgb-teal-color: "48, 176, 199"
+      rgb-teal: "48, 176, 199"
+      cyan-color: "rgb(50, 173, 230)"
+      rgb-cyan-color: "50, 173, 230"
+      rgb-cyan: "50, 173, 230"
+      indigo-color: "rgb(88, 86, 214)"
+      rgb-indigo-color: "88, 86, 214"
+      rgb-indigo: "88, 86, 214"
+      amber-color: "rgb(255, 179, 0)"
+      rgb-amber-color: "255, 179, 0"
+      rgb-amber: "255, 179, 0"
+      deep-orange-color: "rgb(255, 120, 40)"
+      rgb-deep-orange-color: "255, 120, 40"
+      rgb-deep-orange: "255, 120, 40"
+      light-blue-color: "rgb(90, 200, 250)"
+      rgb-light-blue-color: "90, 200, 250"
+      rgb-light-blue: "90, 200, 250"
+      light-green-color: "rgb(120, 210, 100)"
+      rgb-light-green-color: "120, 210, 100"
+      rgb-light-green: "120, 210, 100"
+      lime-color: "rgb(190, 220, 60)"
+      rgb-lime-color: "190, 220, 60"
+      rgb-lime: "190, 220, 60"
+      brown-color: "rgb(162, 132, 94)"
+      rgb-brown-color: "162, 132, 94"
+      rgb-brown: "162, 132, 94"
+      grey-color: "rgb(142, 142, 147)"
+      rgb-grey-color: "142, 142, 147"
+      rgb-grey: "142, 142, 147"
+      blue-grey-color: "rgb(120, 135, 155)"
+      rgb-blue-grey-color: "120, 135, 155"
+      rgb-blue-grey: "120, 135, 155"
     dark:
-      lg-card-background: "rgba(72, 64, 110, 0.45)"
-      lg-border-color: "rgba(255, 255, 255, 0.22)"
-      lg-card-shadow: "0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)"
-      primary-background-color: "#0f0c29"
-      secondary-background-color: "rgba(255, 255, 255, 0.08)"
-      card-background-color: "rgba(0, 0, 0, 0.001)"
-      primary-text-color: "#f2f2f7"
-      secondary-text-color: "#d4d0e0"
-      disabled-text-color: "#8b87a0"
+      lovelace-background: >-
+        radial-gradient(ellipse at 10% 5%, #23347a 0%, transparent 55%),
+        radial-gradient(ellipse at 90% 22%, #5a2468 0%, transparent 50%),
+        radial-gradient(ellipse at 25% 65%, #12455a 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 95%, #3b1f5e 0%, transparent 55%),
+        #06070c fixed
+      lg-glass: "linear-gradient(160deg, rgba(255, 255, 255, 0.13) 0%, rgba(255, 255, 255, 0.06) 100%)"
+      lg-glass-border: "rgba(255, 255, 255, 0.16)"
+      lg-glass-shadow: >-
+        0 12px 32px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 rgba(255, 255, 255, 0.05)
+      lg-tile: "rgba(255, 255, 255, 0.07)"
+      lg-tile-shadow: "inset 0 0.5px 0 rgba(255, 255, 255, 0.12)"
+      lg-sheet: "rgba(28, 28, 36, 0.82)"
+      lg-bar: "rgba(12, 13, 20, 0.55)"
+      lg-hairline: "rgba(255, 255, 255, 0.12)"
+      primary-color: "#0A84FF"
+      accent-color: "#0A84FF"
+      primary-background-color: "#06070c"
+      secondary-background-color: "rgba(255, 255, 255, 0.06)"
+      primary-text-color: "#f5f5f7"
+      secondary-text-color: "rgba(235, 235, 245, 0.62)"
+      disabled-text-color: "rgba(235, 235, 245, 0.3)"
+      divider-color: "rgba(255, 255, 255, 0.1)"
+      app-header-background-color: "rgba(12, 13, 20, 0.55)"
+      app-header-text-color: "#f5f5f7"
+      # iOS-Systemfarben (fuer HA- und Mushroom-Farbnamen)
+      blue-color: "rgb(10, 132, 255)"
+      rgb-blue-color: "10, 132, 255"
+      rgb-blue: "10, 132, 255"
+      green-color: "rgb(48, 209, 88)"
+      rgb-green-color: "48, 209, 88"
+      rgb-green: "48, 209, 88"
+      orange-color: "rgb(255, 159, 10)"
+      rgb-orange-color: "255, 159, 10"
+      rgb-orange: "255, 159, 10"
+      red-color: "rgb(255, 69, 58)"
+      rgb-red-color: "255, 69, 58"
+      rgb-red: "255, 69, 58"
+      yellow-color: "rgb(255, 214, 10)"
+      rgb-yellow-color: "255, 214, 10"
+      rgb-yellow: "255, 214, 10"
+      purple-color: "rgb(191, 90, 242)"
+      rgb-purple-color: "191, 90, 242"
+      rgb-purple: "191, 90, 242"
+      pink-color: "rgb(255, 55, 95)"
+      rgb-pink-color: "255, 55, 95"
+      rgb-pink: "255, 55, 95"
+      teal-color: "rgb(64, 200, 224)"
+      rgb-teal-color: "64, 200, 224"
+      rgb-teal: "64, 200, 224"
+      cyan-color: "rgb(100, 210, 255)"
+      rgb-cyan-color: "100, 210, 255"
+      rgb-cyan: "100, 210, 255"
+      indigo-color: "rgb(94, 92, 230)"
+      rgb-indigo-color: "94, 92, 230"
+      rgb-indigo: "94, 92, 230"
+      amber-color: "rgb(255, 190, 30)"
+      rgb-amber-color: "255, 190, 30"
+      rgb-amber: "255, 190, 30"
+      deep-orange-color: "rgb(255, 130, 50)"
+      rgb-deep-orange-color: "255, 130, 50"
+      rgb-deep-orange: "255, 130, 50"
+      light-blue-color: "rgb(110, 210, 255)"
+      rgb-light-blue-color: "110, 210, 255"
+      rgb-light-blue: "110, 210, 255"
+      light-green-color: "rgb(130, 220, 110)"
+      rgb-light-green-color: "130, 220, 110"
+      rgb-light-green: "130, 220, 110"
+      lime-color: "rgb(200, 230, 70)"
+      rgb-lime-color: "200, 230, 70"
+      rgb-lime: "200, 230, 70"
+      brown-color: "rgb(172, 142, 104)"
+      rgb-brown-color: "172, 142, 104"
+      rgb-brown: "172, 142, 104"
+      grey-color: "rgb(152, 152, 157)"
+      rgb-grey-color: "152, 152, 157"
+      rgb-grey: "152, 152, 157"
+      blue-grey-color: "rgb(135, 150, 170)"
+      rgb-blue-grey-color: "135, 150, 170"
+      rgb-blue-grey: "135, 150, 170"

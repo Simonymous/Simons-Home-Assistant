@@ -20,7 +20,8 @@ const only = process.env.DEVICES?.split(",");
 const IGNORE = [/embed\.windy\.com/];
 
 const DEVICES = [
-  { name: "iphone", browser: webkit, options: devices["iPhone 15 Pro"] },
+  { name: "iphone", browser: webkit, options: { ...devices["iPhone 15 Pro"], colorScheme: "light" } },
+  { name: "iphone-dark", browser: webkit, options: { ...devices["iPhone 15 Pro"], colorScheme: "dark" } },
   { name: "desktop", browser: chromium, options: { viewport: { width: 1440, height: 1000 } } },
 ].filter((d) => !only || only.includes(d.name));
 
@@ -80,7 +81,12 @@ async function run(device) {
 
   const results = [];
   const check = async (label, file) => {
-    const found = await page.evaluate(scanPage);
+    let found = await page.evaluate(scanPage);
+    if (found.errors.length) {
+      // Karten laden teils verzoegert (v. a. Pop-ups): einmal nachpruefen
+      await settle(page, 2500);
+      found = await page.evaluate(scanPage);
+    }
     await page.screenshot({ path: join(dir, `${file}.png`), fullPage: true });
     const js = consoleErrors.splice(0);
     results.push({ label, ...found, js });
