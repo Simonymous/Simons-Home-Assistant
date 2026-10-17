@@ -1,6 +1,6 @@
 // NeonPlan 3D: loads the dashboard card. Written by the integration; changes here are overwritten.
 // While Home Assistant is still starting, the card's script is not served yet: then it tries again (#461).
-const url = "/neonplan3d_static/neonplan3d.js?v=1.18.1-cd8d303d7f";
+const url = "/neonplan3d_static/neonplan3d.js?v=1.20.0-234d2b66a9";
 const tag = "neonplan3d-card";
 const load = async (n) => {
   try {

@@ -787,10 +787,10 @@
 - id: '1783786435303'
   alias: 'Wohnwand: Ein mit LG TV (abends)'
   description: Schaltet die Wohnwand-Steckdose mit ein, wenn der Wohnzimmer-LG-TV
-    abends nach Sonnenuntergang aktiviert wird.
+    abends nach Sonnenuntergang angeht (auch direkt aus unavailable).
   triggers:
   - entity_id: media_player.lg_webos_tv_65nano759pa
-    from: 'off'
+    to: 'on'
     trigger: state
   conditions:
   - condition: sun
@@ -802,20 +802,28 @@
   mode: single
 - id: '1783786435304'
   alias: 'Wohnwand: Aus mit LG TV (immer)'
-  description: Schaltet immer die Wohnwand-Steckdose mit aus, wenn der Wohnzimmer-LG-TV
-    ausgeht.
+  description: Schaltet die Wohnwand-Steckdose aus, wenn der Wohnzimmer-LG-TV
+    45 s lang aus ist. Der LG meldet beim Ausschalten erst off, ~25 s spaeter
+    unavailable, daher zaehlen beide als aus.
   triggers:
   - entity_id: media_player.lg_webos_tv_65nano759pa
-    to: 'off'
-    for:
-      seconds: 30
+    to:
+    - 'off'
+    - unavailable
     trigger: state
   conditions: []
   actions:
+  - delay:
+      seconds: 45
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: media_player.lg_webos_tv_65nano759pa
+      state: 'on'
   - action: switch.turn_off
     target:
       entity_id: switch.wohnzimmer_wohnwand_outlet
-  mode: single
+  mode: restart
 - id: '1783786435305'
   alias: 'Zahnbürste: Neuer Bürstenkopf fällig'
   description: Benachrichtigt Simon, wenn der Sonicare-Bürstenkopf laut Verschleiß-Sensor
@@ -909,36 +917,39 @@
         ''werden'' if colors | length > 1 else ''wird'' }} heute abgeholt!'
   mode: single
 - id: '1784566148344'
-  alias: 'Lautsprecher: Ein mit Apple TV'
-  description: Schaltet den Lautsprecher/Receiver ein, wenn der Wohnzimmer-AppleTV
-    aktiviert wird.
+  alias: 'Lautsprecher: Ein mit LG TV'
+  description: Schaltet den Lautsprecher/Receiver ein, wenn der Wohnzimmer-LG-TV
+    angeht, egal ueber welche Quelle (Apple TV, Switch, ...).
   triggers:
-  - entity_id: media_player.wohnzimmer_appletv_wohnzimmer_appletv
-    from: 'off'
-    to:
-    - idle
-    - playing
-    - paused
-    - 'on'
+  - entity_id: media_player.lg_webos_tv_65nano759pa
+    to: 'on'
     trigger: state
   conditions: []
   actions:
   - action: script.lautsprecher_einschalten
   mode: single
 - id: '1784566148345'
-  alias: 'Lautsprecher: Aus mit Apple TV'
-  description: Schaltet den Lautsprecher/Receiver aus, wenn der Wohnzimmer-AppleTV
-    ausgeht.
+  alias: 'Lautsprecher: Aus mit LG TV'
+  description: Schaltet den Lautsprecher/Receiver aus, wenn der Wohnzimmer-LG-TV
+    45 s lang aus ist. Frueher am Apple TV gekoppelt, der beim Spielen ueber andere
+    Quellen (Switch) einschlaeft und dann den Receiver abgeschaltet hat.
   triggers:
-  - entity_id: media_player.wohnzimmer_appletv_wohnzimmer_appletv
-    to: 'off'
-    for:
-      seconds: 30
+  - entity_id: media_player.lg_webos_tv_65nano759pa
+    to:
+    - 'off'
+    - unavailable
     trigger: state
   conditions: []
   actions:
+  - delay:
+      seconds: 45
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: media_player.lg_webos_tv_65nano759pa
+      state: 'on'
   - action: script.lautsprecher_ausschalten
-  mode: single
+  mode: restart
 - id: '1784579939515'
   alias: 'Wohnzimmer: Alles aus (Hue Dimmer)'
   description: Schaltet Lichter, Wohnwand-Steckdose, Apple TV, LG TV und den Receiver
