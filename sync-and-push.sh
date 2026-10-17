@@ -22,6 +22,8 @@ SOURCE="/Volumes/config"
 rsync -a --delete \
   --exclude "/sync-and-push.sh" \
   --exclude "/README.md" \
+  --exclude "/CLAUDE.md" \
+  --exclude "/deploy.sh" \
   --exclude ".git/" \
   --exclude ".github/" \
   --exclude ".storage/" \

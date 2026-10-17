@@ -2,7 +2,7 @@
 
 Persönliche Home-Assistant-Konfiguration — kein Fremd-Tutorial-Setup, sondern über Zeit gewachsen und für genau eine Wohnung zugeschnitten. Dieses Repo ist das Backup/Versionsarchiv der Config, die live auf einem Raspberry Pi (Home Assistant OS) läuft.
 
-Nebenbei ist das hier auch ein Experimentierfeld: über [ha-mcp](https://github.com/homeassistant-ai/ha-mcp) bekommt ein LLM (Claude) direkten, kontrollierten Zugriff auf die laufende Instanz. Vieles mache ich weiterhin von Hand — es geht darum, auszuprobieren, was sich im Smart-Home-Bereich sinnvoll mit KI-Unterstützung machen lässt (Dashboard-Änderungen, Automationen, Debugging) und wo die Grenzen liegen.
+Nebenbei ist das hier auch ein Experimentierfeld: über [ha-mcp](https://github.com/homeassistant-ai/ha-mcp) bekommt ein LLM (Claude) direkten, kontrollierten Zugriff auf die laufende Instanz. Kleinere Änderungen macht Claude direkt per MCP, größere (z. B. Dashboard-Umbauten) lokal im Repo und spielt sie per `deploy.sh` ein (siehe [Sync-Workflow](#sync-workflow)). Vieles mache ich weiterhin von Hand — es geht darum, auszuprobieren, was sich im Smart-Home-Bereich sinnvoll mit KI-Unterstützung machen lässt (Dashboard-Änderungen, Automationen, Debugging) und wo die Grenzen liegen.
 
 ## Was hier drinsteckt
 
@@ -32,6 +32,14 @@ blueprints/               Automation-/Script-Blueprints
 `/Volumes/config` ist die SMB-Freigabe der laufenden Instanz — direkt darauf `git` laufen zu lassen ist unzuverlässig (Locking-Probleme über SMB). Stattdessen lebt dieses Repo lokal, und [`sync-and-push.sh`](sync-and-push.sh) synchronisiert per `rsync` von der Freigabe rein, bevor committed/gepusht wird:
 
 ```bash
+./sync-and-push.sh "Commit-Message"
+```
+
+Der Rückweg für lokal (z. B. von Claude) bearbeitete Dateien ist [`deploy.sh`](deploy.sh): Es kopiert die geänderten Dateien auf die Freigabe und bricht ab, wenn eine davon seit dem letzten Sync live in der UI oder per MCP geändert wurde. Danach landet der Stand wie gewohnt per `sync-and-push.sh` in Git. Damit bleibt die laufende Instanz die Quelle der Wahrheit, und jeder Commit entspricht einem echten Live-Stand. Die Details für Claude stehen in [`CLAUDE.md`](CLAUDE.md).
+
+```bash
+./deploy.sh --dry-run   # zeigt, was live gehen würde
+./deploy.sh
 ./sync-and-push.sh "Commit-Message"
 ```
 
