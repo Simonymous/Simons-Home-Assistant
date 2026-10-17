@@ -157,7 +157,10 @@ template:
         device_class: running
         delay_off:
           minutes: 2
-        state: "{{ states('sensor.simon_synology_download_durchsatz') | float(0) > 50 }}"
+        # Gesamter eingehender NAS-Verkehr in kB/s, abgefragt ca. alle 15 min. DSM holt
+        # jede Nacht gegen 5 Uhr Updates mit bis zu ~180 kB/s; die alte Schwelle von 50
+        # meldete das als Download. Echte Downloads laufen mit mehreren MB/s.
+        state: "{{ states('sensor.simon_synology_download_durchsatz') | float(0) > 1000 }}"
 
       - name: "Receiver an"
         unique_id: receiver_an
