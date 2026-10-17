@@ -35,6 +35,24 @@ jobs:
               empty-lines: disable
               new-line-at-end-of-file: disable
 
+  dashboard-static:
+    name: 🧪 Dashboard-Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 🧪 Dashboard statisch pruefen
+        # YAML, Jinja- und button-card-JS-Syntax, installierte Karten, Navigationsziele
+        run: |
+          pip install --quiet pyyaml jinja2
+          python tests/dashboard/check_static.py
+
   ha-check:
     name: 🏠 HA Config Check
     runs-on: ubuntu-latest

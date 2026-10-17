@@ -12,7 +12,8 @@ Die **laufende Instanz ist die Quelle der Wahrheit**, dieses Repo ist ihr Versio
    (YAML-Modus) und `themes/`. Ablauf:
    1. Dateien bearbeiten, **nicht committen**
    2. `./deploy.sh` (vorher gern `--dry-run`): kopiert nach `/Volumes/config`, bricht ab,
-      wenn die Live-Datei seit dem letzten Sync in der UI/per MCP geändert wurde
+      wenn die Live-Datei seit dem letzten Sync in der UI/per MCP geändert wurde. Bei
+      Dashboard-Dateien laufen vorher die Dashboard-Tests (Stufe 1+2), danach der Rendertest
    3. in HA neu laden (Reload-Service per MCP, Dashboard über Menü > Aktualisieren) und prüfen
    4. `./sync-and-push.sh "Commit-Message"`: holt den Live-Stand und committet/pusht
 
@@ -27,6 +28,17 @@ nicht deployten lokalen Änderungen laufen lassen** (vorher deployen oder `git s
 - SMB-Freigabe gemountet: `smb://homeassistant.local/config` → `/Volumes/config`
 - MCP-Server `home-assistant` in Claude Code eingetragen (Webhook-URL aus dem ha-mcp-Panel in HA;
   die URL ist ein Geheimnis und gehört nicht ins Repo)
+
+## Dashboard-Tests (`tests/dashboard/`)
+
+- `tests/dashboard/run.sh [static] [live] [render]`; ohne Argumente alle Stufen. Exit 2 heißt:
+  live/render mangels Token übersprungen, das ist kein Erfolg.
+- Nach jeder Dashboard-Änderung laufen lassen und die Screenshots unter
+  `tests/dashboard/.screenshots/` (iPhone + Desktop, Vorlauf unter `previous/`) ansehen.
+  Das iPhone ist das Hauptgerät.
+- Neue `custom:`-Karte: erst in HA als Ressource installieren, dann in
+  `tests/dashboard/installed_cards.yaml` eintragen.
+- Screenshots enthalten echte Daten: nie committen oder in die README übernehmen.
 
 ## Regeln
 

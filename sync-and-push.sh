@@ -25,6 +25,7 @@ rsync -a --delete \
   --exclude "/CLAUDE.md" \
   --exclude "/deploy.sh" \
   --exclude "/.gitignore" \
+  --exclude "/tests/" \
   --include "/custom_components/paket_tracking/" \
   --exclude "/custom_components/*" \
   --exclude ".git/" \

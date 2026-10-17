@@ -49,3 +49,7 @@ backups/
 # (GitHub Push Protection blockt diese). Nur eigene Komponenten versionieren.
 custom_components/*
 !custom_components/paket_tracking/
+
+# --- Dashboard-Tests ---
+tests/dashboard/node_modules/
+tests/dashboard/.screenshots/

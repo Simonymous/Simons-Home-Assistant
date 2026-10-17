@@ -15,6 +15,23 @@ Nebenbei ist das hier auch ein Experimentierfeld: über [ha-mcp](https://github.
 - **Broadlink-Fernbedienung Wohnzimmer** — per IR angelernte Befehle (Power-Toggle, TV-Eingang, Lauter/Leiser, Stumm) für den Receiver, gebündelt in einem virtuellen `media_player` (Toggle-Skripte erkennen den echten An/Aus-Zustand über den Stromverbrauch der Steckdose), gekoppelt an Apple TV und via HomeKit-Accessory für Siri-Sprachsteuerung freigegeben.
 - **HACS-Integrationen** für [BYD-Fahrzeug](https://github.com/jkaberg/hass-byd-vehicle), [Meross](https://github.com/krahabb/meross_lan), [Xiaomi/Mi Home](https://github.com/XiaoMi/ha_xiaomi_home), [DWD-Wetter](https://github.com/FL550/dwd_weather), [Müllabfuhr-Kalender](https://github.com/mampfes/hacs_waste_collection_schedule), [WashData](https://github.com/3dg1luk43/ha_washdata) und [NeonPlan 3D](https://mastershort.de/en/neonplan3d/manual/) (installiert, noch nicht im Dashboard). Ihr Code liegt nicht in diesem Repo, sondern kommt über HACS.
 
+## Automatische Dashboard-Tests
+
+Das Dashboard ist der Kern des Projekts. Damit eine umbenannte Entität, ein Tippfehler im Template oder eine fehlende Custom Card nicht erst auffällt, wenn man die betroffene Ansicht öffnet, wird es in drei Stufen geprüft ([`tests/dashboard/`](tests/dashboard)):
+
+1. **Statisch** (bei jedem Push im CI): YAML, Syntax aller Jinja- und button-card-JS-Templates, ob jede `custom:`-Karte installiert ist ([`installed_cards.yaml`](tests/dashboard/installed_cards.yaml)), ob Pop-up- und View-Links ins Leere zeigen.
+2. **Gegen die laufende Instanz** (lokal): Gibt es jede referenzierte Entität, und rendern alle Templates in HA ohne Fehler?
+3. **Rendertest** (lokal): Ein unsichtbarer Browser öffnet jede Ansicht und jedes Pop-up, einmal als iPhone (WebKit, wie die HA-App) und einmal am Desktop. Er schlägt bei Fehlerkarten und JS-Fehlern an und legt Screenshots zum Vorher-Nachher-Vergleich ab. Die Screenshots zeigen echte Daten und bleiben deshalb lokal.
+
+`deploy.sh` führt Stufe 1 und 2 vor dem Kopieren aus und bricht bei Fehlern ab, nach dem Kopieren läuft Stufe 3. Von Hand:
+
+```bash
+tests/dashboard/run.sh            # alle Stufen
+tests/dashboard/run.sh static     # nur Stufe 1
+```
+
+Für Stufe 2 und 3 liegt ein langlebiger HA-Token im macOS-Schlüsselbund (`security add-generic-password -U -s ha-dashboard-tests -a homeassistant -w "$(pbpaste)"`, Token vorher in die Zwischenablage kopieren; die interaktive Abfrage von `security` schneidet nach 128 Zeichen ab), nie im Repo.
+
 ## Struktur
 
 ```
@@ -25,6 +42,7 @@ dashboards/               Lovelace-Dashboard(s), YAML-Modus
 custom_components/        Nur eigene Integrationen (paket_tracking)
 themes/                   Liquid-Glass-Theme
 blueprints/               Automation-/Script-Blueprints
+tests/dashboard/          Dashboard-Tests (statisch, live, Rendertest)
 ```
 
 ## Sync-Workflow

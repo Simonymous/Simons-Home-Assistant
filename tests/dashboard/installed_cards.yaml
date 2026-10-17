@@ -1,0 +1,34 @@
+# Installierte Dashboard-Ressourcen (HA: Einstellungen > Dashboards > Ressourcen)
+# und die Kartentypen, die sie bereitstellen. Neue custom:-Karte im Dashboard?
+# Erst die Ressource in HA installieren, dann hier eintragen.
+lovelace-mushroom:
+  - custom:mushroom-chips-card
+  - custom:mushroom-climate-card
+  - custom:mushroom-cover-card
+  - custom:mushroom-entity-card
+  - custom:mushroom-fan-card
+  - custom:mushroom-light-card
+  - custom:mushroom-lock-card
+  - custom:mushroom-media-player-card
+  - custom:mushroom-person-card
+  - custom:mushroom-select-card
+  - custom:mushroom-template-card
+  - custom:mushroom-title-card
+  - custom:mushroom-vacuum-card
+button-card:
+  - custom:button-card
+Bubble-Card:
+  - custom:bubble-card
+stack-in-card:
+  - custom:stack-in-card
+lovelace-xiaomi-vacuum-map-card:
+  - custom:xiaomi-vacuum-map-card
+vehicle-status-card:
+  - custom:vehicle-status-card
+toothbrush-card:
+  - custom:toothbrush-card
+ha_washdata:
+  - custom:ha-washdata-card
+neonplan3d:
+  - custom:neonplan3d-card
+lovelace-card-mod: []  # stellt keine Karte bereit, nur card_mod-Styles

@@ -1,0 +1,9 @@
+{
+  "name": "ha-dashboard-tests",
+  "private": true,
+  "type": "module",
+  "description": "Rendertest fuer das Status-Dashboard (Stufe 3), siehe run.sh",
+  "dependencies": {
+    "playwright": "1.63.0"
+  }
+}

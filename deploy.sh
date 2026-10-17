@@ -14,7 +14,10 @@
 # noch dem HEAD-Stand entspricht. Wurde sie zwischenzeitlich in der HA-UI
 # oder per MCP geaendert, bricht es ab, statt diese Aenderung zu verlieren.
 #
-# Usage: ./deploy.sh [--dry-run] [pfad ...]
+# Bei Dashboard-Dateien laufen vorher die Dashboard-Tests (statisch + gegen
+# die Live-Instanz) und nach dem Kopieren der Rendertest, siehe tests/dashboard/.
+#
+# Usage: ./deploy.sh [--dry-run] [--no-tests] [pfad ...]
 #   ohne Pfade: alle lokal geaenderten/neuen Dateien
 
 set -euo pipefail
@@ -22,10 +25,12 @@ cd "$(dirname "$0")"
 
 TARGET="${HA_CONFIG_DIR:-/Volumes/config}"
 DRY_RUN=0
-if [ "${1:-}" = "--dry-run" ]; then
-  DRY_RUN=1
+TESTS=1
+while [ "${1:-}" = "--dry-run" ] || [ "${1:-}" = "--no-tests" ]; do
+  [ "$1" = "--dry-run" ] && DRY_RUN=1
+  [ "$1" = "--no-tests" ] && TESTS=0
   shift
-fi
+done
 
 if [ ! -d "$TARGET" ] || [ ! -f "$TARGET/configuration.yaml" ]; then
   echo "$TARGET ist nicht gemountet (Finder: Gehe zu > Mit Server verbinden > smb://homeassistant.local/config)."
@@ -35,7 +40,7 @@ fi
 # Dateien, die nur im Repo leben und nie nach HA gehoeren.
 is_repo_only() {
   case "$1" in
-    README.md|CLAUDE.md|deploy.sh|sync-and-push.sh|.gitignore|.github/*|.claude/*) return 0 ;;
+    README.md|CLAUDE.md|deploy.sh|sync-and-push.sh|.gitignore|.github/*|.claude/*|tests/*) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -88,6 +93,22 @@ if [ "${#DEPLOY[@]}" -eq 0 ]; then
   exit 0
 fi
 
+DASHBOARD=0
+for f in "${DEPLOY[@]}"; do
+  case "$f" in dashboards/*) DASHBOARD=1 ;; esac
+done
+
+if [ "$DASHBOARD" -eq 1 ] && [ "$TESTS" -eq 1 ]; then
+  set +e
+  tests/dashboard/run.sh static live
+  rc=$?
+  set -e
+  if [ "$rc" -eq 1 ]; then
+    echo "Abbruch: Dashboard-Tests fehlgeschlagen (ueberspringen mit --no-tests)."
+    exit 1
+  fi
+fi
+
 for f in "${DEPLOY[@]}"; do
   if [ "$DRY_RUN" -eq 1 ]; then
     echo "[dry-run] $f"
@@ -99,6 +120,20 @@ for f in "${DEPLOY[@]}"; do
 done
 
 [ "$DRY_RUN" -eq 1 ] && exit 0
+
+if [ "$DASHBOARD" -eq 1 ] && [ "$TESTS" -eq 1 ]; then
+  set +e
+  tests/dashboard/run.sh render
+  rc=$?
+  set -e
+  if [ "$rc" -eq 1 ]; then
+    echo
+    echo "Rendertest fehlgeschlagen. Zuruecksetzen auf den letzten Sync-Stand:"
+    for f in "${DEPLOY[@]}"; do
+      case "$f" in dashboards/*) echo "  git show HEAD:$f > \"$TARGET/$f\"" ;; esac
+    done
+  fi
+fi
 
 cat <<'EOF'
 
