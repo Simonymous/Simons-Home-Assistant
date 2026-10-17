@@ -2045,62 +2045,116 @@ views:
   - type: custom:stack-in-card
     cards:
     - type: heading
-      heading: Bob – Wohnungskarte
+      heading: Bob
       heading_style: title
       icon: mdi:robot-vacuum
       card_mod: *heading_card_mod
-    - type: custom:xiaomi-vacuum-map-card
-      title: Bob
+    - type: custom:neonplan-follow-card
+      room_entity: sensor.bob_aktueller_raum
+      active_entity: vacuum.bob
+      active_states:
+      - cleaning
+      - paused
+      card:
+        type: custom:neonplan3d-card
+        height: 380
+        controls_hidden: true
+        room_panel: false
+    - type: custom:button-card
+      entity: sensor.bob_reinigungsstatus
+      icon: mdi:robot-vacuum
+      show_name: true
+      show_state: false
+      show_label: true
+      name: "[[[ return entity ? entity.state : 'Bob'; ]]]"
+      label: |-
+        [[[
+          const status = states['sensor.bob_status']?.state;
+          const aktiv = ['cleaning', 'segment_cleaning', 'zoned_cleaning', 'spot_cleaning', 'paused'].includes(status);
+          if (!aktiv) {
+            const ende = states['sensor.bob_letztes_reinigungsende']?.state;
+            const d = ende ? new Date(ende) : null;
+            return d && !isNaN(d)
+              ? 'Letzte Reinigung: ' + d.toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+              : 'Noch keine Reinigung';
+          }
+          const flaeche = parseFloat(states['sensor.bob_reinigungsbereich']?.state);
+          const m2 = isNaN(flaeche) ? '' : ' · ' + flaeche.toLocaleString('de-DE') + ' m²';
+          const p = states['sensor.bob_reinigungsfortschritt']?.state;
+          return isNaN(parseFloat(p)) ? 'Gezielte Reinigung' + m2 : 'Werktagslauf · ' + p + ' %' + m2;
+        ]]]
+      custom_fields:
+        bar: |-
+          [[[
+            const p = parseFloat(states['sensor.bob_reinigungsfortschritt']?.state);
+            if (isNaN(p)) return '';
+            return '<div style="height:6px;border-radius:3px;background:rgba(127,127,127,0.22);overflow:hidden">'
+              + '<div style="height:100%;width:' + p + '%;border-radius:3px;background:var(--blue-color);transition:width 0.6s ease"></div></div>';
+          ]]]
+      tap_action:
+        action: more-info
+        entity: vacuum.bob
+      styles:
+        card:
+        - padding: 12px 14px
+        grid:
+        - grid-template-areas: '"i n" "i l" "bar bar"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content min-content
+        - row-gap: 2px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 15px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        custom_fields:
+          bar:
+          - margin-top: 8px
+      state:
+      - operator: template
+        value: "[[[ return ['cleaning', 'segment_cleaning', 'zoned_cleaning', 'spot_cleaning'].includes(states['sensor.bob_status']?.state); ]]]"
+        color: var(--blue-color)
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite
+      - operator: template
+        value: "[[[ return states['sensor.bob_status']?.state === 'error'; ]]]"
+        color: var(--red-color)
+      - operator: default
+        color: var(--secondary-text-color)
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+    - type: custom:mushroom-vacuum-card
       entity: vacuum.bob
-      vacuum_platform: Roborock
-      map_source:
-        camera: image.esszimmer_bob_wohnung
-      calibration_source:
-        calibration_points:
-        - map:
-            x: 0
-            y: 0
-          vacuum:
-            x: 0
-            y: 0
-        - map:
-            x: 100
-            y: 0
-          vacuum:
-            x: 100
-            y: 0
-        - map:
-            x: 0
-            y: 100
-          vacuum:
-            x: 0
-            y: 100
-      append_tiles: true
-      tiles:
-      - tile_id: main_brush_left
-        replace_config: true
-        label: Hauptbürste
-        icon: mdi:brush
+      primary_info: none
+      secondary_info: none
+      icon_type: none
+      commands:
+      - start_pause
+      - return_home
+      - locate
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: tile
         entity: sensor.bob_verbleibende_zeit_der_hauptburste
-        unit: h
-      - tile_id: side_brush_left
-        replace_config: true
-        label: Seitenbürste
+        name: Hauptbürste
         icon: mdi:brush
+      - type: tile
         entity: sensor.bob_verbleibende_zeit_der_seitenburste
-        unit: h
-      - tile_id: filter_left
-        replace_config: true
-        label: Filter
-        icon: mdi:air-filter
+        name: Seitenbürste
+        icon: mdi:brush
+      - type: tile
         entity: sensor.bob_verbleibende_filterzeit
-        unit: h
-      - tile_id: sensor_dirty_left
-        replace_config: true
-        label: Sensoren
-        icon: mdi:radar
+        name: Filter
+        icon: mdi:air-filter
+      - type: tile
         entity: sensor.bob_verbleibende_sensorzeit
-        unit: h
+        name: Sensoren
+        icon: mdi:radar
     - type: custom:button-card
       entity: binary_sensor.bob_wasserknappheit
       name: Wasserkasten
@@ -2140,7 +2194,7 @@ views:
           icon:
           - animation: machine-blink 1.2s ease-in-out infinite
       - operator: default
-        color: rgb(76, 175, 80)
+        color: var(--green-color)
       extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
 - title: Energie
   path: energie

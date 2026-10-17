@@ -217,3 +217,65 @@ template:
             {% else %}schliesst
             {% endif %}
           {% endif %}
+  # --- Saugroboter Bob: Status und Fortschritt fuers Dashboard ---
+  # Referenzflaeche des Werktagslaufs (Roborock-App, Mo-Fr 11:00, alle Raeume ausser
+  # Buero/Schlafzimmer/Bad, ca. 33-34 m2). Wird nach jedem vollstaendigen Lauf
+  # nachgefuehrt; trigger-basierte Sensoren behalten ihren Wert ueber Neustarts.
+  - trigger:
+      - trigger: state
+        entity_id: sensor.bob_status
+        to: returning_home
+    sensor:
+      - name: "Bob Fläche Werktagslauf"
+        unique_id: bob_flaeche_werktagslauf
+        unit_of_measurement: "m²"
+        icon: mdi:texture-box
+        state: >-
+          {% set start = as_datetime(states('sensor.bob_letzter_reinigungsbeginn')) %}
+          {% set start = as_local(start) if start else none %}
+          {% set planmaessig = start is not none and start.weekday() < 5
+             and start.hour == 11 and start.minute < 10 %}
+          {% set flaeche = states('sensor.bob_reinigungsbereich') | float(0) %}
+          {{ flaeche if planmaessig and flaeche > 25 else this.state | float(34) }}
+
+  - sensor:
+      - name: "Bob Reinigungsstatus"
+        unique_id: bob_reinigungsstatus
+        icon: mdi:robot-vacuum
+        state: >-
+          {% set s = states('sensor.bob_status') %}
+          {% set raum = states('sensor.bob_aktueller_raum') %}
+          {% set raum = raum if raum not in ['unknown', 'unavailable', 'none', ''] else none %}
+          {% if s in ['cleaning', 'segment_cleaning', 'zoned_cleaning', 'spot_cleaning'] %}
+            {{ 'Reinigt ' ~ raum if raum else 'Reinigt' }}
+          {% elif s == 'paused' %}{{ 'Pausiert in ' ~ raum if raum else 'Pausiert' }}
+          {% elif s in ['returning_home', 'docking'] %}Fährt zur Station
+          {% elif s == 'going_to_target' %}Fährt zum Ziel
+          {% elif s == 'emptying_the_bin' %}Leert den Staubbehälter
+          {% elif s in ['washing_the_mop', 'going_to_wash_the_mop'] %}Wäscht den Mopp
+          {% elif s == 'charging' %}Lädt ({{ states('sensor.bob_batterie') }} %)
+          {% elif s in ['idle', 'charging_complete', 'charger_disconnected'] %}Bereit
+          {% elif s == 'error' %}Fehler: {{ states('sensor.bob_staubsauger_fehler') }}
+          {% elif s in ['unavailable', 'unknown'] %}Nicht erreichbar
+          {% else %}{{ s | replace('_', ' ') | capitalize }}
+          {% endif %}
+
+      # Nur waehrend des Werktagslaufs: gereinigte Flaeche im Verhaeltnis zur Referenz.
+      # Gezielte Laeufe (Raeume aus der App) melden ihre Zielraeume nicht, dort gibt
+      # es keinen Prozentwert.
+      - name: "Bob Reinigungsfortschritt"
+        unique_id: bob_reinigungsfortschritt
+        unit_of_measurement: "%"
+        icon: mdi:progress-check
+        availability: >-
+          {% set start = as_datetime(states('sensor.bob_letzter_reinigungsbeginn')) %}
+          {% set start = as_local(start) if start else none %}
+          {{ states('sensor.bob_status') in ['cleaning', 'segment_cleaning', 'paused',
+               'washing_the_mop', 'going_to_wash_the_mop']
+             and start is not none and start.weekday() < 5
+             and start.hour == 11 and start.minute < 10
+             and (now() - start).total_seconds() < 4 * 3600 }}
+        state: >-
+          {% set ref = states('sensor.bob_flache_werktagslauf') | float(34) %}
+          {% set flaeche = states('sensor.bob_reinigungsbereich') | float(0) %}
+          {{ [99, (flaeche / (ref if ref > 0 else 34) * 100) | round(0)] | min | int }}

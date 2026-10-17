@@ -31,4 +31,6 @@ ha_washdata:
   - custom:ha-washdata-card
 neonplan3d:
   - custom:neonplan3d-card
+neonplan-follow (eigene Karte, www/neonplan-follow.js):
+  - custom:neonplan-follow-card
 lovelace-card-mod: []  # stellt keine Karte bereit, nur card_mod-Styles
