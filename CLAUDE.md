@@ -40,6 +40,18 @@ nicht deployten lokalen Änderungen laufen lassen** (vorher deployen oder `git s
   `tests/dashboard/installed_cards.yaml` eintragen.
 - Screenshots enthalten echte Daten: nie committen oder in die README übernehmen.
 
+## NeonPlan 3D (Grundriss, liegt in `.storage`, nicht im Repo)
+
+- Lesen/Schreiben über die Websocket-API: `neonplan3d/building/get`, `neonplan3d/building/save`.
+  `save` ersetzt den **ganzen** Grundriss: vorher `neonplan3d/history/snapshot` anlegen und die
+  gelesene `revision` unmittelbar vor dem Speichern erneut prüfen. Simon bearbeitet den Plan oft
+  parallel im Editor; bei geänderter Revision abbrechen und fragen.
+- Möbel/Leuchten mit derselben Entität leuchten gemeinsam (z. B. Spots einer Leuchte, Ring +
+  Scheiben der Esszimmerlampe). Möbel können über `state_entity` selbst leuchten (Wohnwand-Vitrinen,
+  TV-Board); keine LED-Streifen in undurchsichtigen Schränken verstecken, ihr Schein bleibt sichtbar.
+- Raumnamen müssen zu `sensor.bob_aktueller_raum` passen; Abweichungen über `room_aliases` der
+  `neonplan-follow-card` (Roborock „Arbeitszimmer“ = NeonPlan „Büro“).
+
 ## Regeln
 
 - **Entitäten umbenennen**: Danach alle Stellen nachziehen, die IDs als Text speichern: Dashboard,
