@@ -273,3 +273,58 @@ template:
           {% set ref = states('sensor.bob_flache_werktagslauf') | float(34) %}
           {% set flaeche = states('sensor.bob_reinigungsbereich') | float(0) %}
           {{ [99, (flaeche / (ref if ref > 0 else 34) * 100) | round(0)] | min | int }}
+
+  # --- AdGuard Home: fortlaufende Zaehler fuer Tageswerte und Verlauf ---
+  # Die AdGuard-Sensoren zaehlen ueber ein gleitendes 24-h-Fenster und haben keine
+  # state_class. Diese Zaehler addieren nur Zuwaechse, fallen also nie zurueck, und HA
+  # fuehrt fuer sie Langzeitstatistik (Grundlage fuer Stunden/Tage/Monate im Dashboard).
+  # Wirft AdGuard zur vollen Stunde eine alte Stunde aus dem Fenster, faellt der Zuwachs
+  # dieses einen Abfrage-Intervalls weg (vernachlaessigbar).
+  - trigger:
+      - trigger: state
+        entity_id: sensor.adguard_home_blockierte_dns_abfragen
+    sensor:
+      - name: "AdGuard blockiert gesamt"
+        unique_id: adguard_blockiert_gesamt
+        unit_of_measurement: "Abfragen"
+        state_class: total_increasing
+        icon: mdi:shield-check
+        state: >-
+          {% set alt = trigger.from_state.state | float(none) if trigger.from_state else none %}
+          {% set neu = trigger.to_state.state | float(none) %}
+          {% set basis = this.state | float(0) %}
+          {{ (basis + neu - alt) | int if alt is not none and neu is not none and neu > alt else basis | int }}
+  - trigger:
+      - trigger: state
+        entity_id: sensor.adguard_home_dns_abfragen
+    sensor:
+      - name: "AdGuard Abfragen gesamt"
+        unique_id: adguard_abfragen_gesamt
+        unit_of_measurement: "Abfragen"
+        state_class: total_increasing
+        icon: mdi:dns
+        state: >-
+          {% set alt = trigger.from_state.state | float(none) if trigger.from_state else none %}
+          {% set neu = trigger.to_state.state | float(none) %}
+          {% set basis = this.state | float(0) %}
+          {{ (basis + neu - alt) | int if alt is not none and neu is not none and neu > alt else basis | int }}
+
+utility_meter:
+  adguard_blockiert_heute:
+    name: AdGuard blockiert heute
+    source: sensor.adguard_blockiert_gesamt
+    cycle: daily
+  adguard_abfragen_heute:
+    name: AdGuard Abfragen heute
+    source: sensor.adguard_abfragen_gesamt
+    cycle: daily
+
+input_select:
+  adguard_zeitraum:
+    name: AdGuard Zeitraum
+    options:
+      - Heute
+      - 7 Tage
+      - 30 Tage
+      - 12 Monate
+    icon: mdi:calendar-range

@@ -2242,6 +2242,209 @@ views:
         name: DSM-Update
         icon: mdi:update
         color: orange
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
+      heading: Werbeblocker
+      heading_style: title
+      icon: mdi:shield-check
+      card_mod: *heading_card_mod
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: custom:mushroom-template-card
+        entity: sensor.adguard_blockiert_heute
+        primary: >-
+          {{ states('sensor.adguard_blockiert_heute') | int(0) }} heute blockiert
+        secondary: >-
+          {% set b = states('sensor.adguard_blockiert_heute') | float(0) %}
+          {% set a = states('sensor.adguard_abfragen_heute') | float(0) %}
+          {{ ((b / a * 100) | round(1)) ~ ' % von ' ~ (a | int) ~ ' Abfragen' if a > 0 else 'Zählt ab der nächsten Abfrage' }}
+        icon: mdi:shield-check
+        icon_color: >-
+          {{ 'green' if is_state('switch.adguard_home_schutz', 'on') else 'grey' }}
+        multiline_secondary: true
+        tap_action:
+          action: more-info
+      - type: tile
+        entity: switch.adguard_home_schutz
+        name: Schutz
+        icon: mdi:shield-sync
+        features:
+        - type: toggle
+    - type: grid
+      columns: 4
+      square: false
+      cards:
+      - type: custom:button-card
+        name: Heute
+        show_icon: false
+        tap_action:
+          action: perform-action
+          perform_action: input_select.select_option
+          target:
+            entity_id: input_select.adguard_zeitraum
+          data:
+            option: Heute
+        styles:
+          card:
+          - padding: 8px 2px
+          name:
+          - font-size: 12px
+        state:
+        - operator: template
+          value: "[[[ return states['input_select.adguard_zeitraum']?.state === 'Heute'; ]]]"
+          styles:
+            card:
+            - '--lg-surface': var(--blue-color)
+            name:
+            - color: white
+            - font-weight: bold
+      - type: custom:button-card
+        name: 7 Tage
+        show_icon: false
+        tap_action:
+          action: perform-action
+          perform_action: input_select.select_option
+          target:
+            entity_id: input_select.adguard_zeitraum
+          data:
+            option: 7 Tage
+        styles:
+          card:
+          - padding: 8px 2px
+          name:
+          - font-size: 12px
+        state:
+        - operator: template
+          value: "[[[ return states['input_select.adguard_zeitraum']?.state === '7 Tage'; ]]]"
+          styles:
+            card:
+            - '--lg-surface': var(--blue-color)
+            name:
+            - color: white
+            - font-weight: bold
+      - type: custom:button-card
+        name: 30 Tage
+        show_icon: false
+        tap_action:
+          action: perform-action
+          perform_action: input_select.select_option
+          target:
+            entity_id: input_select.adguard_zeitraum
+          data:
+            option: 30 Tage
+        styles:
+          card:
+          - padding: 8px 2px
+          name:
+          - font-size: 12px
+        state:
+        - operator: template
+          value: "[[[ return states['input_select.adguard_zeitraum']?.state === '30 Tage'; ]]]"
+          styles:
+            card:
+            - '--lg-surface': var(--blue-color)
+            name:
+            - color: white
+            - font-weight: bold
+      - type: custom:button-card
+        name: 12 Monate
+        show_icon: false
+        tap_action:
+          action: perform-action
+          perform_action: input_select.select_option
+          target:
+            entity_id: input_select.adguard_zeitraum
+          data:
+            option: 12 Monate
+        styles:
+          card:
+          - padding: 8px 2px
+          name:
+          - font-size: 12px
+        state:
+        - operator: template
+          value: "[[[ return states['input_select.adguard_zeitraum']?.state === '12 Monate'; ]]]"
+          styles:
+            card:
+            - '--lg-surface': var(--blue-color)
+            name:
+            - color: white
+            - font-weight: bold
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: input_select.adguard_zeitraum
+        state: Heute
+      card:
+        type: statistics-graph
+        title: Blockiert · Heute
+        entities:
+        - entity: sensor.adguard_blockiert_gesamt
+          name: Blockiert
+        - entity: sensor.adguard_abfragen_gesamt
+          name: Alle Abfragen
+        stat_types:
+        - change
+        chart_type: bar
+        period: hour
+        days_to_show: 1
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: input_select.adguard_zeitraum
+        state: 7 Tage
+      card:
+        type: statistics-graph
+        title: Blockiert · 7 Tage
+        entities:
+        - entity: sensor.adguard_blockiert_gesamt
+          name: Blockiert
+        - entity: sensor.adguard_abfragen_gesamt
+          name: Alle Abfragen
+        stat_types:
+        - change
+        chart_type: bar
+        period: day
+        days_to_show: 7
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: input_select.adguard_zeitraum
+        state: 30 Tage
+      card:
+        type: statistics-graph
+        title: Blockiert · 30 Tage
+        entities:
+        - entity: sensor.adguard_blockiert_gesamt
+          name: Blockiert
+        - entity: sensor.adguard_abfragen_gesamt
+          name: Alle Abfragen
+        stat_types:
+        - change
+        chart_type: bar
+        period: day
+        days_to_show: 30
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: input_select.adguard_zeitraum
+        state: 12 Monate
+      card:
+        type: statistics-graph
+        title: Blockiert · 12 Monate
+        entities:
+        - entity: sensor.adguard_blockiert_gesamt
+          name: Blockiert
+        - entity: sensor.adguard_abfragen_gesamt
+          name: Alle Abfragen
+        stat_types:
+        - change
+        chart_type: bar
+        period: month
+        days_to_show: 365
 - title: Roborock
   path: roborock
   icon: mdi:robot-vacuum
