@@ -987,17 +987,3 @@
       - media_player.lg_webos_tv_65nano759pa
       - media_player.lautsprecher_wohnzimmer
   mode: single
-- id: '1786991165528'
-  alias: Tag Haustür wird gescannt
-  description: ''
-  triggers:
-  - trigger: tag
-    tag_id: 5ee495b8-b98c-480d-b8cd-b3103d60dafd
-  conditions: []
-  actions:
-  - action: button.press
-    metadata: {}
-    target:
-      entity_id: button.vordereingang_tur_offnen
-    data: {}
-  mode: single
