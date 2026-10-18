@@ -100,6 +100,14 @@ async function run(device) {
       await page.evaluate((h) => { location.hash = h; }, hash);
       await settle(page, 1500);
       await check(`${view.title} ${hash}`, `${view.path}__${hash.slice(1)}`);
+      // Ein geoeffnetes Pop-up muss den Bildschirm fuellen, nicht in einer Karte stecken
+      const popH = await page.evaluate(() => {
+        let best = 0;
+        const walk = (n) => { if (n.nodeType === 1 && n.classList?.contains("bubble-pop-up")) best = Math.max(best, n.getBoundingClientRect().height);
+          if (n.shadowRoot) walk(n.shadowRoot); for (const c of n.children || []) walk(c); };
+        walk(document.documentElement); return best / innerHeight;
+      });
+      if (popH < 0.4) results[results.length - 1].errors.push(`Pop-up nur ${Math.round(popH * 100)} % der Bildschirmhoehe`);
       await page.evaluate(() => history.back());
       await settle(page, 800);
     }

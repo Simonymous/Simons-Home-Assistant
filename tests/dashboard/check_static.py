@@ -82,6 +82,24 @@ def main():
                 for i, msg in json.loads(out):
                     errors.append(f"{js[i][0]}: JS-Fehler: {msg}")
 
+        # Pop-ups muessen eigene Karten der View sein: in einer Karte mit Glas-Unschaerfe
+        # (backdrop-filter) wird ihr position: fixed auf die Kartengroesse beschnitten.
+        def nested_popups(node, inside=None):
+            if isinstance(node, dict):
+                if node.get("card_type") == "pop-up" and inside:
+                    errors.append(f"{rel}:{node.line}: Pop-up {node.get('hash')} steckt in {inside} "
+                                  "(als eigene Karte der View anlegen)")
+                kind = node.get("type") if "type" in node and node is not doc else None
+                for v in node.values():
+                    nested_popups(v, inside or (kind if kind and str(kind) != "None" and node.get("card_type") != "pop-up" else None))
+            elif isinstance(node, list):
+                for v in node:
+                    nested_popups(v, inside)
+        for view in doc.get("views", []):
+            for card in view.get("cards", []):
+                for v in card.values():
+                    nested_popups(v, card.get("type") if card.get("card_type") != "pop-up" else None)
+
         views = dl.views(doc)
         hashes = [h for v in views for h in v["hashes"]]
         for h in {h for h in hashes if hashes.count(h) > 1}:

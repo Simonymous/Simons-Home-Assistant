@@ -5,6 +5,30 @@ views:
   icon: mdi:home
   theme: Liquid Glass
   cards:
+  - type: conditional
+    conditions:
+    - condition: state
+      entity: binary_sensor.fritz_box_7590_verbindung
+      state: 'off'
+    card:
+      type: custom:mushroom-template-card
+      entity: binary_sensor.fritz_box_7590_verbindung
+      primary: Internet getrennt
+      secondary: >-
+        {% set s = states.binary_sensor.fritz_box_7590_verbindung %}
+        seit {{ as_local(s.last_changed).strftime('%H:%M') if s else '?' }} Uhr · Ring, tado-App,
+        Roborock und Auto-Daten sind gerade nicht aktuell. Licht, Heizung und Nuki laufen lokal weiter.
+      multiline_secondary: true
+      icon: mdi:web-off
+      icon_color: red
+      tap_action:
+        action: more-info
+      card_mod:
+        style: |
+          ha-card {
+            background: rgba(255, 59, 48, 0.16) !important;
+            border: 1px solid rgba(255, 59, 48, 0.45) !important;
+          }
   - type: custom:stack-in-card
     cards:
     - type: heading
@@ -1625,51 +1649,6 @@ views:
           icon: mdi:battery-check-outline
           color: var(--green-color)
         extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
-    - type: custom:bubble-card
-      card_type: pop-up
-      hash: '#batterien-kritisch'
-      name: Kritische Geräte
-      icon: mdi:battery-alert-variant-outline
-      cards:
-      - type: entities
-        title: Kritische Geräte
-        entities:
-        - entity: sensor.vordereingang_batterie
-          name: Ring Intercom
-        - entity: sensor.smart_lock_pro_batterie
-          name: Nuki Smart Lock
-        - entity: sensor.schlafzimmer_links_batterie
-          name: Rollo links
-        - entity: sensor.schlafzimmer_rechts_batterie
-          name: Rollo rechts
-    - type: custom:bubble-card
-      card_type: pop-up
-      hash: '#batterien-unkritisch'
-      name: Weitere Geräte
-      icon: mdi:battery-outline
-      cards:
-      - type: custom:auto-entities
-        card:
-          type: entities
-          title: Weitere Geräte
-        filter:
-          include:
-          - domain: sensor
-            attributes:
-              device_class: battery
-          exclude:
-          - entity_id: sensor.vordereingang_batterie
-          - entity_id: sensor.smart_lock_pro_batterie
-          - entity_id: sensor.schlafzimmer_links_batterie
-          - entity_id: sensor.schlafzimmer_rechts_batterie
-          - integration: icloud
-          - integration: mobile_app
-          - integration: byd_vehicle
-          - integration: roborock
-        sort:
-          method: state
-          numeric: true
-        show_empty: true
   - type: custom:stack-in-card
     cards:
     - type: heading
@@ -1715,6 +1694,51 @@ views:
         color: var(--amber-color)
       - operator: default
         color: var(--disabled-text-color)
+  - type: custom:bubble-card
+    card_type: pop-up
+    hash: '#batterien-kritisch'
+    name: Kritische Geräte
+    icon: mdi:battery-alert-variant-outline
+    cards:
+    - type: entities
+      title: Kritische Geräte
+      entities:
+      - entity: sensor.vordereingang_batterie
+        name: Ring Intercom
+      - entity: sensor.smart_lock_pro_batterie
+        name: Nuki Smart Lock
+      - entity: sensor.schlafzimmer_links_batterie
+        name: Rollo links
+      - entity: sensor.schlafzimmer_rechts_batterie
+        name: Rollo rechts
+  - type: custom:bubble-card
+    card_type: pop-up
+    hash: '#batterien-unkritisch'
+    name: Weitere Geräte
+    icon: mdi:battery-outline
+    cards:
+    - type: custom:auto-entities
+      card:
+        type: entities
+        title: Weitere Geräte
+      filter:
+        include:
+        - domain: sensor
+          attributes:
+            device_class: battery
+        exclude:
+        - entity_id: sensor.vordereingang_batterie
+        - entity_id: sensor.smart_lock_pro_batterie
+        - entity_id: sensor.schlafzimmer_links_batterie
+        - entity_id: sensor.schlafzimmer_rechts_batterie
+        - integration: icloud
+        - integration: mobile_app
+        - integration: byd_vehicle
+        - integration: roborock
+      sort:
+        method: state
+        numeric: true
+      show_empty: true
   - type: custom:bubble-card
     card_type: pop-up
     hash: '#einkaufsliste'
