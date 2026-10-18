@@ -53,6 +53,12 @@ nicht deployten lokalen Änderungen laufen lassen** (vorher deployen oder `git s
 - Raumnamen müssen zu `sensor.bob_aktueller_raum` passen; Abweichungen über `room_aliases` der
   `neonplan-follow-card` (Roborock „Arbeitszimmer“ = NeonPlan „Büro“).
 
+## Netzwerk
+
+- AdGuard Home (Add-on) ist DNS fürs ganze Heimnetz: Fritz!Box → 192.168.178.105 bzw.
+  fde2:15bd:a78c:0:f931:fcec:5689:473d, Rückfall 1.1.1.1 / 2606:4700:4700::1111. HA-Neustarts
+  bedeuten kurz DNS über den Rückfall. „Sichere Suche“ bewusst aus (sonst YouTube eingeschränkt).
+
 ## Regeln
 
 - **Entitäten umbenennen**: Danach alle Stellen nachziehen, die IDs als Text speichern: Dashboard,
