@@ -29,6 +29,176 @@ views:
             background: rgba(255, 59, 48, 0.16) !important;
             border: 1px solid rgba(255, 59, 48, 0.45) !important;
           }
+  - type: custom:mushroom-chips-card
+    alignment: center
+    chips:
+    - type: weather
+      entity: weather.forecast_home
+      show_conditions: true
+      show_temperature: true
+      tap_action:
+        action: more-info
+    - type: conditional
+      conditions:
+      - condition: numeric_state
+        entity: sensor.restabfall_tage_bis_abholung
+        below: 2
+      chip:
+        type: template
+        entity: sensor.restabfall_tage_bis_abholung
+        icon: mdi:trash-can
+        icon_color: grey
+        content: "Restmüll {{ 'heute' if states('sensor.restabfall_tage_bis_abholung') | int(9) == 0 else 'morgen' }}"
+        tap_action:
+          action: navigate
+          navigation_path: /dashboard-reinigung/erledigungen
+    - type: conditional
+      conditions:
+      - condition: numeric_state
+        entity: sensor.biotonne_tage_bis_abholung
+        below: 2
+      chip:
+        type: template
+        entity: sensor.biotonne_tage_bis_abholung
+        icon: mdi:trash-can
+        icon_color: brown
+        content: "Bio {{ 'heute' if states('sensor.biotonne_tage_bis_abholung') | int(9) == 0 else 'morgen' }}"
+        tap_action:
+          action: navigate
+          navigation_path: /dashboard-reinigung/erledigungen
+    - type: conditional
+      conditions:
+      - condition: numeric_state
+        entity: sensor.gelbe_tonne_tage_bis_abholung
+        below: 2
+      chip:
+        type: template
+        entity: sensor.gelbe_tonne_tage_bis_abholung
+        icon: mdi:trash-can
+        icon_color: yellow
+        content: "Gelber Sack {{ 'heute' if states('sensor.gelbe_tonne_tage_bis_abholung') | int(9) == 0 else 'morgen' }}"
+        tap_action:
+          action: navigate
+          navigation_path: /dashboard-reinigung/erledigungen
+    - type: conditional
+      conditions:
+      - condition: numeric_state
+        entity: sensor.blaue_tonne_tage_bis_abholung
+        below: 2
+      chip:
+        type: template
+        entity: sensor.blaue_tonne_tage_bis_abholung
+        icon: mdi:trash-can
+        icon_color: blue
+        content: "Papier {{ 'heute' if states('sensor.blaue_tonne_tage_bis_abholung') | int(9) == 0 else 'morgen' }}"
+        tap_action:
+          action: navigate
+          navigation_path: /dashboard-reinigung/erledigungen
+    - type: conditional
+      conditions:
+      - condition: numeric_state
+        entity: sensor.pakete_heute
+        above: 0
+      chip:
+        type: template
+        entity: sensor.pakete_heute
+        icon: mdi:package-variant-closed
+        icon_color: orange
+        content: "{{ states('sensor.pakete_heute') }} {{ 'Paket' if states('sensor.pakete_heute') | int(0) == 1 else 'Pakete' }} heute"
+        tap_action:
+          action: navigate
+          navigation_path: /dashboard-reinigung/erledigungen
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: sensor.waschmaschine_zustand
+        state_not: ['off', 'idle', 'unknown', 'unavailable']
+      chip:
+        type: template
+        entity: sensor.waschmaschine_zustand
+        icon: mdi:washing-machine
+        icon_color: "{{ 'green' if is_state('sensor.waschmaschine_zustand', 'finished') else 'blue' }}"
+        content: >-
+          {% set z = states('sensor.waschmaschine_zustand') %}
+          {% set m = states('sensor.waschmaschine_verbleibende_zeit') | float(none) %}
+          {% if z == 'finished' %}Wäsche fertig
+          {% elif z == 'running' and m is not none %}Wäsche bis {{ (now() + timedelta(minutes=m)).strftime('%H:%M') }}
+          {% else %}Wäsche läuft{% endif %}
+        tap_action:
+          action: more-info
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: sensor.trockner_zustand
+        state_not: ['off', 'idle', 'unknown', 'unavailable']
+      chip:
+        type: template
+        entity: sensor.trockner_zustand
+        icon: mdi:tumble-dryer
+        icon_color: "{{ 'green' if is_state('sensor.trockner_zustand', 'finished') else 'blue' }}"
+        content: >-
+          {% set z = states('sensor.trockner_zustand') %}
+          {% set m = states('sensor.trockner_verbleibende_zeit') | float(none) %}
+          {% if z == 'finished' %}Trockner fertig
+          {% elif z == 'running' and m is not none %}Trockner bis {{ (now() + timedelta(minutes=m)).strftime('%H:%M') }}
+          {% else %}Trockner läuft{% endif %}
+        tap_action:
+          action: more-info
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: sensor.spulmaschine_zustand
+        state_not: ['off', 'idle', 'unknown', 'unavailable']
+      chip:
+        type: template
+        entity: sensor.spulmaschine_zustand
+        icon: mdi:dishwasher
+        icon_color: "{{ 'green' if is_state('sensor.spulmaschine_zustand', 'finished') else 'blue' }}"
+        content: >-
+          {% set z = states('sensor.spulmaschine_zustand') %}
+          {% set m = states('sensor.spulmaschine_verbleibende_zeit') | float(none) %}
+          {% if z == 'finished' %}Spüler fertig
+          {% elif z == 'running' and m is not none %}Spüler bis {{ (now() + timedelta(minutes=m)).strftime('%H:%M') }}
+          {% else %}Spüler läuft{% endif %}
+        tap_action:
+          action: more-info
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: binary_sensor.luften_empfohlen
+        state: 'on'
+      chip:
+        type: template
+        entity: binary_sensor.luften_empfohlen
+        icon: mdi:water-alert
+        icon_color: blue
+        content: "Lüften: {{ (state_attr('binary_sensor.luften_empfohlen', 'raeume') or []) | join(', ') }}"
+        tap_action:
+          action: more-info
+    - type: conditional
+      conditions:
+      - condition: numeric_state
+        entity: todo.couple
+        above: 0
+      chip:
+        type: template
+        entity: todo.couple
+        icon: mdi:cart
+        icon_color: green
+        content: "{{ states('todo.couple') }} auf der Liste"
+        tap_action:
+          action: navigate
+          navigation_path: /dashboard-reinigung/erledigungen
+    - type: template
+      entity: sensor.stromkosten_heute
+      icon: mdi:lightning-bolt
+      icon_color: amber
+      content: >-
+        {% if states('input_number.strompreis') | float(0) == 0 %}Strompreis eintragen
+        {% else %}{{ '%.2f' | format(states('sensor.stromkosten_heute') | float(0)) | replace('.', ',') }} € Strom heute{% endif %}
+      tap_action:
+        action: navigate
+        navigation_path: /dashboard-reinigung/energie
   - type: custom:stack-in-card
     cards:
     - type: heading
@@ -261,7 +431,8 @@ views:
         {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
         {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
         {% set h = ['sensor.wohnzimmer_heizung_wohnzimmer_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
-        {% set f = (h | sum / h | count) | round(0) | int ~ ' %' if h else '' %}
+        {% set hv = (h | sum / h | count) | round(0) | int if h else none %}
+        {% set f = hv ~ ' %' ~ (' lüften' if hv >= 65 else (' trocken' if hv < 35 else '')) if hv is not none else '' %}
         {% if not c %}Thermostat offline
         {% elif aus %}Heizung aus{{ ' · ' ~ f if f }}
         {% elif heizt %}heizt auf {{ soll | max }} °C{{ ' · ' ~ f if f }}
@@ -290,8 +461,15 @@ views:
         {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
         {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
         {% set h = ['sensor.wohnzimmer_heizung_wohnzimmer_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
-        {{ 'mdi:fire' if heizt else '' }}
-      badge_color: orange
+        {{ 'mdi:fire' if heizt else ('mdi:water-alert' if h and h | sum / h | count >= 65 else '') }}
+      badge_color: >-
+        {% set c = expand(['climate.wohnzimmer_heizung_wohnzimmer']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.wohnzimmer_heizung_wohnzimmer_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {{ 'orange' if heizt else 'blue' }}
       layout: horizontal
     - type: grid
       columns: 2
@@ -459,7 +637,8 @@ views:
         {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
         {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
         {% set h = ['sensor.schlafzimmer_heizung_schlafzimmer_links_current_humidity', 'sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
-        {% set f = (h | sum / h | count) | round(0) | int ~ ' %' if h else '' %}
+        {% set hv = (h | sum / h | count) | round(0) | int if h else none %}
+        {% set f = hv ~ ' %' ~ (' lüften' if hv >= 65 else (' trocken' if hv < 35 else '')) if hv is not none else '' %}
         {% if not c %}Thermostat offline
         {% elif aus %}Heizung aus{{ ' · ' ~ f if f }}
         {% elif heizt %}heizt auf {{ soll | max }} °C{{ ' · ' ~ f if f }}
@@ -488,8 +667,15 @@ views:
         {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
         {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
         {% set h = ['sensor.schlafzimmer_heizung_schlafzimmer_links_current_humidity', 'sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
-        {{ 'mdi:fire' if heizt else '' }}
-      badge_color: orange
+        {{ 'mdi:fire' if heizt else ('mdi:water-alert' if h and h | sum / h | count >= 65 else '') }}
+      badge_color: >-
+        {% set c = expand(['climate.schlafzimmer_heizung_schlafzimmer_links', 'climate.schlafzimmer_heizung_schlafzimmer_rechts']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.schlafzimmer_heizung_schlafzimmer_links_current_humidity', 'sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {{ 'orange' if heizt else 'blue' }}
       layout: horizontal
     - type: grid
       columns: 2
@@ -800,7 +986,8 @@ views:
         {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
         {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
         {% set h = ['sensor.esszimmer_heizung_esszimmer_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
-        {% set f = (h | sum / h | count) | round(0) | int ~ ' %' if h else '' %}
+        {% set hv = (h | sum / h | count) | round(0) | int if h else none %}
+        {% set f = hv ~ ' %' ~ (' lüften' if hv >= 65 else (' trocken' if hv < 35 else '')) if hv is not none else '' %}
         {% if not c %}Thermostat offline
         {% elif aus %}Heizung aus{{ ' · ' ~ f if f }}
         {% elif heizt %}heizt auf {{ soll | max }} °C{{ ' · ' ~ f if f }}
@@ -829,8 +1016,15 @@ views:
         {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
         {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
         {% set h = ['sensor.esszimmer_heizung_esszimmer_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
-        {{ 'mdi:fire' if heizt else '' }}
-      badge_color: orange
+        {{ 'mdi:fire' if heizt else ('mdi:water-alert' if h and h | sum / h | count >= 65 else '') }}
+      badge_color: >-
+        {% set c = expand(['climate.esszimmer_heizung_esszimmer']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.esszimmer_heizung_esszimmer_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {{ 'orange' if heizt else 'blue' }}
       layout: horizontal
     - type: grid
       columns: 2
@@ -935,7 +1129,8 @@ views:
         {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
         {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
         {% set h = ['sensor.buro_heizung_buro_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
-        {% set f = (h | sum / h | count) | round(0) | int ~ ' %' if h else '' %}
+        {% set hv = (h | sum / h | count) | round(0) | int if h else none %}
+        {% set f = hv ~ ' %' ~ (' lüften' if hv >= 65 else (' trocken' if hv < 35 else '')) if hv is not none else '' %}
         {% if not c %}Thermostat offline
         {% elif aus %}Heizung aus{{ ' · ' ~ f if f }}
         {% elif heizt %}heizt auf {{ soll | max }} °C{{ ' · ' ~ f if f }}
@@ -964,8 +1159,15 @@ views:
         {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
         {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
         {% set h = ['sensor.buro_heizung_buro_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
-        {{ 'mdi:fire' if heizt else '' }}
-      badge_color: orange
+        {{ 'mdi:fire' if heizt else ('mdi:water-alert' if h and h | sum / h | count >= 65 else '') }}
+      badge_color: >-
+        {% set c = expand(['climate.buro_heizung_buro']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.buro_heizung_buro_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {{ 'orange' if heizt else 'blue' }}
       layout: horizontal
     - type: custom:mushroom-fan-card
       entity: fan.zhimi_de_533989040_za5_s_2_fan
@@ -1057,7 +1259,8 @@ views:
         {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
         {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
         {% set h = ['sensor.kuche_heizung_kuche_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
-        {% set f = (h | sum / h | count) | round(0) | int ~ ' %' if h else '' %}
+        {% set hv = (h | sum / h | count) | round(0) | int if h else none %}
+        {% set f = hv ~ ' %' ~ (' lüften' if hv >= 65 else (' trocken' if hv < 35 else '')) if hv is not none else '' %}
         {% if not c %}Thermostat offline
         {% elif aus %}Heizung aus{{ ' · ' ~ f if f }}
         {% elif heizt %}heizt auf {{ soll | max }} °C{{ ' · ' ~ f if f }}
@@ -1086,8 +1289,15 @@ views:
         {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
         {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
         {% set h = ['sensor.kuche_heizung_kuche_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
-        {{ 'mdi:fire' if heizt else '' }}
-      badge_color: orange
+        {{ 'mdi:fire' if heizt else ('mdi:water-alert' if h and h | sum / h | count >= 65 else '') }}
+      badge_color: >-
+        {% set c = expand(['climate.kuche_heizung_kuche']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.kuche_heizung_kuche_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {{ 'orange' if heizt else 'blue' }}
       layout: horizontal
     - type: custom:button-card
       entity: sensor.spulmaschine_zustand
@@ -1171,7 +1381,8 @@ views:
         {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
         {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
         {% set h = ['sensor.bad_heizung_bad_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
-        {% set f = (h | sum / h | count) | round(0) | int ~ ' %' if h else '' %}
+        {% set hv = (h | sum / h | count) | round(0) | int if h else none %}
+        {% set f = hv ~ ' %' ~ (' lüften' if hv >= 65 else (' trocken' if hv < 35 else '')) if hv is not none else '' %}
         {% if not c %}Thermostat offline
         {% elif aus %}Heizung aus{{ ' · ' ~ f if f }}
         {% elif heizt %}heizt auf {{ soll | max }} °C{{ ' · ' ~ f if f }}
@@ -1200,8 +1411,15 @@ views:
         {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
         {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
         {% set h = ['sensor.bad_heizung_bad_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
-        {{ 'mdi:fire' if heizt else '' }}
-      badge_color: orange
+        {{ 'mdi:fire' if heizt else ('mdi:water-alert' if h and h | sum / h | count >= 65 else '') }}
+      badge_color: >-
+        {% set c = expand(['climate.bad_heizung_bad']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.bad_heizung_bad_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {{ 'orange' if heizt else 'blue' }}
       layout: horizontal
     - type: custom:mushroom-light-card
       entity: light.badezimmer_badezimmer
@@ -2899,6 +3117,47 @@ views:
   - type: energy-date-selection
   - type: energy-devices-graph
     title: Verbrauch nach Gerät
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
+      heading: Kosten
+      heading_style: title
+      icon: mdi:currency-eur
+      card_mod: *heading_card_mod
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: custom:mushroom-template-card
+        entity: sensor.stromkosten_heute
+        primary: >-
+          {{ '%.2f' | format(states('sensor.stromkosten_heute') | float(0)) | replace('.', ',') }} €
+        secondary: >-
+          Heute · {{ states('sensor.strom_gerate_heute') | float(0) | round(2) | string | replace('.', ',') }} kWh
+        icon: mdi:calendar-today
+        icon_color: amber
+        layout: vertical
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: sensor.stromkosten_monat
+        primary: >-
+          {{ '%.2f' | format(states('sensor.stromkosten_monat') | float(0)) | replace('.', ',') }} €
+        secondary: >-
+          Monat · {{ states('sensor.strom_gerate_monat') | float(0) | round(1) | string | replace('.', ',') }} kWh
+        icon: mdi:calendar-month
+        icon_color: orange
+        layout: vertical
+        tap_action:
+          action: more-info
+    - type: entities
+      entities:
+      - entity: input_number.strompreis
+        name: Strompreis
+    - type: markdown
+      content: >-
+        Nur die gemessenen Geräte: Waschmaschine, Trockner, Spülmaschine, Receiver und Hue-Licht
+        (geschätzt). Der Rest der Wohnung ist nicht erfasst.
   - type: custom:stack-in-card
     cards:
     - type: heading

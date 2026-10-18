@@ -337,7 +337,90 @@ template:
         availability: "{{ has_value('sensor.fritz_box_7590_upload_durchsatz') }}"
         state: "{{ (states('sensor.fritz_box_7590_upload_durchsatz') | float(0) * 8 / 1000) | round(1) }}"
 
+  # --- Luftfeuchte: Raeume ab 65 % (Schimmelgefahr), Werte aus den tado-Thermostaten ---
+  - binary_sensor:
+      - name: "Lüften empfohlen"
+        unique_id: lueften_empfohlen
+        icon: mdi:window-open-variant
+        state: >-
+            {% set raeume = {
+              'Wohnzimmer': ['sensor.wohnzimmer_heizung_wohnzimmer_current_humidity'],
+              'Schlafzimmer': ['sensor.schlafzimmer_heizung_schlafzimmer_links_current_humidity',
+                               'sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_humidity'],
+              'Esszimmer': ['sensor.esszimmer_heizung_esszimmer_current_humidity'],
+              'Büro': ['sensor.buro_heizung_buro_current_humidity'],
+              'Küche': ['sensor.kuche_heizung_kuche_current_humidity'],
+              'Bad': ['sensor.bad_heizung_bad_current_humidity'] } %}
+            {% set ns = namespace(r=[]) %}
+            {% for raum, ids in raeume.items() %}
+              {% set h = ids | map('states') | map('float', none) | select('number') | list %}
+              {% if h and h | sum / h | count >= 65 %}
+                {% set ns.r = ns.r + [raum ~ ' ' ~ (h | sum / h | count) | round(0) | int ~ ' %'] %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.r | count > 0 }}
+        attributes:
+          raeume: >-
+            {% set raeume = {
+              'Wohnzimmer': ['sensor.wohnzimmer_heizung_wohnzimmer_current_humidity'],
+              'Schlafzimmer': ['sensor.schlafzimmer_heizung_schlafzimmer_links_current_humidity',
+                               'sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_humidity'],
+              'Esszimmer': ['sensor.esszimmer_heizung_esszimmer_current_humidity'],
+              'Büro': ['sensor.buro_heizung_buro_current_humidity'],
+              'Küche': ['sensor.kuche_heizung_kuche_current_humidity'],
+              'Bad': ['sensor.bad_heizung_bad_current_humidity'] } %}
+            {% set ns = namespace(r=[]) %}
+            {% for raum, ids in raeume.items() %}
+              {% set h = ids | map('states') | map('float', none) | select('number') | list %}
+              {% if h and h | sum / h | count >= 65 %}
+                {% set ns.r = ns.r + [raum ~ ' ' ~ (h | sum / h | count) | round(0) | int ~ ' %'] %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.r }}
+
+  # --- Stromkosten der gemessenen Geraete (Energie-Dashboard), Preis in input_number.strompreis ---
+  - sensor:
+      - name: "Strom Geräte gesamt"
+        unique_id: strom_geraete_gesamt
+        unit_of_measurement: kWh
+        device_class: energy
+        state_class: total_increasing
+        icon: mdi:lightning-bolt
+        # nur wenn alle Zaehler da sind, sonst springt die Summe und die Tageszaehler zaehlen falsch
+        availability: >-
+          {{ ['sensor.tz3210_2putqrmw_ts011f_summe_verbraucht', 'sensor.keller_steckdose_trockner_summe_verbraucht',
+              'sensor.steckdose_geschirrspuler_summe_verbraucht', 'sensor.waschmaschine_summe_verbraucht',
+              'sensor.hue_licht_energy'] | map('states') | map('is_number') | min }}
+        state: >-
+          {{ (['sensor.tz3210_2putqrmw_ts011f_summe_verbraucht', 'sensor.keller_steckdose_trockner_summe_verbraucht',
+               'sensor.steckdose_geschirrspuler_summe_verbraucht', 'sensor.waschmaschine_summe_verbraucht',
+               'sensor.hue_licht_energy'] | map('states') | map('float') | sum) | round(3) }}
+      - name: "Stromkosten heute"
+        unique_id: stromkosten_heute
+        unit_of_measurement: "€"
+        device_class: monetary
+        state_class: total
+        icon: mdi:currency-eur
+        availability: "{{ is_number(states('sensor.strom_gerate_heute')) }}"
+        state: "{{ (states('sensor.strom_gerate_heute') | float * states('input_number.strompreis') | float(0)) | round(2) }}"
+      - name: "Stromkosten Monat"
+        unique_id: stromkosten_monat
+        unit_of_measurement: "€"
+        device_class: monetary
+        state_class: total
+        icon: mdi:currency-eur
+        availability: "{{ is_number(states('sensor.strom_gerate_monat')) }}"
+        state: "{{ (states('sensor.strom_gerate_monat') | float * states('input_number.strompreis') | float(0)) | round(2) }}"
+
 utility_meter:
+  strom_gerate_heute:
+    name: Strom Geräte heute
+    source: sensor.strom_gerate_gesamt
+    cycle: daily
+  strom_gerate_monat:
+    name: Strom Geräte Monat
+    source: sensor.strom_gerate_gesamt
+    cycle: monthly
   adguard_blockiert_heute:
     name: AdGuard blockiert heute
     source: sensor.adguard_blockiert_gesamt
@@ -346,6 +429,16 @@ utility_meter:
     name: AdGuard Abfragen heute
     source: sensor.adguard_abfragen_gesamt
     cycle: daily
+
+input_number:
+  strompreis:
+    name: Strompreis
+    min: 0
+    max: 1
+    step: 0.0001
+    mode: box
+    unit_of_measurement: "€/kWh"
+    icon: mdi:cash
 
 input_select:
   adguard_zeitraum:
