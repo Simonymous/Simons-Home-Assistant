@@ -79,12 +79,6 @@ input_datetime:
 
 template:
   - sensor:
-      - name: "Nuki Keypad Batterie"
-        unit_of_measurement: "%"
-        device_class: battery
-        state: >
-          {{ state_attr('lock.smart_lock_pro', 'keypad_battery_critical') }}
-
       # Liest das naechste Abholdatum direkt aus den Attributen der
       # waste_collection_schedule UI-Sensoren (deren "state" ist nur ein
       # Anzeigetext wie "on Mi, 15.07.2026", kein Tage-Zaehler) und rechnet
