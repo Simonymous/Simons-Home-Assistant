@@ -805,35 +805,6 @@
     target:
       entity_id: switch.wohnzimmer_wohnwand_outlet
   mode: single
-- id: '1783786435304'
-  alias: 'Wohnwand: Aus mit LG TV (immer)'
-  description: Schaltet die Wohnwand-Steckdose aus, wenn der Wohnzimmer-LG-TV
-    45 s lang aus ist. Der LG meldet beim Ausschalten erst off, ~25 s spaeter
-    unavailable, daher zaehlen beide als aus. Auch nach HA-Start und
-    Automations-Reload, damit ein dabei verpasster Wechsel nachgeholt wird.
-  triggers:
-  - entity_id: media_player.lg_webos_tv_65nano759pa
-    to:
-    - 'off'
-    - unavailable
-    trigger: state
-  - trigger: homeassistant
-    event: start
-  - trigger: event
-    event_type: automation_reloaded
-  conditions: []
-  actions:
-  - delay:
-      seconds: 45
-  - condition: not
-    conditions:
-    - condition: state
-      entity_id: media_player.lg_webos_tv_65nano759pa
-      state: 'on'
-  - action: switch.turn_off
-    target:
-      entity_id: switch.wohnzimmer_wohnwand_outlet
-  mode: restart
 - id: '1783786435305'
   alias: 'Zahnbürste: Neuer Bürstenkopf fällig'
   description: Benachrichtigt Simon, wenn der Sonicare-Bürstenkopf laut Verschleiß-Sensor
