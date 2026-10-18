@@ -270,10 +270,7 @@
   description: Sendet eine Push-Nachricht, wenn die Spülmaschine fertig ist.
   triggers:
   - entity_id: sensor.spulmaschine_zustand
-    to:
-    - job_done
-    - finished
-    - Finished
+    to: finished
     trigger: state
   conditions: []
   actions:
