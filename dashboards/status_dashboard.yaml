@@ -2089,159 +2089,135 @@ views:
       - indicators
       - buttons
       - mini_map
-- title: Synology
-  path: synology
-  icon: mdi:nas
+- title: Netzwerk
+  path: netzwerk
+  icon: mdi:lan
   theme: Liquid Glass
   cards:
   - type: custom:stack-in-card
     cards:
     - type: heading
-      heading: DS223j
+      heading: Internet
       heading_style: title
-      icon: mdi:nas
+      icon: mdi:web
       card_mod: *heading_card_mod
-    - type: picture
-      image: /local/synology_ds223j.png
-  - type: custom:stack-in-card
-    cards:
-    - type: heading
-      heading: Downloads
-      heading_style: title
-      icon: mdi:download-network
-      card_mod: *heading_card_mod
+    - type: custom:mushroom-template-card
+      entity: binary_sensor.fritz_box_7590_verbindung
+      primary: >-
+        {% set seit = as_datetime(states('sensor.fritz_box_7590_verbindungsverfugbarkeit')) %}
+        {% if is_state('binary_sensor.fritz_box_7590_verbindung', 'on') %}Online{{ ' seit ' ~ as_local(seit).strftime('%d.%m. %H:%M') if seit else '' }}{% else %}Getrennt{% endif %}
+      secondary: >-
+        Leitung {{ ((states('sensor.fritz_box_7590_link_download_durchsatz') | float(0) / 1000) | round(1) | string | replace('.', ',')) }} /
+        {{ ((states('sensor.fritz_box_7590_link_upload_durchsatz') | float(0) / 1000) | round(1) | string | replace('.', ',')) }} Mbit/s ·
+        {{ states('sensor.fritz_box_7590_gb_empfangen') | float(0) | round(0) | int }} GB empfangen,
+        {{ states('sensor.fritz_box_7590_gb_gesendet') | float(0) | round(0) | int }} GB gesendet
+      multiline_secondary: true
+      icon: >-
+        {{ 'mdi:web-check' if is_state('binary_sensor.fritz_box_7590_verbindung', 'on') else 'mdi:web-off' }}
+      icon_color: >-
+        {{ 'green' if is_state('binary_sensor.fritz_box_7590_verbindung', 'on') else 'red' }}
+      tap_action:
+        action: more-info
     - type: grid
       columns: 2
       square: false
       cards:
-      - type: custom:button-card
-        entity: binary_sensor.synology_download_aktiv
+      - type: tile
+        entity: sensor.internet_download_jetzt
+        name: Download jetzt
+      - type: tile
+        entity: sensor.internet_upload_jetzt
+        name: Upload jetzt
+    - type: grid
+      columns: 3
+      square: false
+      cards:
+      - type: tile
+        entity: sensor.speedtest_download
+        name: Speedtest ↓
+        vertical: true
+      - type: tile
+        entity: sensor.speedtest_upload
+        name: Speedtest ↑
+        vertical: true
+      - type: tile
+        entity: sensor.speedtest_ping
+        name: Ping
+        vertical: true
+    - type: history-graph
+      title: Auslastung (24 h)
+      hours_to_show: 24
+      entities:
+      - entity: sensor.internet_download_jetzt
         name: Download
-        icon: mdi:download-network
-        show_name: true
-        show_state: false
-        show_label: true
-        show_icon: true
-        label: "[[[\n  const st = states['binary_sensor.synology_download_aktiv'];\n  return (st && st.state === 'on') ? 'Download läuft…' : 'Kein Download aktiv';\n]]]"
-        styles:
-          card:
-          - padding: 12px
-          - min-height: 66px
-          grid:
-          - grid-template-areas: '"i n" "i l"'
-          - grid-template-columns: 42px 1fr
-          - grid-template-rows: min-content min-content
-          icon:
-          - width: 24px
-          - height: 24px
-          name:
-          - justify-self: start
-          - font-weight: bold
-          - font-size: 14px
-          label:
-          - justify-self: start
-          - font-size: 12px
-          - color: var(--secondary-text-color)
-        state:
-        - value: 'on'
-          icon: mdi:loading
-          color: rgb(33, 150, 243)
-          styles:
-            icon:
-            - animation: spinner-spin 1.1s linear infinite, machine-blink 1.6s ease-in-out infinite
-        - operator: default
-          color: var(--disabled-text-color)
-        extra_styles: '@keyframes spinner-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } @keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+      - entity: sensor.internet_upload_jetzt
+        name: Upload
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
+      heading: Geräte & WLAN
+      heading_style: title
+      icon: mdi:wifi
+      card_mod: *heading_card_mod
+    - type: grid
+      columns: 2
+      square: false
+      cards:
       - type: custom:mushroom-template-card
-        primary: Letzter Download
-        secondary: '{% set dt = states(''input_datetime.letzter_synology_download'') %}{% if dt in [''unknown'', ''unavailable'', ''none'', ''''] %} Noch keiner erfasst {% else %} {{ as_timestamp(dt) | timestamp_custom(''%d.%m.%Y um %H:%M Uhr'') }} {% endif %}'
-        icon: mdi:clock-check-outline
-        icon_color: grey
-        layout: vertical
-  - type: custom:stack-in-card
-    cards:
-    - type: heading
-      heading: System
-      heading_style: title
-      icon: mdi:chip
-      card_mod: *heading_card_mod
-    - type: grid
-      columns: 2
-      square: false
-      cards:
+        entity: sensor.gerate_im_netz
+        primary: "{{ states('sensor.gerate_im_netz') }} Geräte online"
+        secondary: "von {{ state_attr('sensor.gerate_im_netz', 'bekannt') }} bekannten"
+        icon: mdi:devices
+        icon_color: blue
+        tap_action:
+          action: more-info
       - type: tile
-        entity: sensor.simon_synology_cpu_auslastung_gesamt
-        name: CPU-Auslastung
-        icon: mdi:cpu-64-bit
-        color: blue
+        entity: switch.fritz_box_7590_wi_fi_guest
+        name: Gäste-WLAN
+        tap_action:
+          action: more-info
+        features:
+        - type: toggle
       - type: tile
-        entity: sensor.simon_synology_speichernutzung_real
-        name: Arbeitsspeicher
-        icon: mdi:memory
-        color: green
-  - type: custom:stack-in-card
-    cards:
-    - type: heading
-      heading: Speicher
-      heading_style: title
-      icon: mdi:harddisk
-      card_mod: *heading_card_mod
-    - type: grid
-      columns: 2
-      square: false
-      cards:
+        entity: switch.fritz_box_7590_wi_fi_main_2_4ghz
+        name: WLAN 2,4 GHz
+        tap_action:
+          action: more-info
+        icon_tap_action:
+          action: more-info
       - type: tile
-        entity: sensor.simon_synology_volume_1_volume_nutzung
-        name: Volume-Nutzung
-        icon: mdi:database
-        color: orange
-      - type: tile
-        entity: sensor.simon_synology_volume_1_durchschnittliche_festplattentemperatur
-        name: Festplatten-Temperatur
-        icon: mdi:thermometer
-        color: red
-  - type: custom:stack-in-card
-    cards:
-    - type: heading
-      heading: Netzwerk
-      heading_style: title
-      icon: mdi:swap-vertical
-      card_mod: *heading_card_mod
-    - type: grid
-      columns: 2
-      square: false
-      cards:
-      - type: tile
-        entity: sensor.simon_synology_download_durchsatz
-        name: Download-Durchsatz
-        icon: mdi:arrow-down-bold
-        color: blue
-      - type: tile
-        entity: sensor.simon_synology_upload_durchsatz
-        name: Upload-Durchsatz
-        icon: mdi:arrow-up-bold
-        color: purple
-  - type: custom:stack-in-card
-    cards:
-    - type: heading
-      heading: Status
-      heading_style: title
-      icon: mdi:shield-check
-      card_mod: *heading_card_mod
-    - type: grid
-      columns: 2
-      square: false
-      cards:
-      - type: tile
-        entity: binary_sensor.simon_synology_sicherheitsstatus
-        name: Sicherheitsstatus
-        icon: mdi:shield-check
-        color: green
-      - type: tile
-        entity: update.simon_synology_dsm_update
-        name: DSM-Update
-        icon: mdi:update
-        color: orange
+        entity: switch.fritz_box_7590_wi_fi_main_5ghz
+        name: WLAN 5 GHz
+        tap_action:
+          action: more-info
+        icon_tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: sensor.fritz_box_7590_cpu_temperatur
+        primary: "Fritz!Box · {{ states('sensor.fritz_box_7590_cpu_temperatur') }} °C"
+        secondary: >-
+          {% set up = as_datetime(states('sensor.fritz_box_7590_betriebszeit')) %}
+          {{ 'läuft seit ' ~ as_local(up).strftime('%d.%m.') if up else '' }} ·
+          {{ 'Update verfügbar' if is_state('update.fritz_box_7590_fritz_os', 'on') else 'FRITZ!OS aktuell' }}
+        multiline_secondary: true
+        icon: mdi:router-wireless
+        icon_color: >-
+          {{ 'orange' if is_state('update.fritz_box_7590_fritz_os', 'on') or states('sensor.fritz_box_7590_cpu_temperatur') | float(0) >= 85 else 'green' }}
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: sensor.fritz_repeater_2400_cpu_temperatur
+        primary: "Repeater · {{ states('sensor.fritz_repeater_2400_cpu_temperatur') }} °C"
+        secondary: >-
+          {% set up = as_datetime(states('sensor.fritz_repeater_2400_betriebszeit')) %}
+          {{ 'läuft seit ' ~ as_local(up).strftime('%d.%m.') if up else '' }} ·
+          {{ 'Update verfügbar' if is_state('update.fritz_repeater_2400_fritz_os', 'on') else 'FRITZ!OS aktuell' }}
+        multiline_secondary: true
+        icon: mdi:access-point
+        icon_color: >-
+          {{ 'orange' if is_state('update.fritz_repeater_2400_fritz_os', 'on') else 'green' }}
+        tap_action:
+          action: more-info
   - type: custom:stack-in-card
     cards:
     - type: heading
@@ -2256,11 +2232,11 @@ views:
       - type: custom:mushroom-template-card
         entity: sensor.adguard_blockiert_heute
         primary: >-
-          {{ states('sensor.adguard_blockiert_heute') | int(0) }} heute blockiert
+          {{ states('sensor.adguard_blockiert_heute') | int(0) }} blockiert
         secondary: >-
           {% set b = states('sensor.adguard_blockiert_heute') | float(0) %}
           {% set a = states('sensor.adguard_abfragen_heute') | float(0) %}
-          {{ ((b / a * 100) | round(1)) ~ ' % von ' ~ (a | int) ~ ' Abfragen' if a > 0 else 'Zählt ab der nächsten Abfrage' }}
+          {{ 'heute · ' ~ ((b / a * 100) | round(1) | string | replace('.', ',')) ~ ' % von ' ~ (a | int) ~ ' Abfragen' if a > 0 else 'Zählt ab der nächsten Abfrage' }}
         icon: mdi:shield-check
         icon_color: >-
           {{ 'green' if is_state('switch.adguard_home_schutz', 'on') else 'grey' }}
@@ -2445,6 +2421,154 @@ views:
         chart_type: bar
         period: month
         days_to_show: 365
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
+      heading: DS223j
+      heading_style: title
+      icon: mdi:nas
+      card_mod: *heading_card_mod
+    - type: picture
+      image: /local/synology_ds223j.png
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
+      heading: Downloads
+      heading_style: title
+      icon: mdi:download-network
+      card_mod: *heading_card_mod
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: custom:button-card
+        entity: binary_sensor.synology_download_aktiv
+        name: Download
+        icon: mdi:download-network
+        show_name: true
+        show_state: false
+        show_label: true
+        show_icon: true
+        label: "[[[\n  const st = states['binary_sensor.synology_download_aktiv'];\n  return (st && st.state === 'on') ? 'Download läuft…' : 'Kein Download aktiv';\n]]]"
+        styles:
+          card:
+          - padding: 12px
+          - min-height: 66px
+          grid:
+          - grid-template-areas: '"i n" "i l"'
+          - grid-template-columns: 42px 1fr
+          - grid-template-rows: min-content min-content
+          icon:
+          - width: 24px
+          - height: 24px
+          name:
+          - justify-self: start
+          - font-weight: bold
+          - font-size: 14px
+          label:
+          - justify-self: start
+          - font-size: 12px
+          - color: var(--secondary-text-color)
+        state:
+        - value: 'on'
+          icon: mdi:loading
+          color: rgb(33, 150, 243)
+          styles:
+            icon:
+            - animation: spinner-spin 1.1s linear infinite, machine-blink 1.6s ease-in-out infinite
+        - operator: default
+          color: var(--disabled-text-color)
+        extra_styles: '@keyframes spinner-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } @keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+      - type: custom:mushroom-template-card
+        primary: Letzter Download
+        secondary: '{% set dt = states(''input_datetime.letzter_synology_download'') %}{% if dt in [''unknown'', ''unavailable'', ''none'', ''''] %} Noch keiner erfasst {% else %} {{ as_timestamp(dt) | timestamp_custom(''%d.%m.%Y um %H:%M Uhr'') }} {% endif %}'
+        icon: mdi:clock-check-outline
+        icon_color: grey
+        layout: vertical
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
+      heading: System
+      heading_style: title
+      icon: mdi:chip
+      card_mod: *heading_card_mod
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: tile
+        entity: sensor.simon_synology_cpu_auslastung_gesamt
+        name: CPU-Auslastung
+        icon: mdi:cpu-64-bit
+        color: blue
+      - type: tile
+        entity: sensor.simon_synology_speichernutzung_real
+        name: Arbeitsspeicher
+        icon: mdi:memory
+        color: green
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
+      heading: Speicher
+      heading_style: title
+      icon: mdi:harddisk
+      card_mod: *heading_card_mod
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: tile
+        entity: sensor.simon_synology_volume_1_volume_nutzung
+        name: Volume-Nutzung
+        icon: mdi:database
+        color: orange
+      - type: tile
+        entity: sensor.simon_synology_volume_1_durchschnittliche_festplattentemperatur
+        name: Festplatten-Temperatur
+        icon: mdi:thermometer
+        color: red
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
+      heading: NAS-Netzwerk
+      heading_style: title
+      icon: mdi:swap-vertical
+      card_mod: *heading_card_mod
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: tile
+        entity: sensor.simon_synology_download_durchsatz
+        name: Download-Durchsatz
+        icon: mdi:arrow-down-bold
+        color: blue
+      - type: tile
+        entity: sensor.simon_synology_upload_durchsatz
+        name: Upload-Durchsatz
+        icon: mdi:arrow-up-bold
+        color: purple
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
+      heading: Status
+      heading_style: title
+      icon: mdi:shield-check
+      card_mod: *heading_card_mod
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: tile
+        entity: binary_sensor.simon_synology_sicherheitsstatus
+        name: Sicherheitsstatus
+        icon: mdi:shield-check
+        color: green
+      - type: tile
+        entity: update.simon_synology_dsm_update
+        name: DSM-Update
+        icon: mdi:update
+        color: orange
 - title: Roborock
   path: roborock
   icon: mdi:robot-vacuum

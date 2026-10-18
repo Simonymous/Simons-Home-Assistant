@@ -309,6 +309,34 @@ template:
           {% set basis = this.state | float(0) %}
           {{ (basis + neu - alt) | int if alt is not none and neu is not none and neu > alt else basis | int }}
 
+  # --- Netzwerk-Tab: Fritz!Box-Kennzahlen in lesbaren Einheiten ---
+  - sensor:
+      - name: "Geräte im Netz"
+        unique_id: netzwerk_geraete_im_netz
+        unit_of_measurement: "Geräte"
+        state_class: measurement
+        icon: mdi:devices
+        state: >-
+          {{ integration_entities('fritz') | select('match', 'device_tracker\.')
+             | select('is_state', 'home') | list | count }}
+        attributes:
+          bekannt: >-
+            {{ integration_entities('fritz') | select('match', 'device_tracker\.') | list | count }}
+      - name: "Internet Download jetzt"
+        unique_id: netzwerk_download_jetzt
+        unit_of_measurement: "Mbit/s"
+        state_class: measurement
+        icon: mdi:download-network
+        availability: "{{ has_value('sensor.fritz_box_7590_download_durchsatz') }}"
+        state: "{{ (states('sensor.fritz_box_7590_download_durchsatz') | float(0) * 8 / 1000) | round(1) }}"
+      - name: "Internet Upload jetzt"
+        unique_id: netzwerk_upload_jetzt
+        unit_of_measurement: "Mbit/s"
+        state_class: measurement
+        icon: mdi:upload-network
+        availability: "{{ has_value('sensor.fritz_box_7590_upload_durchsatz') }}"
+        state: "{{ (states('sensor.fritz_box_7590_upload_durchsatz') | float(0) * 8 / 1000) | round(1) }}"
+
 utility_meter:
   adguard_blockiert_heute:
     name: AdGuard blockiert heute

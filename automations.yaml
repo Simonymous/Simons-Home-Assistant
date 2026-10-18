@@ -1084,3 +1084,16 @@
       data:
         tag: haustuer_geoeffnet
   mode: queued
+- id: '1792300000003'
+  alias: 'Netzwerk: Speedtest nachts'
+  description: Startet einmal täglich um 4:30 einen Speedtest. Die stündliche Abfrage der
+    Speedtest-Integration ist abgeschaltet, weil jeder Test die Leitung kurz voll auslastet.
+  triggers:
+  - trigger: time
+    at: 04:30:00
+  conditions: []
+  actions:
+  - action: homeassistant.update_entity
+    target:
+      entity_id: sensor.speedtest_download
+  mode: single
