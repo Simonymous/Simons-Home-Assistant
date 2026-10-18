@@ -247,20 +247,51 @@ views:
       tap_action:
         action: more-info
       primary: >-
-        {% set t = states('sensor.wohnzimmer_heizung_wohnzimmer_current_temperature') %}
-        {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
+        {% set c = expand(['climate.wohnzimmer_heizung_wohnzimmer']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.wohnzimmer_heizung_wohnzimmer_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if ist %}{{ (ist | sum / ist | count) | round(1) }} °C{% else %}Nicht erreichbar{% endif %}
       secondary: >-
-        {% set h = states('sensor.wohnzimmer_heizung_wohnzimmer_current_humidity') %}
-        {% if h in ['unavailable', 'unknown', 'none', ''] %}Sensor offline{% else %}{{ h }} % Luftfeuchtigkeit{% endif %}
+        {% set c = expand(['climate.wohnzimmer_heizung_wohnzimmer']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.wohnzimmer_heizung_wohnzimmer_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% set f = (h | sum / h | count) | round(0) | int ~ ' %' if h else '' %}
+        {% if not c %}Thermostat offline
+        {% elif aus %}Heizung aus{{ ' · ' ~ f if f }}
+        {% elif heizt %}heizt auf {{ soll | max }} °C{{ ' · ' ~ f if f }}
+        {% else %}Soll {{ soll | max if soll else '–' }} °C{{ ' · ' ~ f if f }}{% endif %}
       icon: >-
-        {% set t = states('sensor.wohnzimmer_heizung_wohnzimmer_current_temperature') %}
-        {{ 'mdi:thermometer-off' if t in ['unavailable', 'unknown', 'none', ''] else 'mdi:thermometer' }}
+        {% set c = expand(['climate.wohnzimmer_heizung_wohnzimmer']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.wohnzimmer_heizung_wohnzimmer_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if not ist %}mdi:thermometer-off{% elif heizt %}mdi:radiator{% elif aus %}mdi:radiator-off{% else %}mdi:thermometer{% endif %}
       icon_color: >-
-        {% set t = states('sensor.wohnzimmer_heizung_wohnzimmer_current_temperature') %}
-        {% if t in ['unavailable', 'unknown', 'none', ''] %}grey{% else %}
-        {% set tf = t | float(0) %}
-        {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
-        {% endif %}
+        {% set c = expand(['climate.wohnzimmer_heizung_wohnzimmer']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.wohnzimmer_heizung_wohnzimmer_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if not ist or aus %}grey{% elif heizt %}orange
+        {% elif soll and (ist | sum / ist | count) | round(1) < (soll | max) - 0.5 %}blue{% else %}green{% endif %}
+      badge_icon: >-
+        {% set c = expand(['climate.wohnzimmer_heizung_wohnzimmer']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.wohnzimmer_heizung_wohnzimmer_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {{ 'mdi:fire' if heizt else '' }}
+      badge_color: orange
       layout: horizontal
     - type: grid
       columns: 2
@@ -414,24 +445,51 @@ views:
       tap_action:
         action: more-info
       primary: >-
-        {% set t1 = states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_temperature') %}
-        {% set t2 = states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_temperature') %}
-        {% if t1 in ['unavailable', 'unknown', 'none', ''] or t2 in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ ((t1 | float(0) + t2 | float(0)) / 2) | round(1) }} °C{% endif %}
+        {% set c = expand(['climate.schlafzimmer_heizung_schlafzimmer_links', 'climate.schlafzimmer_heizung_schlafzimmer_rechts']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.schlafzimmer_heizung_schlafzimmer_links_current_humidity', 'sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if ist %}{{ (ist | sum / ist | count) | round(1) }} °C{% else %}Nicht erreichbar{% endif %}
       secondary: >-
-        {% set h1 = states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_humidity') %}
-        {% set h2 = states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_humidity') %}
-        {% if h1 in ['unavailable', 'unknown', 'none', ''] or h2 in ['unavailable', 'unknown', 'none', ''] %}Sensor offline{% else %}{{ ((h1 | float(0) + h2 | float(0)) / 2) | round(0) }} % Luftfeuchtigkeit{% endif %}
+        {% set c = expand(['climate.schlafzimmer_heizung_schlafzimmer_links', 'climate.schlafzimmer_heizung_schlafzimmer_rechts']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.schlafzimmer_heizung_schlafzimmer_links_current_humidity', 'sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% set f = (h | sum / h | count) | round(0) | int ~ ' %' if h else '' %}
+        {% if not c %}Thermostat offline
+        {% elif aus %}Heizung aus{{ ' · ' ~ f if f }}
+        {% elif heizt %}heizt auf {{ soll | max }} °C{{ ' · ' ~ f if f }}
+        {% else %}Soll {{ soll | max if soll else '–' }} °C{{ ' · ' ~ f if f }}{% endif %}
       icon: >-
-        {% set t1 = states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_temperature') %}
-        {% set t2 = states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_temperature') %}
-        {{ 'mdi:thermometer-off' if (t1 in ['unavailable', 'unknown', 'none', ''] or t2 in ['unavailable', 'unknown', 'none', '']) else 'mdi:thermometer' }}
+        {% set c = expand(['climate.schlafzimmer_heizung_schlafzimmer_links', 'climate.schlafzimmer_heizung_schlafzimmer_rechts']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.schlafzimmer_heizung_schlafzimmer_links_current_humidity', 'sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if not ist %}mdi:thermometer-off{% elif heizt %}mdi:radiator{% elif aus %}mdi:radiator-off{% else %}mdi:thermometer{% endif %}
       icon_color: >-
-        {% set t1 = states('sensor.schlafzimmer_heizung_schlafzimmer_links_current_temperature') %}
-        {% set t2 = states('sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_temperature') %}
-        {% if t1 in ['unavailable', 'unknown', 'none', ''] or t2 in ['unavailable', 'unknown', 'none', ''] %}grey{% else %}
-        {% set t = (t1 | float(0) + t2 | float(0)) / 2 %}
-        {% if t >= 23 %}orange{% elif t <= 19 %}blue{% else %}green{% endif %}
-        {% endif %}
+        {% set c = expand(['climate.schlafzimmer_heizung_schlafzimmer_links', 'climate.schlafzimmer_heizung_schlafzimmer_rechts']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.schlafzimmer_heizung_schlafzimmer_links_current_humidity', 'sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if not ist or aus %}grey{% elif heizt %}orange
+        {% elif soll and (ist | sum / ist | count) | round(1) < (soll | max) - 0.5 %}blue{% else %}green{% endif %}
+      badge_icon: >-
+        {% set c = expand(['climate.schlafzimmer_heizung_schlafzimmer_links', 'climate.schlafzimmer_heizung_schlafzimmer_rechts']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.schlafzimmer_heizung_schlafzimmer_links_current_humidity', 'sensor.schlafzimmer_heizung_schlafzimmer_rechts_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {{ 'mdi:fire' if heizt else '' }}
+      badge_color: orange
       layout: horizontal
     - type: grid
       columns: 2
@@ -728,20 +786,51 @@ views:
       tap_action:
         action: more-info
       primary: >-
-        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature') %}
-        {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
+        {% set c = expand(['climate.esszimmer_heizung_esszimmer']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.esszimmer_heizung_esszimmer_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if ist %}{{ (ist | sum / ist | count) | round(1) }} °C{% else %}Nicht erreichbar{% endif %}
       secondary: >-
-        {% set h = states('sensor.esszimmer_heizung_esszimmer_current_humidity') %}
-        {% if h in ['unavailable', 'unknown', 'none', ''] %}Sensor offline{% else %}{{ h }} % Luftfeuchtigkeit{% endif %}
+        {% set c = expand(['climate.esszimmer_heizung_esszimmer']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.esszimmer_heizung_esszimmer_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% set f = (h | sum / h | count) | round(0) | int ~ ' %' if h else '' %}
+        {% if not c %}Thermostat offline
+        {% elif aus %}Heizung aus{{ ' · ' ~ f if f }}
+        {% elif heizt %}heizt auf {{ soll | max }} °C{{ ' · ' ~ f if f }}
+        {% else %}Soll {{ soll | max if soll else '–' }} °C{{ ' · ' ~ f if f }}{% endif %}
       icon: >-
-        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature') %}
-        {{ 'mdi:thermometer-off' if t in ['unavailable', 'unknown', 'none', ''] else 'mdi:thermometer' }}
+        {% set c = expand(['climate.esszimmer_heizung_esszimmer']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.esszimmer_heizung_esszimmer_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if not ist %}mdi:thermometer-off{% elif heizt %}mdi:radiator{% elif aus %}mdi:radiator-off{% else %}mdi:thermometer{% endif %}
       icon_color: >-
-        {% set t = states('sensor.esszimmer_heizung_esszimmer_current_temperature') %}
-        {% if t in ['unavailable', 'unknown', 'none', ''] %}grey{% else %}
-        {% set tf = t | float(0) %}
-        {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
-        {% endif %}
+        {% set c = expand(['climate.esszimmer_heizung_esszimmer']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.esszimmer_heizung_esszimmer_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if not ist or aus %}grey{% elif heizt %}orange
+        {% elif soll and (ist | sum / ist | count) | round(1) < (soll | max) - 0.5 %}blue{% else %}green{% endif %}
+      badge_icon: >-
+        {% set c = expand(['climate.esszimmer_heizung_esszimmer']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.esszimmer_heizung_esszimmer_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {{ 'mdi:fire' if heizt else '' }}
+      badge_color: orange
       layout: horizontal
     - type: grid
       columns: 2
@@ -832,20 +921,51 @@ views:
       tap_action:
         action: more-info
       primary: >-
-        {% set t = states('sensor.buro_heizung_buro_current_temperature') %}
-        {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
+        {% set c = expand(['climate.buro_heizung_buro']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.buro_heizung_buro_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if ist %}{{ (ist | sum / ist | count) | round(1) }} °C{% else %}Nicht erreichbar{% endif %}
       secondary: >-
-        {% set h = states('sensor.buro_heizung_buro_current_humidity') %}
-        {% if h in ['unavailable', 'unknown', 'none', ''] %}Sensor offline{% else %}{{ h }} % Luftfeuchtigkeit{% endif %}
+        {% set c = expand(['climate.buro_heizung_buro']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.buro_heizung_buro_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% set f = (h | sum / h | count) | round(0) | int ~ ' %' if h else '' %}
+        {% if not c %}Thermostat offline
+        {% elif aus %}Heizung aus{{ ' · ' ~ f if f }}
+        {% elif heizt %}heizt auf {{ soll | max }} °C{{ ' · ' ~ f if f }}
+        {% else %}Soll {{ soll | max if soll else '–' }} °C{{ ' · ' ~ f if f }}{% endif %}
       icon: >-
-        {% set t = states('sensor.buro_heizung_buro_current_temperature') %}
-        {{ 'mdi:thermometer-off' if t in ['unavailable', 'unknown', 'none', ''] else 'mdi:thermometer' }}
+        {% set c = expand(['climate.buro_heizung_buro']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.buro_heizung_buro_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if not ist %}mdi:thermometer-off{% elif heizt %}mdi:radiator{% elif aus %}mdi:radiator-off{% else %}mdi:thermometer{% endif %}
       icon_color: >-
-        {% set t = states('sensor.buro_heizung_buro_current_temperature') %}
-        {% if t in ['unavailable', 'unknown', 'none', ''] %}grey{% else %}
-        {% set tf = t | float(0) %}
-        {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
-        {% endif %}
+        {% set c = expand(['climate.buro_heizung_buro']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.buro_heizung_buro_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if not ist or aus %}grey{% elif heizt %}orange
+        {% elif soll and (ist | sum / ist | count) | round(1) < (soll | max) - 0.5 %}blue{% else %}green{% endif %}
+      badge_icon: >-
+        {% set c = expand(['climate.buro_heizung_buro']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.buro_heizung_buro_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {{ 'mdi:fire' if heizt else '' }}
+      badge_color: orange
       layout: horizontal
     - type: custom:mushroom-fan-card
       entity: fan.zhimi_de_533989040_za5_s_2_fan
@@ -923,20 +1043,51 @@ views:
       tap_action:
         action: more-info
       primary: >-
-        {% set t = states('sensor.kuche_heizung_kuche_current_temperature') %}
-        {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
+        {% set c = expand(['climate.kuche_heizung_kuche']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.kuche_heizung_kuche_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if ist %}{{ (ist | sum / ist | count) | round(1) }} °C{% else %}Nicht erreichbar{% endif %}
       secondary: >-
-        {% set h = states('sensor.kuche_heizung_kuche_current_humidity') %}
-        {% if h in ['unavailable', 'unknown', 'none', ''] %}Sensor offline{% else %}{{ h }} % Luftfeuchtigkeit{% endif %}
+        {% set c = expand(['climate.kuche_heizung_kuche']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.kuche_heizung_kuche_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% set f = (h | sum / h | count) | round(0) | int ~ ' %' if h else '' %}
+        {% if not c %}Thermostat offline
+        {% elif aus %}Heizung aus{{ ' · ' ~ f if f }}
+        {% elif heizt %}heizt auf {{ soll | max }} °C{{ ' · ' ~ f if f }}
+        {% else %}Soll {{ soll | max if soll else '–' }} °C{{ ' · ' ~ f if f }}{% endif %}
       icon: >-
-        {% set t = states('sensor.kuche_heizung_kuche_current_temperature') %}
-        {{ 'mdi:thermometer-off' if t in ['unavailable', 'unknown', 'none', ''] else 'mdi:thermometer' }}
+        {% set c = expand(['climate.kuche_heizung_kuche']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.kuche_heizung_kuche_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if not ist %}mdi:thermometer-off{% elif heizt %}mdi:radiator{% elif aus %}mdi:radiator-off{% else %}mdi:thermometer{% endif %}
       icon_color: >-
-        {% set t = states('sensor.kuche_heizung_kuche_current_temperature') %}
-        {% if t in ['unavailable', 'unknown', 'none', ''] %}grey{% else %}
-        {% set tf = t | float(0) %}
-        {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
-        {% endif %}
+        {% set c = expand(['climate.kuche_heizung_kuche']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.kuche_heizung_kuche_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if not ist or aus %}grey{% elif heizt %}orange
+        {% elif soll and (ist | sum / ist | count) | round(1) < (soll | max) - 0.5 %}blue{% else %}green{% endif %}
+      badge_icon: >-
+        {% set c = expand(['climate.kuche_heizung_kuche']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.kuche_heizung_kuche_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {{ 'mdi:fire' if heizt else '' }}
+      badge_color: orange
       layout: horizontal
     - type: custom:button-card
       entity: sensor.spulmaschine_zustand
@@ -1006,20 +1157,51 @@ views:
       tap_action:
         action: more-info
       primary: >-
-        {% set t = states('sensor.bad_heizung_bad_current_temperature') %}
-        {% if t in ['unavailable', 'unknown', 'none', ''] %}Nicht erreichbar{% else %}{{ t }} °C{% endif %}
+        {% set c = expand(['climate.bad_heizung_bad']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.bad_heizung_bad_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if ist %}{{ (ist | sum / ist | count) | round(1) }} °C{% else %}Nicht erreichbar{% endif %}
       secondary: >-
-        {% set h = states('sensor.bad_heizung_bad_current_humidity') %}
-        {% if h in ['unavailable', 'unknown', 'none', ''] %}Sensor offline{% else %}{{ h }} % Luftfeuchtigkeit{% endif %}
+        {% set c = expand(['climate.bad_heizung_bad']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.bad_heizung_bad_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% set f = (h | sum / h | count) | round(0) | int ~ ' %' if h else '' %}
+        {% if not c %}Thermostat offline
+        {% elif aus %}Heizung aus{{ ' · ' ~ f if f }}
+        {% elif heizt %}heizt auf {{ soll | max }} °C{{ ' · ' ~ f if f }}
+        {% else %}Soll {{ soll | max if soll else '–' }} °C{{ ' · ' ~ f if f }}{% endif %}
       icon: >-
-        {% set t = states('sensor.bad_heizung_bad_current_temperature') %}
-        {{ 'mdi:thermometer-off' if t in ['unavailable', 'unknown', 'none', ''] else 'mdi:thermometer' }}
+        {% set c = expand(['climate.bad_heizung_bad']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.bad_heizung_bad_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if not ist %}mdi:thermometer-off{% elif heizt %}mdi:radiator{% elif aus %}mdi:radiator-off{% else %}mdi:thermometer{% endif %}
       icon_color: >-
-        {% set t = states('sensor.bad_heizung_bad_current_temperature') %}
-        {% if t in ['unavailable', 'unknown', 'none', ''] %}grey{% else %}
-        {% set tf = t | float(0) %}
-        {% if tf >= 23 %}orange{% elif tf <= 19 %}blue{% else %}green{% endif %}
-        {% endif %}
+        {% set c = expand(['climate.bad_heizung_bad']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.bad_heizung_bad_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {% if not ist or aus %}grey{% elif heizt %}orange
+        {% elif soll and (ist | sum / ist | count) | round(1) < (soll | max) - 0.5 %}blue{% else %}green{% endif %}
+      badge_icon: >-
+        {% set c = expand(['climate.bad_heizung_bad']) | rejectattr('state', 'in', ['unavailable', 'unknown']) | list %}
+        {% set ist = c | map(attribute='attributes.current_temperature') | select('number') | list %}
+        {% set soll = c | selectattr('state', 'eq', 'heat') | map(attribute='attributes.temperature') | select('number') | list %}
+        {% set heizt = c | selectattr('attributes.hvac_action', 'eq', 'heating') | list | count > 0 %}
+        {% set aus = c | count > 0 and c | selectattr('state', 'eq', 'off') | list | count == c | count %}
+        {% set h = ['sensor.bad_heizung_bad_current_humidity'] | map('states') | map('float', none) | select('number') | list %}
+        {{ 'mdi:fire' if heizt else '' }}
+      badge_color: orange
       layout: horizontal
     - type: custom:mushroom-light-card
       entity: light.badezimmer_badezimmer
