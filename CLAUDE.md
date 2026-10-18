@@ -72,6 +72,11 @@ nicht deployten lokalen Änderungen laufen lassen** (vorher deployen oder `git s
   scheitert der Config-Check im CI.
 - Vor Änderungen an `configuration.yaml` per MCP die Konfiguration prüfen lassen, bevor neu
   gestartet wird.
+- Neue Automationen/Skripte gleich einsortieren (Entity-Registry, nicht im Repo): eine **Kategorie**
+  (Automationen: Haushaltsgeräte, Türen & Klingel, Wohnzimmer & Medien, Licht, Klima & Fenster,
+  Erinnerungen, Auto & Laden, Netzwerk & System; Skripte: Türen, Lautsprecher, Saugroboter) und
+  passende **Labels** (Benachrichtigung, Sprachansage, Sicherheit, Batterie, Live-Timer, Protokoll,
+  iPhone-Steuerung).
 - Automationen in `automations.yaml` brauchen eine eindeutige `id` (wie die UI sie vergibt),
   sonst sind sie in der UI nicht editierbar.
 - Im Repo liegt nur die eigene Komponente `custom_components/paket_tracking`. HACS- und
