@@ -26,6 +26,7 @@ nicht deployten lokalen Änderungen laufen lassen** (vorher deployen oder `git s
 ## Voraussetzungen
 
 - SMB-Freigabe gemountet: `smb://homeassistant.local/config` → `/Volumes/config`
+- SSH (Add-on Advanced SSH): `ssh -i ~/.ssh/id_ed25519_ha_diag -p 2223 root@homeassistant.local`, nur Schlüssel, kein Passwort; dort steht die `ha`-CLI zur Verfügung
 - MCP-Server `home-assistant` in Claude Code eingetragen (Webhook-URL aus dem ha-mcp-Panel in HA;
   die URL ist ein Geheimnis und gehört nicht ins Repo)
 
