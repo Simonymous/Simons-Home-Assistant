@@ -118,3 +118,42 @@ lautsprecher_stumm_setzen:
     - action: script.lautsprecher_stumm_aus
   mode: single
 
+
+# --- Tueren: fuer Kontrollzentrum, Sperrbildschirm, Action Button und NFC ---
+haustuer_oeffnen:
+  alias: 'Haustür öffnen'
+  description: Summt die Haustür über die Ring Intercom auf.
+  icon: mdi:door-open
+  sequence:
+  - action: button.press
+    target:
+      entity_id: button.vordereingang_tur_offnen
+  mode: single
+
+wohnungstuer_oeffnen:
+  alias: 'Wohnungstür öffnen'
+  description: Schließt den Nuki auf und zieht die Falle.
+  icon: mdi:door-open
+  sequence:
+  - action: lock.open
+    target:
+      entity_id: lock.smart_lock_pro
+  mode: single
+
+wohnungstuer_aufschliessen:
+  alias: 'Wohnungstür aufschließen'
+  icon: mdi:lock-open-variant
+  sequence:
+  - action: lock.unlock
+    target:
+      entity_id: lock.smart_lock_pro
+  mode: single
+
+wohnungstuer_abschliessen:
+  alias: 'Wohnungstür abschließen'
+  icon: mdi:lock
+  sequence:
+  - action: lock.lock
+    target:
+      entity_id: lock.smart_lock_pro
+  mode: single

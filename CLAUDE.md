@@ -42,6 +42,11 @@ nicht deployten lokalen Änderungen laufen lassen** (vorher deployen oder `git s
 
 ## Regeln
 
+- **Entitäten umbenennen**: Danach alle Stellen nachziehen, die IDs als Text speichern: Dashboard,
+  Automationen/Skripte, `configuration.yaml`, **HomeKit-Bridges** (Optionen je Bridge, eine pro Raum)
+  und **NeonPlan** (`neonplan3d/building/get`). Spook meldet nur IDs, die es nicht mehr gibt; eine
+  alte ID, die jetzt zu einem *anderen* Gerät gehört, fällt nur beim Gegenlesen auf.
+
 - Öffentliches Repo: keine Tokens, Passwörter, Koordinaten, Webhook-IDs. `.storage/` und
   `secrets.yaml` bleiben draußen; Zugangsdaten über `!secret`.
 - Neue `!secret`-Schlüssel auch als Dummy in `.github/workflows/ha-ci.yaml` ergänzen, sonst
