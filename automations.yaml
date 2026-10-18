@@ -220,15 +220,18 @@
         media_content_id: media-source://media_source/local/doorbell.mp3
         media_content_type: audio/mpeg
         metadata: {}
-  - action: notify.notify
+  - action: notify.mobile_app_eierphone_simon
     data:
       title: "\U0001F514 Es hat geklingelt!"
       message: Jemand steht am Vordereingang. Haustür öffnen?
       data:
         tag: intercom_klingel
+        push:
+          interruption-level: time-sensitive
         actions:
         - action: TUER_OEFFNEN
           title: "\U0001F513 Tür öffnen"
+          authenticationRequired: true
   mode: single
 - id: '1783780294734'
   alias: 'Intercom: Push-Antwort ausführen'
@@ -244,6 +247,11 @@
     target:
       entity_id: button.vordereingang_tur_offnen
     data: {}
+  - action: notify.mobile_app_eierphone_simon
+    data:
+      message: clear_notification
+      data:
+        tag: intercom_klingel
   mode: single
 - id: '1783781683587'
   alias: Flurlicht aus bei keiner Bewegung
@@ -984,3 +992,95 @@
       - media_player.lg_webos_tv_65nano759pa
       - media_player.lautsprecher_wohnzimmer
   mode: single
+- id: '1792300000001'
+  alias: 'Schlafzimmer: Heizung aus bei offenem Fenster'
+  description: Fenster (Eve-Kontakt, rechts) 2 min offen -> beide Thermostate aus, vorherige
+    Einstellung wird gemerkt, Mitteilung ans iPhone. Fenster zu -> sofort Einstellung zurueck
+    (sofern die Thermostate noch aus sind, sonst hat jemand selbst nachgestellt) und Mitteilung
+    wieder entfernt.
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.eve_door_20ebn9901_tur
+    to: 'on'
+    for:
+      minutes: 2
+    id: offen
+  - trigger: state
+    entity_id: binary_sensor.eve_door_20ebn9901_tur
+    to: 'off'
+    id: zu
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: offen
+      - condition: template
+        value_template: >-
+          {{ not (is_state('climate.schlafzimmer_heizung_schlafzimmer_links', 'off')
+             and is_state('climate.schlafzimmer_heizung_schlafzimmer_rechts', 'off')) }}
+      sequence:
+      - action: scene.create
+        data:
+          scene_id: schlafzimmer_heizung_vor_dem_lueften
+          snapshot_entities:
+          - climate.schlafzimmer_heizung_schlafzimmer_links
+          - climate.schlafzimmer_heizung_schlafzimmer_rechts
+      - action: climate.turn_off
+        target:
+          entity_id:
+          - climate.schlafzimmer_heizung_schlafzimmer_links
+          - climate.schlafzimmer_heizung_schlafzimmer_rechts
+      - action: notify.mobile_app_eierphone_simon
+        data:
+          title: Schlafzimmer-Fenster offen
+          message: Heizung ist aus und geht wieder an, sobald das Fenster zu ist.
+          data:
+            tag: schlafzimmer-fenster-heizung
+    - conditions:
+      - condition: trigger
+        id: zu
+      - condition: template
+        value_template: >-
+          {{ states.scene.schlafzimmer_heizung_vor_dem_lueften is not none
+             and is_state('climate.schlafzimmer_heizung_schlafzimmer_links', 'off')
+             and is_state('climate.schlafzimmer_heizung_schlafzimmer_rechts', 'off') }}
+      sequence:
+      - action: scene.turn_on
+        target:
+          entity_id: scene.schlafzimmer_heizung_vor_dem_lueften
+      - action: notify.mobile_app_eierphone_simon
+        data:
+          message: clear_notification
+          data:
+            tag: schlafzimmer-fenster-heizung
+  mode: queued
+- id: '1792300000002'
+  alias: 'Haustür: Benachrichtigung bei Öffnen'
+  description: Meldet jedes Oeffnen der Haustuer ueber die Ring Intercom. Wurde der Tueroeffner
+    in den 30 s davor ueber Home Assistant gedrueckt (Mitteilung, NFC, Kontrollzentrum), steht
+    das dabei, sonst kam es ueber die Ring-App bzw. Gegensprechanlage.
+  triggers:
+  - trigger: state
+    entity_id: event.vordereingang_gegensprechanlage_entsperren
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
+  conditions: []
+  actions:
+  - variables:
+      ueber_ha: >-
+        {% set p = as_datetime(states('button.vordereingang_tur_offnen')) %}
+        {{ p is not none and (now() - p).total_seconds() < 30 }}
+  - action: notify.mobile_app_eierphone_simon
+    data:
+      title: "\U0001F6AA Haustür geöffnet"
+      message: >-
+        {{ now().strftime('%H:%M') }} Uhr, {{ 'über Home Assistant' if ueber_ha
+        else 'über die Ring-App bzw. Gegensprechanlage' }}.
+      data:
+        tag: haustuer_geoeffnet
+  mode: queued

@@ -33,4 +33,6 @@ neonplan3d:
   - custom:neonplan3d-card
 neonplan-follow (eigene Karte, www/neonplan-follow.js):
   - custom:neonplan-follow-card
+lovelace-auto-entities:
+  - custom:auto-entities
 lovelace-card-mod: []  # stellt keine Karte bereit, nur card_mod-Styles

@@ -1589,7 +1589,7 @@ views:
         show_state: false
         show_label: true
         show_icon: true
-        label: "[[[\n  const ids = ['sensor.buro_hue_smart_button_4_batterie','sensor.esszimmer_hue_dimmer_switch_1_batterie','sensor.esszimmer_hue_smart_button_3_batterie','sensor.eve_door_20ebn9901_batterie','sensor.flur_bewegungsmelder_flur_batterie','sensor.flur_hue_smart_button_2_batterie','sensor.hue_dimmer_switch_sz_batterie','sensor.schlafzimmer_hue_smart_button_1_batterie','sensor.tradfri_open_close_remote_batterie','sensor.wohnzimmer_hue_dimmer_switch_wz_batterie'];\n  const low = ids.filter((id) => {\n    const s = states[id];\n    if (!s) return false;\n    const v = parseFloat(s.state);\n    return !isNaN(v) && v <= 15;\n  });\n  if (low.length === 0) return 'Alle Batterien OK';\n  if (low.length === 1) return '1 muss bald aufgeladen werden';\n  return low.length + ' müssen bald aufgeladen werden';\n]]]"
+        label: "[[[\n  const kritisch = ['sensor.vordereingang_batterie','sensor.smart_lock_pro_batterie','sensor.schlafzimmer_links_batterie','sensor.schlafzimmer_rechts_batterie'];\n  const ohne = ['icloud','mobile_app','byd_vehicle','roborock'];\n  const ids = Object.keys(states).filter((id) => id.startsWith('sensor.') && states[id].attributes.device_class === 'battery'\n    && !kritisch.includes(id) && !ohne.includes(hass.entities?.[id]?.platform));\n  const leer = ids.filter((id) => { const v = parseFloat(states[id].state); return !isNaN(v) && v <= 15; });\n  const weg = ids.filter((id) => states[id].state === 'unavailable');\n  const teile = [];\n  if (leer.length) teile.push(leer.length + ' fast leer');\n  if (weg.length) teile.push(weg.length + ' nicht erreichbar');\n  return teile.length ? teile.join(' · ') : 'Alle ' + ids.length + ' Batterien OK';\n]]]"
         tap_action:
           action: navigate
           navigation_path: '#batterien-unkritisch'
@@ -1615,7 +1615,7 @@ views:
           - white-space: normal
         state:
         - operator: template
-          value: "[[[\n  const ids = ['sensor.buro_hue_smart_button_4_batterie','sensor.esszimmer_hue_dimmer_switch_1_batterie','sensor.esszimmer_hue_smart_button_3_batterie','sensor.eve_door_20ebn9901_batterie','sensor.flur_bewegungsmelder_flur_batterie','sensor.flur_hue_smart_button_2_batterie','sensor.hue_dimmer_switch_sz_batterie','sensor.schlafzimmer_hue_smart_button_1_batterie','sensor.tradfri_open_close_remote_batterie','sensor.wohnzimmer_hue_dimmer_switch_wz_batterie'];\n  return ids.some((id) => {\n    const s = states[id];\n    if (!s) return false;\n    const v = parseFloat(s.state);\n    return !isNaN(v) && v <= 15;\n  });\n]]]"
+          value: "[[[\n  const kritisch = ['sensor.vordereingang_batterie','sensor.smart_lock_pro_batterie','sensor.schlafzimmer_links_batterie','sensor.schlafzimmer_rechts_batterie'];\n  const ohne = ['icloud','mobile_app','byd_vehicle','roborock'];\n  const ids = Object.keys(states).filter((id) => id.startsWith('sensor.') && states[id].attributes.device_class === 'battery'\n    && !kritisch.includes(id) && !ohne.includes(hass.entities?.[id]?.platform));\n  const leer = ids.filter((id) => { const v = parseFloat(states[id].state); return !isNaN(v) && v <= 15; });\n  const weg = ids.filter((id) => states[id].state === 'unavailable');\n  return leer.length + weg.length > 0;\n]]]"
           icon: mdi:battery-alert-variant-outline
           color: var(--orange-color)
           styles:
@@ -1648,29 +1648,28 @@ views:
       name: Weitere Geräte
       icon: mdi:battery-outline
       cards:
-      - type: entities
-        title: Weitere Geräte
-        entities:
-        - entity: sensor.buro_hue_smart_button_4_batterie
-          name: Hue Smart Button (Büro)
-        - entity: sensor.esszimmer_hue_dimmer_switch_1_batterie
-          name: Hue Dimmer Switch (Esszimmer)
-        - entity: sensor.esszimmer_hue_smart_button_3_batterie
-          name: Hue Smart Button (Esszimmer)
-        - entity: sensor.eve_door_20ebn9901_batterie
-          name: Eve Door (Schlafzimmerfenster)
-        - entity: sensor.flur_bewegungsmelder_flur_batterie
-          name: Bewegungsmelder (Flur)
-        - entity: sensor.flur_hue_smart_button_2_batterie
-          name: Hue Smart Button (Flur)
-        - entity: sensor.hue_dimmer_switch_sz_batterie
-          name: Hue Dimmer Switch (Schlafzimmer)
-        - entity: sensor.schlafzimmer_hue_smart_button_1_batterie
-          name: Hue Smart Button (Schlafzimmer)
-        - entity: sensor.tradfri_open_close_remote_batterie
-          name: Tradfri Fernbedienung
-        - entity: sensor.wohnzimmer_hue_dimmer_switch_wz_batterie
-          name: Hue Dimmer Switch (Wohnzimmer)
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: Weitere Geräte
+        filter:
+          include:
+          - domain: sensor
+            attributes:
+              device_class: battery
+          exclude:
+          - entity_id: sensor.vordereingang_batterie
+          - entity_id: sensor.smart_lock_pro_batterie
+          - entity_id: sensor.schlafzimmer_links_batterie
+          - entity_id: sensor.schlafzimmer_rechts_batterie
+          - integration: icloud
+          - integration: mobile_app
+          - integration: byd_vehicle
+          - integration: roborock
+        sort:
+          method: state
+          numeric: true
+        show_empty: true
   - type: custom:stack-in-card
     cards:
     - type: heading
@@ -2248,6 +2247,96 @@ views:
         secondary: '{{ states("sensor.tz3210_2putqrmw_ts011f_summe_verbraucht") }} kWh'
         icon: mdi:audio-video
         icon_color: '#9C27B0'
+        layout: vertical
+        tap_action:
+          action: more-info
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
+      heading: Licht (Hue)
+      heading_style: title
+      icon: mdi:lightbulb-group
+      card_mod: *heading_card_mod
+    - type: custom:mushroom-template-card
+      entity: sensor.hue_licht_power
+      primary: >-
+        {{ states('sensor.hue_licht_power') | float(0) | round(1) }} W gerade
+      secondary: >-
+        {% set d = states('sensor.hue_licht_energy_daily') %}
+        {% set m = states('sensor.hue_licht_energy_monthly') %}
+        Heute {{ d | float(0) | round(2) if d not in ['unknown', 'unavailable'] else 0 }} kWh ·
+        Monat {{ m | float(0) | round(2) if m not in ['unknown', 'unavailable'] else 0 }} kWh ·
+        geschätzt
+      icon: mdi:lightbulb-on-outline
+      icon_color: amber
+      tap_action:
+        action: more-info
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: custom:mushroom-template-card
+        entity: sensor.hue_wohnzimmer_power
+        primary: Wohnzimmer
+        secondary: >-
+          {% set w = states('sensor.hue_wohnzimmer_power') %}
+          {% if w in ['unavailable', 'unknown'] %}nicht erreichbar
+          {% else %}{{ w | float(0) | round(1) }} W · {{ states('sensor.hue_wohnzimmer_energy') | float(0) | round(2) }} kWh{% endif %}
+        icon: mdi:ceiling-light-multiple
+        icon_color: >-
+          {{ 'amber' if states('sensor.hue_wohnzimmer_power') | float(0) > 2 else 'grey' }}
+        layout: vertical
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: sensor.hue_schlafzimmer_power
+        primary: Schlafzimmer
+        secondary: >-
+          {% set w = states('sensor.hue_schlafzimmer_power') %}
+          {% if w in ['unavailable', 'unknown'] %}nicht erreichbar
+          {% else %}{{ w | float(0) | round(1) }} W · {{ states('sensor.hue_schlafzimmer_energy') | float(0) | round(2) }} kWh{% endif %}
+        icon: mdi:light-recessed
+        icon_color: >-
+          {{ 'amber' if states('sensor.hue_schlafzimmer_power') | float(0) > 2 else 'grey' }}
+        layout: vertical
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: sensor.hue_buro_power
+        primary: Büro
+        secondary: >-
+          {% set w = states('sensor.hue_buro_power') %}
+          {% if w in ['unavailable', 'unknown'] %}nicht erreichbar
+          {% else %}{{ w | float(0) | round(1) }} W · {{ states('sensor.hue_buro_energy') | float(0) | round(2) }} kWh{% endif %}
+        icon: mdi:light-recessed
+        icon_color: >-
+          {{ 'amber' if states('sensor.hue_buro_power') | float(0) > 2 else 'grey' }}
+        layout: vertical
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: sensor.hue_esszimmer_power
+        primary: Esszimmer
+        secondary: >-
+          {% set w = states('sensor.hue_esszimmer_power') %}
+          {% if w in ['unavailable', 'unknown'] %}nicht erreichbar
+          {% else %}{{ w | float(0) | round(1) }} W · {{ states('sensor.hue_esszimmer_energy') | float(0) | round(2) }} kWh{% endif %}
+        icon: mdi:lamp
+        icon_color: >-
+          {{ 'amber' if states('sensor.hue_esszimmer_power') | float(0) > 2 else 'grey' }}
+        layout: vertical
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: sensor.hue_bad_power
+        primary: Bad
+        secondary: >-
+          {% set w = states('sensor.hue_bad_power') %}
+          {% if w in ['unavailable', 'unknown'] %}nicht erreichbar
+          {% else %}{{ w | float(0) | round(1) }} W · {{ states('sensor.hue_bad_energy') | float(0) | round(2) }} kWh{% endif %}
+        icon: mdi:ceiling-light
+        icon_color: >-
+          {{ 'amber' if states('sensor.hue_bad_power') | float(0) > 2 else 'grey' }}
         layout: vertical
         tap_action:
           action: more-info
