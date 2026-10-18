@@ -157,3 +157,28 @@ wohnungstuer_abschliessen:
     target:
       entity_id: lock.smart_lock_pro
   mode: single
+
+# --- Saugroboter Bob: gezielte Raumreinigung (Raum-IDs aus roborock.get_maps) ---
+# 16 Schlafzimmer, 17 Wohnzimmer, 18 Esszimmer, 19 Kueche, 20 Flur, 21 Bad, 22 Arbeitszimmer (Buero)
+bob_raeume_reinigen:
+  alias: 'Bob: Räume reinigen'
+  description: Schickt Bob gezielt in die angegebenen Räume.
+  icon: mdi:robot-vacuum
+  fields:
+    raeume:
+      name: Räume
+      description: Roborock-Raum-IDs, z. B. [17] fürs Wohnzimmer
+      required: true
+      example: '[17, 18]'
+      selector:
+        object: {}
+  sequence:
+  - action: vacuum.send_command
+    target:
+      entity_id: vacuum.bob
+    data:
+      command: app_segment_clean
+      params:
+      - segments: '{{ raeume if raeume is list else [raeume] }}'
+        repeat: 1
+  mode: single

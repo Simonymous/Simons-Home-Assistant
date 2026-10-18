@@ -6,6 +6,8 @@
 //   room_entity: sensor.bob_aktueller_raum      # Zustand = Raumname wie in NeonPlan
 //   active_entity: vacuum.bob
 //   active_states: [cleaning, paused]
+//   room_aliases:                                # Sensor-Name -> NeonPlan-Raumname
+//     Arbeitszimmer: Büro
 //   card:                                        # normale neonplan3d-card-Optionen
 //     height: 380
 //
@@ -21,6 +23,7 @@ class NeonplanFollowCard extends HTMLElement {
       room_entity: "sensor.bob_aktueller_raum",
       active_entity: "vacuum.bob",
       active_states: ["cleaning", "paused"],
+      room_aliases: {},
       ...config,
     };
     this._lastRoom = undefined;
@@ -63,7 +66,8 @@ class NeonplanFollowCard extends HTMLElement {
     if (!this._hass || !this._card) return;
     const c = this._config;
     const active = c.active_states.includes(this._hass.states[c.active_entity]?.state);
-    const roomName = active ? this._hass.states[c.room_entity]?.state : null;
+    const raw = active ? this._hass.states[c.room_entity]?.state : null;
+    const roomName = (raw && c.room_aliases[raw]) || raw;
     // Der Raumsensor meldet beim Fahren kurz unknown: dann Ansicht einfach stehen lassen
     if (active && ["unknown", "unavailable", "", undefined].includes(roomName)) return;
     if (roomName === this._lastRoom) return;
