@@ -1,0 +1,32 @@
+# Written by NeonPlan 3D: the sentences Assist hands to the open NeonPlan views (the first one that
+# understands answers). Rewritten on every start: put your own sentences for NeonPlanAsk into another file.
+language: "de"
+intents:
+  NeonPlanAsk:
+    data:
+      - sentences:
+          - "zeig[e] [mir] [mal] [bitte] {text}"
+          - "geh[e] [mal] (in|ins|in die|in den|auf|aufs|auf die|auf den|zu|zum|zur) {text}"
+          - "wo (ist|sind|steht|stehen) {text}"
+          - "(frag|frage) das haus {text}"
+          - "(haus|neonplan|neon plan) {text}"
+          - "was ist [alles|gerade|denn] offen"
+          - "ist [irgend]was offen"
+          - "welche (fenster|türen) sind [noch] offen"
+          - "ist (ein|das) fenster (im|in der|in dem|auf dem|auf der) {text} offen"
+          - "wo ist es (kalt|warm|zu kalt|zu warm)"
+          - "was (zieht|verbraucht|braucht) [gerade|denn] [den] strom"
+          - "was macht die (solaranlage|solar|pv|pv-anlage|photovoltaik)"
+          - "wie voll ist (der|die) (akku|batterie|speicher)"
+          - "sind die (rollläden|rolläden|jalousien|rollos) (unten|oben|zu|offen)"
+          - "ist (die|das) {text} (abgeschlossen|verschlossen|zu|offen|an|aus|ein)"
+          - "läuft (die|der|das) {text}"
+          - "was läuft [gerade|noch|alles]"
+          - "gute nacht"
+          - "guten morgen"
+          - "was kannst du [alles]"
+          - "was (steht|ist) heute an"
+          - "wie (ist|wird) das wetter [heute|morgen]"
+lists:
+  text:
+    wildcard: true

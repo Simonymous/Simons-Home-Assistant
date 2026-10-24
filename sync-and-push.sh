@@ -38,6 +38,7 @@ rsync -a --delete \
   --exclude "home-assistant.log*" \
   --exclude "*.log" \
   --exclude ".ha_mcp/" \
+  --exclude "/esphome/" \
   --exclude ".cache/" \
   --exclude ".cloud/" \
   --exclude "deps/" \

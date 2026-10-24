@@ -59,6 +59,15 @@ nicht deployten lokalen Änderungen laufen lassen** (vorher deployen oder `git s
   fde2:15bd:a78c:0:f931:fcec:5689:473d, Rückfall 1.1.1.1 / 2606:4700:4700::1111. HA-Neustarts
   bedeuten kurz DNS über den Rückfall. „Sichere Suche“ bewusst aus (sonst YouTube eingeschränkt).
 
+## ESPHome (ESP32)
+
+- Add-on „ESPHome Device Builder“ (`5c53de3b_esphome`), Seitenleiste „ESPHome“. Geräte-YAMLs in
+  `/config/esphome/`, dort eigene Git-Versionierung durch den Builder; **nicht in dieses Repo**
+  (Klartext-API-Schlüssel/OTA-Passwörter), daher in `.gitignore` und Sync-Ausschluss.
+- WLAN-Zugangsdaten stehen in `esphome/secrets.yaml` (`wifi_ssid`, `wifi_password`), trägt Simon
+  selbst ein. In Geräte-YAMLs nur per `!secret` verwenden.
+- Kompilieren auf dem Pi 4 dauert beim ersten Mal 5–10 Minuten; danach Updates per WLAN (OTA).
+
 ## Regeln
 
 - **Entitäten umbenennen**: Danach alle Stellen nachziehen, die IDs als Text speichern: Dashboard,

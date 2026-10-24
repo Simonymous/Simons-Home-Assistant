@@ -1,0 +1,32 @@
+# Written by NeonPlan 3D: the sentences Assist hands to the open NeonPlan views (the first one that
+# understands answers). Rewritten on every start: put your own sentences for NeonPlanAsk into another file.
+language: "en"
+intents:
+  NeonPlanAsk:
+    data:
+      - sentences:
+          - "show [me] {text}"
+          - "go to [the] {text}"
+          - "where (is|are) [the] {text}"
+          - "ask the house {text}"
+          - "(house|neonplan|neon plan) {text}"
+          - "what is open"
+          - "is anything open"
+          - "which (windows|doors) are [still] open"
+          - "is a window open in the {text}"
+          - "where is it (cold|warm|too cold|too warm)"
+          - "what is (drawing|using) power"
+          - "what is the solar doing"
+          - "how full is the battery"
+          - "are the (blinds|shutters) (down|up|closed|open)"
+          - "is the {text} (locked|unlocked|closed|open|on|off)"
+          - "is the {text} running"
+          - "what is running"
+          - "good night"
+          - "good morning"
+          - "what can you do"
+          - "what is on today"
+          - "what is the weather [like] [today|tomorrow]"
+lists:
+  text:
+    wildcard: true

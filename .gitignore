@@ -44,6 +44,11 @@ backups/
 .claude/
 .DS_Store
 
+# --- ESPHome ---
+# Geraete-YAMLs enthalten API-Schluessel und OTA-Passwoerter im Klartext;
+# der Device Builder versioniert den Ordner selbst (esphome/.git auf dem Pi).
+esphome/
+
 # --- Fremd-Integrationen (HACS / Add-on-verwaltet) ---
 # Reproduzierbar ueber HACS, enthalten teils oeffentliche API-Keys der Anbieter
 # (GitHub Push Protection blockt diese). Nur eigene Komponenten versionieren.
