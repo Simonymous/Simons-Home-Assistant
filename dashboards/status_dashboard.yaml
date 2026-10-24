@@ -2885,6 +2885,7 @@ views:
       icon_type: none
       commands:
       - start_pause
+      - stop
       - return_home
       - locate
     - type: heading
