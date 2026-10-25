@@ -28,6 +28,8 @@ deps/
 tts/
 image/
 www/community/
+# Icon-Pack von mastershort.de: fremdes Material, nicht weiterverteilen
+www/mastershort/
 www/ha_washdata/preview/
 custom_components/**/__pycache__/
 custom_components/**/*.pyc

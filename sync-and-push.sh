@@ -45,6 +45,7 @@ rsync -a --delete \
   --exclude "tts/" \
   --exclude "image/" \
   --exclude "www/community/" \
+  --exclude "/www/mastershort/" \
   --exclude "www/ha_washdata/preview/" \
   --exclude "__pycache__/" \
   --exclude "*.pyc" \

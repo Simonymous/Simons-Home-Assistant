@@ -68,6 +68,16 @@ nicht deployten lokalen Änderungen laufen lassen** (vorher deployen oder `git s
   selbst ein. In Geräte-YAMLs nur per `!secret` verwenden.
 - Kompilieren auf dem Pi 4 dauert beim ersten Mal 5–10 Minuten; danach Updates per WLAN (OTA).
 
+## Icons (mastershort-Pack)
+
+- 259 Linien-Icons (SVG, 24×24) je in Cyan, Weiß und Lime unter `/config/www/mastershort/icons/<farbe>/ms-<name>.svg`,
+  im Dashboard als `/local/mastershort/icons/<farbe>/ms-<name>.svg`. Nicht im Repo (fremdes Material,
+  Weiterverteilen nicht erlaubt), daher in `.gitignore` und Sync-Ausschluss.
+- Es sind Strich-Icons (`stroke`), keine gefüllten Pfade: als `entity_picture`/`picture`/`<img>` einbinden,
+  nicht als `mdi:`-Ersatz (HA füllt Icon-Pfade, die Linien würden falsch dargestellt).
+- Neu kopieren per SSH (`tar | ssh … tar -x`), danach die macOS-Dateien `._*` löschen; per SMB scheitert das
+  Anlegen der Unterordner.
+
 ## Regeln
 
 - **Entitäten umbenennen**: Danach alle Stellen nachziehen, die IDs als Text speichern: Dashboard,
