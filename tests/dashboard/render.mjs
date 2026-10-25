@@ -70,6 +70,8 @@ async function run(device) {
   const consoleErrors = [];
   page.on("pageerror", (e) => consoleErrors.push(`pageerror: ${e.message}`));
   page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
+  // Bei 404 & Co. die Adresse mitloggen, die Konsolenmeldung nennt sie nicht
+  page.on("response", (r) => r.status() >= 400 && consoleErrors.push(`HTTP ${r.status()} ${r.url()}`));
 
   const base = `${HA_URL}/${manifest.url_path}`;
   await page.goto(`${base}/${manifest.views[0].path}`);

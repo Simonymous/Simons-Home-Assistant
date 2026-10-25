@@ -222,16 +222,48 @@ views:
       columns: 2
       square: false
       cards:
-      - type: custom:mushroom-person-card
+      - type: custom:mushroom-template-card
         entity: person.simonymous
-        name: Simon
+        primary: Simon
+        # Raum aus der NeonPlan-Ortung (BT-Proxys + Pi), nur wenn zu Hause und Raum bekannt
+        secondary: >-
+          {% set p = states('person.simonymous') %}
+          {% set r = states('sensor.simon_raum') %}
+          {% set s = as_datetime(state_attr('sensor.simon_raum', 'since')) %}
+          {% if p == 'home' and r not in ['unknown', 'unavailable', 'none', ''] %}{{ r }}{% if s %}{% set s = as_local(s) %} · seit {{ s.strftime('%H:%M') if s.date() == now().date() else s.strftime('%d.%m.') }}{% endif %}
+          {% elif p == 'home' %}Zuhause
+          {% elif p == 'not_home' %}Unterwegs
+          {% else %}{{ p }}{% endif %}
+        picture: "{{ state_attr('person.simonymous', 'entity_picture') }}"
+        badge_icon: >-
+          {% set r = states('sensor.simon_raum') %}
+          {% if is_state('person.simonymous', 'home') %}{{ 'mdi:map-marker-radius' if r not in ['unknown', 'unavailable', 'none', ''] else 'mdi:home' }}{% else %}mdi:walk{% endif %}
+        badge_color: "{{ 'green' if is_state('person.simonymous', 'home') else 'grey' }}"
         layout: vertical
-        use_entity_picture: true
-      - type: custom:mushroom-person-card
+        multiline_secondary: true
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
         entity: person.madeleine
-        name: Madeleine
+        primary: Madeleine
+        # Raum aus der NeonPlan-Ortung (BT-Proxys + Pi), nur wenn zu Hause und Raum bekannt
+        secondary: >-
+          {% set p = states('person.madeleine') %}
+          {% set r = states('sensor.madeleine_raum') %}
+          {% set s = as_datetime(state_attr('sensor.madeleine_raum', 'since')) %}
+          {% if p == 'home' and r not in ['unknown', 'unavailable', 'none', ''] %}{{ r }}{% if s %}{% set s = as_local(s) %} · seit {{ s.strftime('%H:%M') if s.date() == now().date() else s.strftime('%d.%m.') }}{% endif %}
+          {% elif p == 'home' %}Zuhause
+          {% elif p == 'not_home' %}Unterwegs
+          {% else %}{{ p }}{% endif %}
+        picture: "{{ state_attr('person.madeleine', 'entity_picture') }}"
+        badge_icon: >-
+          {% set r = states('sensor.madeleine_raum') %}
+          {% if is_state('person.madeleine', 'home') %}{{ 'mdi:map-marker-radius' if r not in ['unknown', 'unavailable', 'none', ''] else 'mdi:home' }}{% else %}mdi:walk{% endif %}
+        badge_color: "{{ 'green' if is_state('person.madeleine', 'home') else 'grey' }}"
         layout: vertical
-        use_entity_picture: true
+        multiline_secondary: true
+        tap_action:
+          action: more-info
   - type: custom:stack-in-card
     cards:
     - type: heading
@@ -1062,7 +1094,7 @@ views:
     - type: custom:button-card
       entity: vacuum.bob
       name: Saugroboter Bob
-      icon: mdi:robot-vacuum
+      icon: mdi:blank
       show_name: true
       show_state: false
       show_label: true
@@ -1082,6 +1114,9 @@ views:
         icon:
         - width: 24px
         - height: 24px
+        - '-webkit-mask': url(/local/mastershort/icons/weiss/ms-saugroboter.svg) center / contain no-repeat
+        - mask: url(/local/mastershort/icons/weiss/ms-saugroboter.svg) center / contain no-repeat
+        - background-color: var(--primary-text-color)
         name:
         - justify-self: start
         - font-weight: bold
@@ -1096,7 +1131,12 @@ views:
         color: rgb(76, 175, 80)
         styles:
           icon:
+          - background-color: '#22d3ee'
           - animation: machine-blink 1.6s ease-in-out infinite
+      - value: returning
+        styles:
+          icon:
+          - background-color: '#22d3ee'
       - operator: default
         color: var(--disabled-text-color)
       extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
@@ -1302,7 +1342,7 @@ views:
     - type: custom:button-card
       entity: sensor.spulmaschine_zustand
       name: Spülmaschine
-      icon: mdi:dishwasher
+      icon: mdi:blank
       show_name: true
       show_state: false
       show_label: true
@@ -1319,6 +1359,9 @@ views:
         icon:
         - width: 24px
         - height: 24px
+        - '-webkit-mask': url(/local/mastershort/icons/weiss/ms-geschirrspueler.svg) center / contain no-repeat
+        - mask: url(/local/mastershort/icons/weiss/ms-geschirrspueler.svg) center / contain no-repeat
+        - background-color: var(--primary-text-color)
         name:
         - justify-self: start
         - font-weight: bold
@@ -1333,11 +1376,13 @@ views:
         color: rgb(33, 150, 243)
         styles:
           icon:
+          - background-color: '#22d3ee'
           - animation: machine-blink 1.6s ease-in-out infinite, machine-wobble 1.2s ease-in-out infinite
       - value: finished
         color: rgb(76, 175, 80)
         styles:
           icon:
+          - background-color: '#a3e635'
           - animation: machine-blink 1.6s ease-in-out infinite
       - operator: default
         color: var(--disabled-text-color)
@@ -1481,7 +1526,7 @@ views:
     - type: custom:button-card
       entity: sensor.waschmaschine_zustand
       name: Waschmaschine
-      icon: mdi:washing-machine
+      icon: mdi:blank
       show_name: true
       show_state: false
       show_label: true
@@ -1498,6 +1543,9 @@ views:
         icon:
         - width: 24px
         - height: 24px
+        - '-webkit-mask': url(/local/mastershort/icons/weiss/ms-waschmaschine.svg) center / contain no-repeat
+        - mask: url(/local/mastershort/icons/weiss/ms-waschmaschine.svg) center / contain no-repeat
+        - background-color: var(--primary-text-color)
         name:
         - justify-self: start
         - font-weight: bold
@@ -1512,11 +1560,13 @@ views:
         color: rgb(0, 150, 136)
         styles:
           icon:
+          - background-color: '#22d3ee'
           - animation: machine-blink 1.6s ease-in-out infinite, machine-spin 2.2s linear infinite
       - value: finished
         color: rgb(76, 175, 80)
         styles:
           icon:
+          - background-color: '#a3e635'
           - animation: machine-blink 1.6s ease-in-out infinite
       - operator: default
         color: var(--disabled-text-color)
@@ -1524,7 +1574,7 @@ views:
     - type: custom:button-card
       entity: sensor.trockner_zustand
       name: Trockner
-      icon: mdi:tumble-dryer
+      icon: mdi:blank
       show_name: true
       show_state: false
       show_label: true
@@ -1541,6 +1591,9 @@ views:
         icon:
         - width: 24px
         - height: 24px
+        - '-webkit-mask': url(/local/mastershort/icons/weiss/ms-trockner.svg) center / contain no-repeat
+        - mask: url(/local/mastershort/icons/weiss/ms-trockner.svg) center / contain no-repeat
+        - background-color: var(--primary-text-color)
         name:
         - justify-self: start
         - font-weight: bold
@@ -1555,11 +1608,13 @@ views:
         color: rgb(255, 152, 0)
         styles:
           icon:
+          - background-color: '#22d3ee'
           - animation: machine-blink 1.6s ease-in-out infinite, machine-spin 2.2s linear infinite
       - value: finished
         color: rgb(76, 175, 80)
         styles:
           icon:
+          - background-color: '#a3e635'
           - animation: machine-blink 1.6s ease-in-out infinite
       - operator: default
         color: var(--disabled-text-color)
@@ -2814,7 +2869,7 @@ views:
         room_panel: false
     - type: custom:button-card
       entity: sensor.bob_reinigungsstatus
-      icon: mdi:robot-vacuum
+      icon: mdi:blank
       show_name: true
       show_state: false
       show_label: true
@@ -2849,6 +2904,12 @@ views:
       styles:
         card:
         - padding: 12px 14px
+        icon:
+        - width: 26px
+        - height: 26px
+        - '-webkit-mask': url(/local/mastershort/icons/weiss/ms-saugroboter.svg) center / contain no-repeat
+        - mask: url(/local/mastershort/icons/weiss/ms-saugroboter.svg) center / contain no-repeat
+        - background-color: var(--primary-text-color)
         grid:
         - grid-template-areas: '"i n" "i l" "bar bar"'
         - grid-template-columns: 42px 1fr
@@ -2871,10 +2932,14 @@ views:
         color: var(--blue-color)
         styles:
           icon:
+          - background-color: '#22d3ee'
           - animation: machine-blink 1.6s ease-in-out infinite
       - operator: template
         value: "[[[ return states['sensor.bob_status']?.state === 'error'; ]]]"
         color: var(--red-color)
+        styles:
+          icon:
+          - background-color: var(--red-color)
       - operator: default
         color: var(--secondary-text-color)
       extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
