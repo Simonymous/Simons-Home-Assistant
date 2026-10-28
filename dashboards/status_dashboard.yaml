@@ -1270,6 +1270,57 @@ views:
       - operator: default
         color: var(--disabled-text-color)
       extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+    - type: custom:button-card
+      entity: sensor.treadmill_status
+      name: Laufband
+      icon: mdi:walk
+      show_name: true
+      show_state: false
+      show_label: true
+      label: |-
+        [[[
+          const num = (id) => parseFloat(states[id]?.state) || 0;
+          const de = (x, d) => x.toLocaleString('de-DE', { maximumFractionDigits: d });
+          const heute = 'Heute ' + de(num('sensor.buro_laufband_strecke_heute'), 2) + ' km · ' + de(num('sensor.buro_laufband_trainingszeit_heute'), 0) + ' min';
+          if (['unavailable', 'unknown'].includes(entity?.state)) return 'Nicht verbunden · ' + heute;
+          const v = num('sensor.treadmill_speed');
+          if (v > 0) return 'Läuft · ' + de(v, 1) + ' km/h · ' + Math.floor(num('sensor.treadmill_time_elapsed') / 60) + ' min';
+          return heute;
+        ]]]
+      tap_action:
+        action: navigate
+        navigation_path: /dashboard-reinigung/laufband
+      styles:
+        card:
+        - padding: 12px
+        - min-height: 66px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        icon:
+        - width: 24px
+        - height: 24px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 14px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+        - text-align: left
+      state:
+      - operator: template
+        value: "[[[ return parseFloat(states['sensor.treadmill_speed']?.state) > 0; ]]]"
+        color: '#22d3ee'
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite
+      - operator: default
+        color: var(--disabled-text-color)
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
   - type: custom:stack-in-card
     cards:
     - type: heading
@@ -3175,6 +3226,470 @@ views:
       - operator: default
         color: var(--green-color)
       extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+- title: Laufband
+  path: laufband
+  icon: mdi:walk
+  theme: Liquid Glass
+  cards:
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
+      heading: Laufband
+      heading_style: title
+      icon: mdi:walk
+      card_mod: *heading_card_mod
+    - type: custom:button-card
+      entity: sensor.treadmill_status
+      icon: mdi:walk
+      show_name: true
+      show_state: false
+      show_label: true
+      name: |-
+        [[[
+          const st = entity?.state;
+          if (!st || ['unavailable', 'unknown'].includes(st)) return 'Nicht verbunden';
+          const v = parseFloat(states['sensor.treadmill_speed']?.state);
+          if (v > 0) return 'Läuft · ' + v.toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' km/h';
+          const namen = { idle: 'Bereit', pre_workout: 'Startet', post_workout: 'Einheit beendet', warming_up: 'Aufwärmen', cool_down: 'Abkühlen' };
+          return namen[st] || 'Pausiert';
+        ]]]
+      label: |-
+        [[[
+          const num = (id) => parseFloat(states[id]?.state) || 0;
+          const de = (x, d) => x.toLocaleString('de-DE', { maximumFractionDigits: d });
+          const t = num('sensor.treadmill_time_elapsed');
+          if (t > 0) {
+            const mm = Math.floor(t / 60), ss = String(Math.round(t % 60)).padStart(2, '0');
+            return 'Diese Einheit: ' + mm + ':' + ss + ' min · ' + de(num('sensor.treadmill_distance_total') / 1000, 2) + ' km · '
+              + de(num('sensor.treadmill_step_count'), 0) + ' Schritte · ' + de(num('sensor.treadmill_energy_total'), 0) + ' kcal';
+          }
+          if (states['switch.treadmill_connection']?.state === 'off') return 'Verbindung aus · Sportstech-App kann übernehmen';
+          return 'Heute: ' + de(num('sensor.buro_laufband_strecke_heute'), 2) + ' km · ' + de(num('sensor.buro_laufband_trainingszeit_heute'), 0) + ' min';
+        ]]]
+      tap_action:
+        action: more-info
+      styles:
+        card:
+        - padding: 12px 14px
+        icon:
+        - width: 26px
+        - height: 26px
+        grid:
+        - grid-template-areas: '"i n" "i l"'
+        - grid-template-columns: 42px 1fr
+        - grid-template-rows: min-content min-content
+        - row-gap: 2px
+        name:
+        - justify-self: start
+        - font-weight: bold
+        - font-size: 15px
+        label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - white-space: normal
+        - text-align: left
+      state:
+      - operator: template
+        value: "[[[ return parseFloat(states['sensor.treadmill_speed']?.state) > 0; ]]]"
+        color: '#22d3ee'
+        styles:
+          icon:
+          - animation: machine-blink 1.6s ease-in-out infinite
+      - operator: template
+        value: "[[[ return ['unavailable', 'unknown'].includes(entity?.state); ]]]"
+        color: var(--disabled-text-color)
+      - operator: default
+        color: var(--secondary-text-color)
+      extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+    - type: grid
+      columns: 3
+      square: false
+      cards:
+      - type: custom:button-card
+        entity: button.treadmill_start_resume
+        name: Start
+        icon: mdi:play
+        tap_action:
+          action: perform-action
+          perform_action: button.press
+          target:
+            entity_id: button.treadmill_start_resume
+        styles: &laufband_knopf
+          card:
+          - padding: 10px 2px
+          icon:
+          - width: 24px
+          name:
+          - font-size: 12px
+        color: var(--green-color)
+      - type: custom:button-card
+        entity: button.treadmill_pause
+        name: Pause
+        icon: mdi:pause
+        tap_action:
+          action: perform-action
+          perform_action: button.press
+          target:
+            entity_id: button.treadmill_pause
+        styles: *laufband_knopf
+        color: var(--orange-color)
+      - type: custom:button-card
+        entity: button.treadmill_stop
+        name: Stopp
+        icon: mdi:stop
+        tap_action:
+          action: perform-action
+          perform_action: button.press
+          target:
+            entity_id: button.treadmill_stop
+        styles: *laufband_knopf
+        color: var(--red-color)
+    - type: tile
+      entity: number.treadmill_speed
+      name: Tempo
+      icon: mdi:speedometer
+      features:
+      - type: numeric-input
+        style: buttons
+    - type: grid
+      columns: 5
+      square: false
+      cards:
+      - type: custom:button-card
+        name: 2 km/h
+        show_icon: false
+        tap_action:
+          action: perform-action
+          perform_action: number.set_value
+          target:
+            entity_id: number.treadmill_speed
+          data:
+            value: 2
+        styles: &laufband_tempo_stil
+          card:
+          - padding: 8px 2px
+          name:
+          - font-size: 12px
+        state:
+        - operator: template
+          value: "[[[ return Math.abs(parseFloat(states['sensor.treadmill_speed']?.state) - 2) < 0.05; ]]]"
+          styles: &laufband_tempo_aktiv
+            card:
+            - '--lg-surface': var(--blue-color)
+            name:
+            - color: white
+            - font-weight: bold
+      - type: custom:button-card
+        name: 3 km/h
+        show_icon: false
+        tap_action:
+          action: perform-action
+          perform_action: number.set_value
+          target:
+            entity_id: number.treadmill_speed
+          data:
+            value: 3
+        styles: *laufband_tempo_stil
+        state:
+        - operator: template
+          value: "[[[ return Math.abs(parseFloat(states['sensor.treadmill_speed']?.state) - 3) < 0.05; ]]]"
+          styles: *laufband_tempo_aktiv
+      - type: custom:button-card
+        name: 4 km/h
+        show_icon: false
+        tap_action:
+          action: perform-action
+          perform_action: number.set_value
+          target:
+            entity_id: number.treadmill_speed
+          data:
+            value: 4
+        styles: *laufband_tempo_stil
+        state:
+        - operator: template
+          value: "[[[ return Math.abs(parseFloat(states['sensor.treadmill_speed']?.state) - 4) < 0.05; ]]]"
+          styles: *laufband_tempo_aktiv
+      - type: custom:button-card
+        name: 5 km/h
+        show_icon: false
+        tap_action:
+          action: perform-action
+          perform_action: number.set_value
+          target:
+            entity_id: number.treadmill_speed
+          data:
+            value: 5
+        styles: *laufband_tempo_stil
+        state:
+        - operator: template
+          value: "[[[ return Math.abs(parseFloat(states['sensor.treadmill_speed']?.state) - 5) < 0.05; ]]]"
+          styles: *laufband_tempo_aktiv
+      - type: custom:button-card
+        name: 6 km/h
+        show_icon: false
+        tap_action:
+          action: perform-action
+          perform_action: number.set_value
+          target:
+            entity_id: number.treadmill_speed
+          data:
+            value: 6
+        styles: *laufband_tempo_stil
+        state:
+        - operator: template
+          value: "[[[ return Math.abs(parseFloat(states['sensor.treadmill_speed']?.state) - 6) < 0.05; ]]]"
+          styles: *laufband_tempo_aktiv
+    - type: tile
+      entity: switch.treadmill_connection
+      name: Verbindung zu HA
+      icon: mdi:bluetooth-connect
+      features:
+      - type: toggle
+    - type: markdown
+      content: >-
+        Solange HA verbunden ist, kommt die Sportstech-App nicht ans Laufband. Für die App
+        die Verbindung hier ausschalten.
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
+      heading: Heute
+      heading_style: title
+      icon: mdi:calendar-today
+      card_mod: *heading_card_mod
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: custom:mushroom-template-card
+        entity: sensor.buro_laufband_strecke_heute
+        primary: >-
+          {{ states('sensor.buro_laufband_strecke_heute') | float(0) | round(2) | string | replace('.', ',') }} km
+        secondary: Strecke
+        icon: mdi:map-marker-distance
+        icon_color: cyan
+        layout: vertical
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: sensor.buro_laufband_trainingszeit_heute
+        primary: >-
+          {{ states('sensor.buro_laufband_trainingszeit_heute') | float(0) | round(0) | int }} min
+        secondary: Trainingszeit
+        icon: mdi:timer-outline
+        icon_color: blue
+        layout: vertical
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: sensor.buro_laufband_schritte_heute
+        primary: >-
+          {{ '{:,}'.format(states('sensor.buro_laufband_schritte_heute') | int(0)) | replace(',', '.') }}
+        secondary: Schritte
+        icon: mdi:shoe-print
+        icon_color: green
+        layout: vertical
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: sensor.buro_laufband_kalorien_heute
+        primary: >-
+          {{ states('sensor.buro_laufband_kalorien_heute') | int(0) }} kcal
+        secondary: Kalorien
+        icon: mdi:fire
+        icon_color: orange
+        layout: vertical
+        tap_action:
+          action: more-info
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
+      heading: Woche & Monat
+      heading_style: title
+      icon: mdi:calendar-week
+      card_mod: *heading_card_mod
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+      - type: statistic
+        entity: sensor.buro_laufband_strecke_heute
+        name: Woche
+        icon: mdi:map-marker-distance
+        period:
+          calendar:
+            period: week
+        stat_type: change
+      - type: statistic
+        entity: sensor.buro_laufband_trainingszeit_heute
+        name: Woche
+        icon: mdi:timer-outline
+        period:
+          calendar:
+            period: week
+        stat_type: change
+      - type: statistic
+        entity: sensor.buro_laufband_strecke_heute
+        name: Monat
+        icon: mdi:map-marker-distance
+        period:
+          calendar:
+            period: month
+        stat_type: change
+      - type: statistic
+        entity: sensor.buro_laufband_trainingszeit_heute
+        name: Monat
+        icon: mdi:timer-outline
+        period:
+          calendar:
+            period: month
+        stat_type: change
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
+      heading: Verlauf
+      heading_style: title
+      icon: mdi:chart-bar
+      card_mod: *heading_card_mod
+    - type: grid
+      columns: 3
+      square: false
+      cards:
+      - type: custom:button-card
+        name: 7 Tage
+        show_icon: false
+        tap_action:
+          action: perform-action
+          perform_action: input_select.select_option
+          target:
+            entity_id: input_select.laufband_zeitraum
+          data:
+            option: 7 Tage
+        styles: *laufband_tempo_stil
+        state:
+        - operator: template
+          value: "[[[ return states['input_select.laufband_zeitraum']?.state === '7 Tage'; ]]]"
+          styles: *laufband_tempo_aktiv
+      - type: custom:button-card
+        name: 30 Tage
+        show_icon: false
+        tap_action:
+          action: perform-action
+          perform_action: input_select.select_option
+          target:
+            entity_id: input_select.laufband_zeitraum
+          data:
+            option: 30 Tage
+        styles: *laufband_tempo_stil
+        state:
+        - operator: template
+          value: "[[[ return states['input_select.laufband_zeitraum']?.state === '30 Tage'; ]]]"
+          styles: *laufband_tempo_aktiv
+      - type: custom:button-card
+        name: 12 Monate
+        show_icon: false
+        tap_action:
+          action: perform-action
+          perform_action: input_select.select_option
+          target:
+            entity_id: input_select.laufband_zeitraum
+          data:
+            option: 12 Monate
+        styles: *laufband_tempo_stil
+        state:
+        - operator: template
+          value: "[[[ return states['input_select.laufband_zeitraum']?.state === '12 Monate'; ]]]"
+          styles: *laufband_tempo_aktiv
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: input_select.laufband_zeitraum
+        state: 7 Tage
+      card:
+        type: vertical-stack
+        cards:
+        - type: statistics-graph
+          title: Strecke
+          entities:
+          - entity: sensor.buro_laufband_strecke_heute
+            name: Strecke
+          stat_types:
+          - change
+          chart_type: bar
+          period: day
+          days_to_show: 7
+        - type: statistics-graph
+          title: Trainingszeit
+          entities:
+          - entity: sensor.buro_laufband_trainingszeit_heute
+            name: Trainingszeit
+          stat_types:
+          - change
+          chart_type: bar
+          period: day
+          days_to_show: 7
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: input_select.laufband_zeitraum
+        state: 30 Tage
+      card:
+        type: vertical-stack
+        cards:
+        - type: statistics-graph
+          title: Strecke
+          entities:
+          - entity: sensor.buro_laufband_strecke_heute
+            name: Strecke
+          stat_types:
+          - change
+          chart_type: bar
+          period: day
+          days_to_show: 30
+        - type: statistics-graph
+          title: Trainingszeit
+          entities:
+          - entity: sensor.buro_laufband_trainingszeit_heute
+            name: Trainingszeit
+          stat_types:
+          - change
+          chart_type: bar
+          period: day
+          days_to_show: 30
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: input_select.laufband_zeitraum
+        state: 12 Monate
+      card:
+        type: vertical-stack
+        cards:
+        - type: statistics-graph
+          title: Strecke
+          entities:
+          - entity: sensor.buro_laufband_strecke_heute
+            name: Strecke
+          stat_types:
+          - change
+          chart_type: bar
+          period: month
+          days_to_show: 365
+        - type: statistics-graph
+          title: Trainingszeit
+          entities:
+          - entity: sensor.buro_laufband_trainingszeit_heute
+            name: Trainingszeit
+          stat_types:
+          - change
+          chart_type: bar
+          period: month
+          days_to_show: 365
+    - type: history-graph
+      title: Tempo · 12 Stunden
+      hours_to_show: 12
+      entities:
+      - entity: sensor.treadmill_speed
+        name: Tempo
 - title: Energie
   path: energie
   icon: mdi:lightning-bolt
