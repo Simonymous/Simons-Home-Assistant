@@ -3811,38 +3811,38 @@ views:
       square: false
       cards:
       - type: custom:mushroom-template-card
-        entity: sensor.anker_ladestation_pad_1_leistung
-        primary: Pad 1
+        entity: sensor.anker_ladestation_iphone_leistung
+        primary: iPhone
         secondary: >-
-          {% set w = states('sensor.anker_ladestation_pad_1_leistung') %}
+          {% set w = states('sensor.anker_ladestation_iphone_leistung') %}
           {{ (w | float(0) | round(1) | string | replace('.', ',')) ~ ' W' if is_number(w) else '–' }}
-        icon: mdi:numeric-1-circle-outline
+        icon: mdi:cellphone-wireless
         icon_color: >-
-          {{ 'green' if states('sensor.anker_ladestation_pad_1_leistung') | float(0) > 0.5 else 'grey' }}
+          {{ 'green' if states('sensor.anker_ladestation_iphone_leistung') | float(0) > 0.5 else 'grey' }}
         layout: vertical
         tap_action:
           action: more-info
       - type: custom:mushroom-template-card
-        entity: sensor.anker_ladestation_pad_2_leistung
-        primary: Pad 2
+        entity: sensor.anker_ladestation_watch_leistung
+        primary: Watch
         secondary: >-
-          {% set w = states('sensor.anker_ladestation_pad_2_leistung') %}
+          {% set w = states('sensor.anker_ladestation_watch_leistung') %}
           {{ (w | float(0) | round(1) | string | replace('.', ',')) ~ ' W' if is_number(w) else '–' }}
-        icon: mdi:numeric-2-circle-outline
+        icon: mdi:watch
         icon_color: >-
-          {{ 'green' if states('sensor.anker_ladestation_pad_2_leistung') | float(0) > 0.5 else 'grey' }}
+          {{ 'green' if states('sensor.anker_ladestation_watch_leistung') | float(0) > 0.5 else 'grey' }}
         layout: vertical
         tap_action:
           action: more-info
       - type: custom:mushroom-template-card
-        entity: sensor.anker_ladestation_pad_3_leistung
-        primary: Pad 3
+        entity: sensor.anker_ladestation_airpods_leistung
+        primary: AirPods
         secondary: >-
-          {% set w = states('sensor.anker_ladestation_pad_3_leistung') %}
+          {% set w = states('sensor.anker_ladestation_airpods_leistung') %}
           {{ (w | float(0) | round(1) | string | replace('.', ',')) ~ ' W' if is_number(w) else '–' }}
-        icon: mdi:numeric-3-circle-outline
+        icon: mdi:earbuds
         icon_color: >-
-          {{ 'green' if states('sensor.anker_ladestation_pad_3_leistung') | float(0) > 0.5 else 'grey' }}
+          {{ 'green' if states('sensor.anker_ladestation_airpods_leistung') | float(0) > 0.5 else 'grey' }}
         layout: vertical
         tap_action:
           action: more-info
