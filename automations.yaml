@@ -899,8 +899,8 @@
   mode: single
 - id: '1784566148344'
   alias: 'Lautsprecher: Ein mit LG TV'
-  description: Schaltet den Lautsprecher/Receiver ein, wenn der Wohnzimmer-LG-TV
-    angeht, egal ueber welche Quelle (Apple TV, Switch, ...).
+  description: Schaltet den Lautsprecher/Receiver ein, wenn der Wohnzimmer-LG-TV angeht,
+    egal ueber welche Quelle (Apple TV, Switch, ...).
   triggers:
   - entity_id: media_player.lg_webos_tv_65nano759pa
     to: 'on'
@@ -911,10 +911,10 @@
   mode: single
 - id: '1784566148345'
   alias: 'Lautsprecher: Aus mit LG TV'
-  description: Schaltet den Lautsprecher/Receiver aus, wenn der Wohnzimmer-LG-TV
-    45 s lang aus ist. Frueher am Apple TV gekoppelt, der beim Spielen ueber andere
-    Quellen (Switch) einschlaeft und dann den Receiver abgeschaltet hat. Auch nach
-    HA-Start und Automations-Reload, damit ein dabei verpasster Wechsel nachgeholt wird.
+  description: Schaltet den Lautsprecher/Receiver aus, wenn der Wohnzimmer-LG-TV 45
+    s lang aus ist. Frueher am Apple TV gekoppelt, der beim Spielen ueber andere Quellen
+    (Switch) einschlaeft und dann den Receiver abgeschaltet hat. Auch nach HA-Start
+    und Automations-Reload, damit ein dabei verpasster Wechsel nachgeholt wird.
   triggers:
   - entity_id: media_player.lg_webos_tv_65nano759pa
     to:
@@ -965,10 +965,10 @@
   mode: single
 - id: '1792300000001'
   alias: 'Schlafzimmer: Heizung aus bei offenem Fenster'
-  description: Fenster (Eve-Kontakt, rechts) 2 min offen -> beide Thermostate aus, vorherige
-    Einstellung wird gemerkt, Mitteilung ans iPhone. Fenster zu -> sofort Einstellung zurueck
-    (sofern die Thermostate noch aus sind, sonst hat jemand selbst nachgestellt) und Mitteilung
-    wieder entfernt.
+  description: Fenster (Eve-Kontakt, rechts) 2 min offen -> beide Thermostate aus,
+    vorherige Einstellung wird gemerkt, Mitteilung ans iPhone. Fenster zu -> sofort
+    Einstellung zurueck (sofern die Thermostate noch aus sind, sonst hat jemand selbst
+    nachgestellt) und Mitteilung wieder entfernt.
   triggers:
   - trigger: state
     entity_id: binary_sensor.eve_door_20ebn9901_tur
@@ -987,9 +987,9 @@
       - condition: trigger
         id: offen
       - condition: template
-        value_template: >-
-          {{ not (is_state('climate.schlafzimmer_heizung_schlafzimmer_links', 'off')
-             and is_state('climate.schlafzimmer_heizung_schlafzimmer_rechts', 'off')) }}
+        value_template: "{{ not (is_state('climate.schlafzimmer_heizung_schlafzimmer_links',
+          'off')\n   and is_state('climate.schlafzimmer_heizung_schlafzimmer_rechts',
+          'off')) }}"
       sequence:
       - action: scene.create
         data:
@@ -1012,10 +1012,10 @@
       - condition: trigger
         id: zu
       - condition: template
-        value_template: >-
-          {{ states.scene.schlafzimmer_heizung_vor_dem_lueften is not none
-             and is_state('climate.schlafzimmer_heizung_schlafzimmer_links', 'off')
-             and is_state('climate.schlafzimmer_heizung_schlafzimmer_rechts', 'off') }}
+        value_template: "{{ states.scene.schlafzimmer_heizung_vor_dem_lueften is not
+          none\n   and is_state('climate.schlafzimmer_heizung_schlafzimmer_links',
+          'off')\n   and is_state('climate.schlafzimmer_heizung_schlafzimmer_rechts',
+          'off') }}"
       sequence:
       - action: scene.turn_on
         target:
@@ -1028,9 +1028,9 @@
   mode: queued
 - id: '1792300000002'
   alias: 'Haustür: Benachrichtigung bei Öffnen'
-  description: Meldet jedes Oeffnen der Haustuer ueber die Ring Intercom. Wurde der Tueroeffner
-    in den 30 s davor ueber Home Assistant gedrueckt (Mitteilung, NFC, Kontrollzentrum), steht
-    das dabei, sonst kam es ueber die Ring-App bzw. Gegensprechanlage.
+  description: Meldet jedes Oeffnen der Haustuer ueber die Ring Intercom. Wurde der
+    Tueroeffner in den 30 s davor ueber Home Assistant gedrueckt (Mitteilung, NFC,
+    Kontrollzentrum), steht das dabei, sonst kam es ueber die Ring-App bzw. Gegensprechanlage.
   triggers:
   - trigger: state
     entity_id: event.vordereingang_gegensprechanlage_entsperren
@@ -1043,22 +1043,21 @@
   conditions: []
   actions:
   - variables:
-      ueber_ha: >-
-        {% set p = as_datetime(states('button.vordereingang_tur_offnen')) %}
-        {{ p is not none and (now() - p).total_seconds() < 30 }}
+      ueber_ha: '{% set p = as_datetime(states(''button.vordereingang_tur_offnen''))
+        %} {{ p is not none and (now() - p).total_seconds() < 30 }}'
   - action: notify.mobile_app_eierphone_simon
     data:
       title: "\U0001F6AA Haustür geöffnet"
-      message: >-
-        {{ now().strftime('%H:%M') }} Uhr, {{ 'über Home Assistant' if ueber_ha
-        else 'über die Ring-App bzw. Gegensprechanlage' }}.
+      message: '{{ now().strftime(''%H:%M'') }} Uhr, {{ ''über Home Assistant'' if
+        ueber_ha else ''über die Ring-App bzw. Gegensprechanlage'' }}.'
       data:
         tag: haustuer_geoeffnet
   mode: queued
 - id: '1792300000003'
   alias: 'Netzwerk: Speedtest nachts'
-  description: Startet einmal täglich um 4:30 einen Speedtest. Die stündliche Abfrage der
-    Speedtest-Integration ist abgeschaltet, weil jeder Test die Leitung kurz voll auslastet.
+  description: Startet einmal täglich um 4:30 einen Speedtest. Die stündliche Abfrage
+    der Speedtest-Integration ist abgeschaltet, weil jeder Test die Leitung kurz voll
+    auslastet.
   triggers:
   - trigger: time
     at: 04:30:00
@@ -1067,4 +1066,32 @@
   - action: homeassistant.update_entity
     target:
       entity_id: sensor.speedtest_download
+  mode: single
+- id: '1793632009402'
+  alias: 'Fenster-Wächter: Nachtruhe'
+  description: Schaltet die Warnungen des NeonPlan-Fenster-Wächters nachts stumm (22:30–07:00).
+  triggers:
+  - trigger: time
+    at: '22:30:00'
+    id: nacht
+  - trigger: time
+    at: 07:00:00
+    id: morgen
+  - trigger: homeassistant
+    event: start
+    id: start
+  actions:
+  - choose:
+    - conditions:
+      - condition: time
+        after: '22:30:00'
+        before: 07:00:00
+      sequence:
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.window_watch_quiet
+    default:
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.window_watch_quiet
   mode: single
