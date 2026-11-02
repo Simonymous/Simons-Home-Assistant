@@ -19,11 +19,12 @@ from .const import (
     HEUTE_MAX_AGE_DAYS,
     MAX_AGE_DAYS,
     STATUS_HEUTE,
+    STATUS_UNTERWEGS,
     STATUS_ZUGESTELLT,
     STORAGE_KEY,
     STORAGE_VERSION,
 )
-from .parsers import parse_email
+from .parsers import ParsedEmail, parse_email
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -93,11 +94,28 @@ class PaketTrackingManager:
             _LOGGER.debug("Keine passende Regel für sender=%r subject=%r", sender, subject)
             return
 
+        if parsed.via_amazon and self._handle_amazon_via_dhl(parsed):
+            return
+
+        keys = (parsed.key, *parsed.extra_keys)
         if parsed.status == STATUS_ZUGESTELLT:
-            if self.packages.pop(parsed.key, None) is not None:
-                _LOGGER.debug("Paket %s als zugestellt entfernt", parsed.key)
+            # The delivery mail may name only the first order of a shared shipment,
+            # the "In Zustellung" mail before it recorded the whole group.
+            grouped = [k for k, pkg in self.packages.items() if parsed.key in pkg.get("group", ())]
+            removed = [key for key in (*keys, *grouped) if self.packages.pop(key, None) is not None]
+            if removed:
+                _LOGGER.debug("Pakete %s als zugestellt entfernt", removed)
                 self._notify_and_save()
             return
+
+        # Other orders in the same shipment follow its status, but only if they
+        # are already tracked - an extra number alone never creates an entry.
+        group = [key for key in keys if key in self.packages or key == parsed.key]
+        for key in parsed.extra_keys:
+            if key in self.packages:
+                self.packages[key]["status"] = parsed.status
+                self.packages[key]["updated_at"] = dt_util.now().isoformat()
+                self.packages[key]["group"] = group
 
         existing = self.packages.get(parsed.key, {})
         self.packages[parsed.key] = {
@@ -106,9 +124,52 @@ class PaketTrackingManager:
             "description": parsed.description or existing.get("description"),
             "expected": parsed.expected or existing.get("expected"),
             "updated_at": dt_util.now().isoformat(),
+            **({"dhl": existing["dhl"]} if existing.get("dhl") else {}),
+            **({"group": existing["group"]} if existing.get("group") else {}),
         }
+        if parsed.extra_keys and len(group) > 1:
+            self.packages[parsed.key]["group"] = group
         _LOGGER.debug("Paket %s -> %s (%s)", parsed.key, parsed.status, parsed.carrier)
         self._notify_and_save()
+
+    def _handle_amazon_via_dhl(self, parsed: ParsedEmail) -> bool:
+        # Amazon sends no delivery mail of its own when DHL carries the order, and
+        # the DHL mails don't name the order. So the first DHL announcement is
+        # linked to the oldest unlinked Amazon order in transit, later DHL mails
+        # move that order along instead of tracking the parcel a second time.
+        keys = {parsed.key, *parsed.extra_keys}
+        amazon = {
+            key: pkg
+            for key, pkg in self.packages.items()
+            if key.startswith("amazon:") and pkg["status"] in (STATUS_UNTERWEGS, STATUS_HEUTE)
+        }
+        target = next((key for key, pkg in amazon.items() if pkg.get("dhl") in keys), None)
+        if target is None:
+            linked = [key for key, pkg in amazon.items() if pkg.get("dhl")]
+            unlinked = [key for key, pkg in amazon.items() if not pkg.get("dhl")]
+            # A new announcement takes a fresh order. A "heute" or delivery mail
+            # without a known number belongs to an order DHL already announced.
+            if parsed.status == STATUS_UNTERWEGS:
+                pool = unlinked
+            else:
+                pool = linked or unlinked
+            if not pool:
+                return False
+            target = min(pool, key=lambda key: amazon[key].get("updated_at", ""))
+            self.packages[target]["dhl"] = parsed.key
+
+        if parsed.status == STATUS_ZUGESTELLT:
+            self.packages.pop(target, None)
+            _LOGGER.debug("Amazon-Paket %s per DHL zugestellt", target)
+        else:
+            self.packages[target]["status"] = parsed.status
+            self.packages[target]["updated_at"] = dt_util.now().isoformat()
+            _LOGGER.debug("Amazon-Paket %s per DHL -> %s", target, parsed.status)
+        # A plain DHL entry for this parcel from before the link would hang otherwise.
+        for key in keys:
+            self.packages.pop(key, None)
+        self._notify_and_save()
+        return True
 
     def _notify_and_save(self) -> None:
         self.async_save()

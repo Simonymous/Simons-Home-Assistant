@@ -9,6 +9,9 @@ from .const import STATUS_HEUTE, STATUS_OFFEN, STATUS_UNTERWEGS, STATUS_ZUGESTEL
 _QUOTE_RE = re.compile(r"„([^“]+)“")
 _WEITERE_RE = re.compile(r"und\s+(\d+)\s+weitere[rn]?\s+Artikel", re.IGNORECASE)
 _BESTELLNR_RE = re.compile(r"Bestellnr\.[^\d]*([\d][\d\-]{8,})")
+# A shipment with several orders ("und 1 weiterer Artikel") only names the first
+# under "Bestellnr.", the others appear as bare order numbers further down.
+_AMAZON_ORDER_RE = re.compile(r"\b\d{3}-\d{7}-\d{7}\b")
 _ZUSTELLUNG_RE = re.compile(r"Zustellung:\s*([A-Za-zÄÖÜäöüß.,0-9 ]+?)(?:\n|\r|$)")
 
 _DHL_TRACKING_RE = re.compile(r"\b\d{10,20}\b")
@@ -23,6 +26,12 @@ class ParsedEmail:
     key: str
     description: str | None = None
     expected: str | None = None
+    # Further keys the same email refers to (other orders in the shipment,
+    # other candidate tracking numbers); applied only to entries already tracked.
+    extra_keys: tuple[str, ...] = ()
+    # DHL delivering an Amazon order ("Ihre Amazon Sendung ..."): the package is
+    # already tracked under its Amazon order number, see PaketTrackingManager.
+    via_amazon: bool = False
 
 
 def _hash_key(*parts: str) -> str:
@@ -50,7 +59,7 @@ def parse_amazon(sender: str, subject: str, text: str) -> ParsedEmail | None:
     elif "versandbestaetigung@amazon" in sender:
         status = STATUS_UNTERWEGS
     elif "shipment-tracking@amazon" in sender or "order-update@amazon" in sender:
-        if subject.startswith("Zugestellt"):
+        if subject.startswith("Zugestellt") or subject.startswith("Geliefert"):
             status = STATUS_ZUGESTELLT
         elif subject.startswith("In Zustellung") or subject.startswith("Heute"):
             status = STATUS_HEUTE
@@ -62,7 +71,8 @@ def parse_amazon(sender: str, subject: str, text: str) -> ParsedEmail | None:
         return None
 
     order_match = _BESTELLNR_RE.search(text or "")
-    order_number = order_match.group(1) if order_match else None
+    order_numbers = list(dict.fromkeys(_AMAZON_ORDER_RE.findall(text or "")))
+    order_number = order_match.group(1) if order_match else (order_numbers[0] if order_numbers else None)
     description = _amazon_description(subject)
 
     if order_number:
@@ -84,6 +94,7 @@ def parse_amazon(sender: str, subject: str, text: str) -> ParsedEmail | None:
         key=key,
         description=description,
         expected=expected,
+        extra_keys=tuple(f"amazon:{n}" for n in order_numbers if n != order_number),
     )
 
 
@@ -93,19 +104,28 @@ def parse_dhl(sender: str, subject: str, text: str) -> ParsedEmail | None:
         return None
 
     subject_l = subject.lower()
-    if "zugestellt" in subject_l:
-        status = STATUS_ZUGESTELLT
-    elif "heute zugestellt" in subject_l or "wird heute" in subject_l:
+    # "wird heute zugestellt" / "kommt heute" must win over the plain "zugestellt".
+    if "heute" in subject_l and "wurde" not in subject_l:
         status = STATUS_HEUTE
+    elif "zugestellt" in subject_l:
+        status = STATUS_ZUGESTELLT
     elif "unterwegs" in subject_l or "versandt" in subject_l or "versendet" in subject_l:
         status = STATUS_UNTERWEGS
     else:
         return None
 
-    tracking_match = _DHL_TRACKING_RE.search(subject) or _DHL_TRACKING_RE.search(text or "")
-    key = f"dhl:{tracking_match.group(0)}" if tracking_match else f"dhl:{_hash_key(sender, subject)}"
+    # The mail body holds several long numbers and their order differs between
+    # the announcement and the delivery mail, so every candidate is a key.
+    numbers = list(dict.fromkeys(_DHL_TRACKING_RE.findall(subject) + _DHL_TRACKING_RE.findall(text or "")))
+    key = f"dhl:{numbers[0]}" if numbers else f"dhl:{_hash_key(sender, subject)}"
 
-    return ParsedEmail(carrier="DHL", status=status, key=key)
+    return ParsedEmail(
+        carrier="DHL",
+        status=status,
+        key=key,
+        extra_keys=tuple(f"dhl:{n}" for n in numbers[1:]),
+        via_amazon="amazon sendung" in subject_l,
+    )
 
 
 def parse_ups(sender: str, subject: str, text: str) -> ParsedEmail | None:
