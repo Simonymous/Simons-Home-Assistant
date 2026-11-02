@@ -902,6 +902,25 @@ views:
           icon: mdi:window-shutter-alert
           color: var(--grey-color)
         extra_styles: '@keyframes machine-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }'
+    - type: custom:mushroom-template-card
+      entity: sensor.anker_ladestation_leistung
+      primary: Ladestation
+      secondary: >-
+        {% set w = states('sensor.anker_ladestation_leistung') %}
+        {% set pads = [('iPhone', 'sensor.anker_ladestation_iphone_leistung'), ('Watch', 'sensor.anker_ladestation_watch_leistung'), ('AirPods', 'sensor.anker_ladestation_airpods_leistung')] %}
+        {% set ns = namespace(t=[]) %}
+        {% for n, e in pads if states(e) | float(0) > 0.5 %}{% set ns.t = ns.t + [n ~ ' ' ~ (states(e) | float | round(1) | string | replace('.', ',')) ~ ' W'] %}{% endfor %}
+        {% if not is_number(w) %}Nicht verbunden{% elif ns.t %}{{ ns.t | join(' · ') }}{% else %}Lädt nichts{% endif %}
+      icon: mdi:battery-charging-wireless
+      icon_color: >-
+        {% set ids = ['sensor.anker_ladestation_iphone_leistung', 'sensor.anker_ladestation_watch_leistung', 'sensor.anker_ladestation_airpods_leistung'] %}
+        {{ 'green' if ids | map('states') | map('float', 0) | select('gt', 0.5) | list else 'grey' }}
+      layout: horizontal
+      tap_action:
+        action: more-info
+      hold_action:
+        action: navigate
+        navigation_path: /dashboard-reinigung/energie
     - type: conditional
       conditions:
       - condition: state
