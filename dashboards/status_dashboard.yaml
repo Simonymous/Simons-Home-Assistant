@@ -3789,6 +3789,66 @@ views:
   - type: custom:stack-in-card
     cards:
     - type: heading
+      heading: Ladestation
+      heading_style: title
+      icon: mdi:battery-charging-wireless
+      card_mod: *heading_card_mod
+    - type: custom:mushroom-template-card
+      entity: sensor.anker_ladestation_leistung
+      primary: >-
+        {% set w = states('sensor.anker_ladestation_leistung') %}
+        {{ (w | float(0) | round(1) | string | replace('.', ',')) ~ ' W gerade' if is_number(w) else 'Nicht verbunden' }}
+      secondary: >-
+        {% set d = states('sensor.anker_ladestation_energie') %}
+        {{ 'Gesamt ' ~ (d | float(0) | round(2) | string | replace('.', ',')) ~ ' kWh' if is_number(d) else 'Noch kein Zählerstand' }}
+      icon: mdi:battery-charging-wireless
+      icon_color: >-
+        {{ 'green' if states('sensor.anker_ladestation_leistung') | float(0) > 1 else 'grey' }}
+      tap_action:
+        action: more-info
+    - type: grid
+      columns: 3
+      square: false
+      cards:
+      - type: custom:mushroom-template-card
+        entity: sensor.anker_ladestation_pad_1_leistung
+        primary: Pad 1
+        secondary: >-
+          {% set w = states('sensor.anker_ladestation_pad_1_leistung') %}
+          {{ (w | float(0) | round(1) | string | replace('.', ',')) ~ ' W' if is_number(w) else '–' }}
+        icon: mdi:numeric-1-circle-outline
+        icon_color: >-
+          {{ 'green' if states('sensor.anker_ladestation_pad_1_leistung') | float(0) > 0.5 else 'grey' }}
+        layout: vertical
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: sensor.anker_ladestation_pad_2_leistung
+        primary: Pad 2
+        secondary: >-
+          {% set w = states('sensor.anker_ladestation_pad_2_leistung') %}
+          {{ (w | float(0) | round(1) | string | replace('.', ',')) ~ ' W' if is_number(w) else '–' }}
+        icon: mdi:numeric-2-circle-outline
+        icon_color: >-
+          {{ 'green' if states('sensor.anker_ladestation_pad_2_leistung') | float(0) > 0.5 else 'grey' }}
+        layout: vertical
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: sensor.anker_ladestation_pad_3_leistung
+        primary: Pad 3
+        secondary: >-
+          {% set w = states('sensor.anker_ladestation_pad_3_leistung') %}
+          {{ (w | float(0) | round(1) | string | replace('.', ',')) ~ ' W' if is_number(w) else '–' }}
+        icon: mdi:numeric-3-circle-outline
+        icon_color: >-
+          {{ 'green' if states('sensor.anker_ladestation_pad_3_leistung') | float(0) > 0.5 else 'grey' }}
+        layout: vertical
+        tap_action:
+          action: more-info
+  - type: custom:stack-in-card
+    cards:
+    - type: heading
       heading: Licht (Hue)
       heading_style: title
       icon: mdi:lightbulb-group
