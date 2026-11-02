@@ -211,6 +211,125 @@ template:
             {% else %}schliesst
             {% endif %}
           {% endif %}
+  # --- Anker Ladestation: fertig geladen erkennen ---
+  # Die Pads melden nur Leistung, keinen Akkustand. Heuristik: hat geladen
+  # (> 0,5 W fuer 2 Min), danach 10 Min unter 0,6 W = voll. Abnehmen sieht
+  # genauso aus; beim iPhone hilft der Akkustand aus der Companion-App
+  # (>= 80 % bzw. "Full"), sonst gilt es als abgenommen. "voll" faellt nach
+  # 4 Stunden auf "frei" zurueck, weil das Abnehmen nicht erkennbar ist.
+  - trigger:
+      - trigger: numeric_state
+        entity_id: sensor.anker_ladestation_iphone_leistung
+        above: 0.5
+        for:
+          minutes: 2
+        id: laedt
+      - trigger: numeric_state
+        entity_id: sensor.anker_ladestation_iphone_leistung
+        below: 0.6
+        for:
+          minutes: 10
+        id: ende
+      - trigger: state
+        entity_id: sensor.ladestation_iphone_status
+        to: voll
+        for:
+          hours: 4
+        id: ablauf
+      - trigger: homeassistant
+        event: start
+        id: init
+      - trigger: event
+        event_type: event_template_reloaded
+        id: init
+      - trigger: state
+        entity_id: sensor.eierphone_simon_battery_state
+        to: Full
+        id: full
+    sensor:
+      - name: "Ladestation iPhone Status"
+        unique_id: ladestation_iphone_status
+        icon: mdi:battery-charging-wireless
+        state: >-
+          {% if trigger.id == 'laedt' %}lädt
+          {% elif trigger.id == 'ende' %}{{ 'voll' if this.state == 'lädt' and states('sensor.eierphone_simon_battery_level') | int(0) >= 80 else ('frei' if this.state == 'lädt' else this.state) }}
+          {% elif trigger.id == 'ablauf' %}frei
+          {% elif trigger.id == 'full' %}{{ 'voll' if this.state == 'lädt' else this.state }}
+          {% elif states('sensor.anker_ladestation_iphone_leistung') | float(0) > 0.5 %}lädt
+          {% else %}{{ this.state if this.state in ['lädt', 'voll', 'frei'] else 'frei' }}{% endif %}
+
+  - trigger:
+      - trigger: numeric_state
+        entity_id: sensor.anker_ladestation_watch_leistung
+        above: 0.5
+        for:
+          minutes: 2
+        id: laedt
+      - trigger: numeric_state
+        entity_id: sensor.anker_ladestation_watch_leistung
+        below: 0.6
+        for:
+          minutes: 10
+        id: ende
+      - trigger: state
+        entity_id: sensor.ladestation_watch_status
+        to: voll
+        for:
+          hours: 4
+        id: ablauf
+      - trigger: homeassistant
+        event: start
+        id: init
+      - trigger: event
+        event_type: event_template_reloaded
+        id: init
+    sensor:
+      - name: "Ladestation Watch Status"
+        unique_id: ladestation_watch_status
+        icon: mdi:battery-charging-wireless
+        state: >-
+          {% if trigger.id == 'laedt' %}lädt
+          {% elif trigger.id == 'ende' %}{{ 'voll' if this.state == 'lädt' else this.state }}
+          {% elif trigger.id == 'ablauf' %}frei
+          {% elif states('sensor.anker_ladestation_watch_leistung') | float(0) > 0.5 %}lädt
+          {% else %}{{ this.state if this.state in ['lädt', 'voll', 'frei'] else 'frei' }}{% endif %}
+
+  - trigger:
+      - trigger: numeric_state
+        entity_id: sensor.anker_ladestation_airpods_leistung
+        above: 0.5
+        for:
+          minutes: 2
+        id: laedt
+      - trigger: numeric_state
+        entity_id: sensor.anker_ladestation_airpods_leistung
+        below: 0.6
+        for:
+          minutes: 10
+        id: ende
+      - trigger: state
+        entity_id: sensor.ladestation_airpods_status
+        to: voll
+        for:
+          hours: 4
+        id: ablauf
+      - trigger: homeassistant
+        event: start
+        id: init
+      - trigger: event
+        event_type: event_template_reloaded
+        id: init
+    sensor:
+      - name: "Ladestation AirPods Status"
+        unique_id: ladestation_airpods_status
+        icon: mdi:battery-charging-wireless
+        state: >-
+          {% if trigger.id == 'laedt' %}lädt
+          {% elif trigger.id == 'ende' %}{{ 'voll' if this.state == 'lädt' else this.state }}
+          {% elif trigger.id == 'ablauf' %}frei
+          {% elif states('sensor.anker_ladestation_airpods_leistung') | float(0) > 0.5 %}lädt
+          {% else %}{{ this.state if this.state in ['lädt', 'voll', 'frei'] else 'frei' }}{% endif %}
+
   # --- Saugroboter Bob: Status und Fortschritt fuers Dashboard ---
   # Referenzflaeche des Werktagslaufs (Roborock-App, Mo-Fr 11:00, alle Raeume ausser
   # Buero/Schlafzimmer/Bad, ca. 33-34 m2). Wird nach jedem vollstaendigen Lauf

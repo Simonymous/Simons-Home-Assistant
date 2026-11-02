@@ -907,14 +907,20 @@ views:
       primary: Ladestation
       secondary: >-
         {% set w = states('sensor.anker_ladestation_leistung') %}
-        {% set pads = [('iPhone', 'sensor.anker_ladestation_iphone_leistung'), ('Watch', 'sensor.anker_ladestation_watch_leistung'), ('AirPods', 'sensor.anker_ladestation_airpods_leistung')] %}
+        {% set pads = [('iPhone', 'sensor.anker_ladestation_iphone_leistung', 'sensor.ladestation_iphone_status'), ('Watch', 'sensor.anker_ladestation_watch_leistung', 'sensor.ladestation_watch_status'), ('AirPods', 'sensor.anker_ladestation_airpods_leistung', 'sensor.ladestation_airpods_status')] %}
         {% set ns = namespace(t=[]) %}
-        {% for n, e in pads if states(e) | float(0) > 0.5 %}{% set ns.t = ns.t + [n ~ ' ' ~ (states(e) | float | round(1) | string | replace('.', ',')) ~ ' W'] %}{% endfor %}
+        {% for n, e, st in pads %}
+        {% if states(e) | float(0) > 0.5 %}{% set ns.t = ns.t + [n ~ ' ' ~ (states(e) | float | round(1) | string | replace('.', ',')) ~ ' W'] %}
+        {% elif is_state(st, 'voll') %}{% set ns.t = ns.t + [n ~ ' voll'] %}{% endif %}{% endfor %}
         {% if not is_number(w) %}Nicht verbunden{% elif ns.t %}{{ ns.t | join(' · ') }}{% else %}Lädt nichts{% endif %}
-      icon: mdi:battery-charging-wireless
+      icon: >-
+        {% set ids = ['sensor.anker_ladestation_iphone_leistung', 'sensor.anker_ladestation_watch_leistung', 'sensor.anker_ladestation_airpods_leistung'] %}
+        {% set voll = ['sensor.ladestation_iphone_status', 'sensor.ladestation_watch_status', 'sensor.ladestation_airpods_status'] | select('is_state', 'voll') | list %}
+        {{ 'mdi:battery-charging-wireless' if ids | map('states') | map('float', 0) | select('gt', 0.5) | list or not voll else 'mdi:battery-check' }}
       icon_color: >-
         {% set ids = ['sensor.anker_ladestation_iphone_leistung', 'sensor.anker_ladestation_watch_leistung', 'sensor.anker_ladestation_airpods_leistung'] %}
-        {{ 'green' if ids | map('states') | map('float', 0) | select('gt', 0.5) | list else 'grey' }}
+        {% set voll = ['sensor.ladestation_iphone_status', 'sensor.ladestation_watch_status', 'sensor.ladestation_airpods_status'] | select('is_state', 'voll') | list %}
+        {{ 'green' if ids | map('states') | map('float', 0) | select('gt', 0.5) | list or voll else 'grey' }}
       layout: horizontal
       tap_action:
         action: more-info
